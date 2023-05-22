@@ -1,0 +1,522 @@
+
+# -----------------------------------------------------------------------
+# from DVPT128.rsp
+
+[Alen = 0, Plen = 24, Nlen = 13, Tlen = 4]
+
+Key = 197afb02ffbd8f699dacae87094d5243
+
+Count = 90
+Nonce = 5a8aa485c316e9403aff859fbb
+Adata = 00
+CT = 4a550134f94455979ec4bf89ad2bd80d25a77ae94e456134a3e138b9
+Result = Pass
+Payload = a16a2e741f1cd9717285b6d882c1fc53655e9773761ad697
+
+
+[Alen = 32, Plen = 24, Nlen = 13, Tlen = 4]
+
+Key = a7aa635ea51b0bb20a092bd5573e728c
+
+Count = 210
+Nonce = 5a8aa485c316e9403aff859fbb
+Adata = a16a2e741f1cd9717285b6d882c1fc53655e9773761ad697a7ee6410184c7982
+CT = 934f893824e880f743d196b22d1f340a52608155087bd28ac25e5329
+Result = Pass
+Payload = 8739b4bea1a099fe547499cbc6d1b13d849b8084c9b6acc5
+
+
+
+# -----------------------------------------------------------------------
+# from DVPT192.rsp
+
+[Alen = 32, Plen = 0, Nlen = 7, Tlen = 4]
+
+Key = 90929a4b0ac65b350ad1591611fe48297e03956f6083e451
+
+Count = 120
+Nonce = 5a8aa485c316e9
+Adata = 3796cf51b8726652a4204733b8fbb047cf00fb91a9837e22ec22b1a268f88e2c
+CT = 1d089a5f
+Result = Pass
+Payload = 00
+
+
+[Alen = 32, Plen = 24, Nlen = 7, Tlen = 4]
+
+Key = f9fdca4ac64fe7f014de0f43039c757194d544ce5d15eed4
+
+Count = 180
+Nonce = 5a8aa485c316e9
+Adata = 3796cf51b8726652a4204733b8fbb047cf00fb91a9837e22ec22b1a268f88e2c
+CT = 9f6ca4af9b159148c889a6584d1183ea26e2614874b0504575dea8d1
+Result = Pass
+Payload = a265480ca88d5f536db0dc6abc40faf0d05be7a966977768
+
+
+# -----------------------------------------------------------------------
+# from DVPT256.rsp
+
+[Alen = 32, Plen = 0, Nlen = 7, Tlen = 4]
+
+Key = 1b0e8df63c57f05d9ac457575ea764524b8610ae5164e6215f426f5a7ae6ede4
+
+Count = 120
+Nonce = a544218dadd3c1
+Adata = d3d5424e20fbec43ae495353ed830271515ab104f8860c988d15b6d36c038eab
+CT = 92d00fbe
+Result = Pass
+Payload = 00
+
+[Alen = 32, Plen = 24, Nlen = 7, Tlen = 16]
+
+Key = 705334e30f53dd2f92d190d2c1437c8772f940c55aa35e562214ed45bd458ffe
+
+Count = 195
+Nonce = a544218dadd3c1
+Adata = d3d5424e20fbec43ae495353ed830271515ab104f8860c988d15b6d36c038eab
+CT = 3341168eb8c48468c414347fb08f71d2086f7c2d1bd581ce1ac68bd42f5ec7fa7e068cc0ecd79c2a
+Result = Pass
+Payload = 78c46e3249ca28e1ef0531d80fd37c124d9aecb7be6668e3
+
+[Alen = 32, Plen = 24, Nlen = 13, Tlen = 16]
+
+Key = 314a202f836f9f257e22d8c11757832ae5131d357a72df88f3eff0ffcee0da4e
+
+Count = 225
+Nonce = a544218dadd3c10583db49cf39
+Adata = 3c0e2815d37d844f7ac240ba9d6e3a0b2a86f706e885959e09a1005e024f6907
+CT = 8d34cdca37ce77be68f65baf3382e31efa693e63f914a781367f30f2eaad8c063ca50795acd90203
+Result = Pass
+Payload = e8de970f6ee8e80ede933581b5bcf4d837e2b72baa8b00c3
+
+
+# -----------------------------------------------------------------------
+# from VADT128.rsp
+
+Plen = 24
+Nlen = 13
+Tlen = 16
+
+[Alen = 0]
+
+Key = d24a3d3dde8c84830280cb87abad0bb3
+Nonce = f1100035bb24a8d26004e0e24b
+
+Count = 0
+Adata = 00
+Payload = 7c86135ed9c2a515aaae0e9a208133897269220f30870006
+CT = 1faeb0ee2ca2cd52f0aa3966578344f24e69b742c4ab37ab1123301219c70599b7c373ad4b3ad67b
+
+
+# -----------------------------------------------------------------------
+# from VADT192.rsp
+
+Plen = 24
+Nlen = 13
+Tlen = 16
+
+
+[Alen = 22]
+
+Key = 671544bf2988056f7f9ccd526861391a27233793a23f811f
+Nonce = 0a259148a1d081e0df381ecd0c
+
+Count = 220
+Adata = 61dafc237cb52f83ab773ba8a885462b6f77d4924611
+Payload = 576b069ae2713f53d2924c1fd68f786cb2eec68892f9e1be
+CT = ce06b3d09b02921f290544032a081a7766612940048867281bb089af0245792c16e6320cf5ffa19e
+
+[Alen = 28]
+
+Key = 6351a67fd6daabd2fd49ee944dd41dd37301f958dd17fcc3
+Nonce = b8d517b033754058128d13d11a
+
+Count = 280
+Adata = 511c6924fa96db716f6b053b7a48aebdc1504145a56cd02d6be2590d
+Payload = 0c0663dd69ccbffbbd0c8c2e9473d0354451ae7a20fa3695
+CT = 19f2745df5007619c79c84d174e4521b942776478a0601d982c560fede4741e2fd3b54b3a48f3e38
+
+
+# -----------------------------------------------------------------------
+# from VADT256.rsp
+
+Plen = 24
+Nlen = 13
+Tlen = 16
+
+[Alen = 0]
+
+Key = 26511fb51fcfa75cb4b44da75a6e5a0eb8d9c8f3b906f886df3ba3e6da3a1389
+Nonce = 72a60f345a1978fb40f28a2fa4
+
+Count = 0
+Adata = 00
+Payload = 30d56ff2a25b83fee791110fcaea48e41db7c7f098a81000
+CT = 55f068c0bbba8b598013dd1841fd740fda2902322148ab5e935753e601b79db4ae730b6ae3500731
+
+[Alen = 25]
+
+Key = 8544808e8fbf8c3a5e1d4ca751d4b603af9fe119eabc6923205815e0e748b7e7
+Nonce = b44a58724596b4d8dea827c1a0
+
+Count = 250
+Adata = f5b2c88f5232c37273b1e66aa31cfa7201e33c21d60054d025
+Payload = 617d54fc6a23601c79e3984f93bfc2d151fde420863206b3
+CT = 57b3414db48982c6567265e1e0173bf38fdfaffe4461fbebc1411af83237c0f9eb0bfe8ed914da66
+
+
+# -----------------------------------------------------------------------
+# from VNT128.rsp
+
+Alen = 32
+Plen = 24
+Tlen = 16
+
+[Nlen = 7]
+
+Key = c0425ed20cd28fda67a2bcc0ab342a49
+
+Count = 0
+Nonce = 37667f334dce90
+Adata = 0b3e8d9785c74c8f41ea257d4d87495ffbbb335542b12e0d62bb177ec7a164d9
+Payload = 4f065a23eeca6b18d118e1de4d7e5ca1a7c0e556d786d407
+CT = 768fccdf4898bca099e33c3d40565497dec22dd6e33dcf4384d71be8565c21a455db45816da8158c
+
+[Nlen = 12]
+
+Key = 005e8f4d8e0cbf4e1ceeb5d87a275848
+
+Count = 50
+Nonce = 0ec3ac452b547b9062aac8fa
+Adata = 2f1821aa57e5278ffd33c17d46615b77363149dbc98470413f6543a6b749f2ca
+Payload = b6f345204526439daf84998f380dcfb4b4167c959c04ff65
+CT = 9575e16f35da3c88a19c26a7b762044f4d7bbbafeff05d754829e2a7752fa3a14890972884b511d8
+
+[Nlen = 13]
+
+Key = ac87fef3b76e725d66d905625a387e82
+
+Count = 60
+Nonce = 61bf06b9fa5a450d094f3ddcb5
+Adata = 0245484bcd987787fe97fda6c8ffb6e7058d7b8f7064f27514afaac4048767fd
+Payload = 959403e0771c21a416bd03f3898390e90d0a0899f69f9552
+CT = cabf8aa613d5357aa3e70173d43f1f202b628a61d18e8b572eb66bb8213a515aa61e5f0945cd57f4
+
+
+# -----------------------------------------------------------------------
+# from VNT192.rsp
+
+
+Alen = 32
+Plen = 24
+Tlen = 16
+
+[Nlen = 7]
+
+Key = ceb009aea4454451feadf0e6b36f45555dd04723baa448e8
+
+Count = 0
+Nonce = 764043c49460b7
+Adata = 6e80dd7f1badf3a1c9ab25c75f10bde78c23fa0eb8f9aaa53adefbf4cbf78fe4
+Payload = c8d275f919e17d7fe69c2a1f58939dfe4d403791b5df1310
+CT = 8a0f3d8229e48e7487fd95a28ad392c80b3681d4fbc7bbfd2dd6ef1c45d4ccb723dc074414db506d
+
+[Nlen = 13]
+
+Key = 36ad1e3fb630d1b1fbccfd685f44edd8984427b78deae7a9
+
+Count = 60
+Nonce = 3af625df8be9d7685a842f260e
+Adata = 308443033ecd4a814475672b814b7c6d813d0ec2a0caeecbcaba18a2840cdb6c
+Payload = 8b9db1c8f9b4892a5654c85467bcffa2e15e28392c938952
+CT = 6bc6890fee299c712fb8d9df9c141f24ee1572b8f15112c2f8c99ccf2d82788cf613a61d60dae458
+
+[Nlen = 12]
+
+Key = d49b255aed8be1c02eb6d8ae2bac6dcd7901f1f61df3bbf5
+
+Count = 50
+Nonce = 1af29e721c98e81fb6286370
+Adata = 64f8a0eee5487a4958a489ed35f1327e2096542c1bdb2134fb942ca91804c274
+Payload = 062eafb0cd09d26e65108c0f56fcc7a305f31c34e0f3a24c
+CT = 721344e2fd05d2ee50713531052d75e4071103ab0436f65f0af2a663da51bac626c9f4128ba5ec0b
+
+
+# -----------------------------------------------------------------------
+# from VNT256.rsp
+
+Alen = 32
+Plen = 24
+Tlen = 16
+
+[Nlen = 7]
+
+Key = 553521a765ab0c3fd203654e9916330e189bdf951feee9b44b10da208fee7acf
+
+Count = 0
+Nonce = aaa23f101647d8
+Adata = a355d4c611812e5f9258d7188b3df8851477094ffc2af2cf0c8670db903fbbe0
+Payload = 644eb34b9a126e437b5e015eea141ca1a88020f2d5d6cc2c
+CT = 27ed90668174ebf8241a3c74b35e1246b6617e4123578f153bdb67062a13ef4e986f5bb3d0bb4307
+
+
+[Nlen = 10]
+
+Key = aecc5e18088bf9fd7b17f089bdd5607b69903b04b726361f8a81e221b1c91891
+
+Count = 30
+Nonce = c527d309ab29ee91c5fc
+Adata = 8f9a73e7bc1c11e2919020ba3a404cbddf861e9e78477218e3be2cd4337b278d
+Payload = d4291c99901345afe29f58912a414a7498f37b44362bdf3c
+CT = 392784a9e0b14bcd37639ec5409d6ead3e75f855e5a92c33ffc040ef3977e0035ce6ea6d157c18d3
+
+
+[Nlen = 13]
+
+Key = 4a75ff2f66dae2935403cce27e829ad8be98185c73f8bc61d3ce950a83007e11
+
+Count = 60
+Nonce = 46eb390b175e75da6193d7edb6
+Adata = 282f05f734f249c0535ee396282218b7c4913c39b59ad2a03ffaf5b0e9b0f780
+Payload = 205f2a664a8512e18321a91c13ec13b9e6b633228c57cc1e
+CT = 58f1584f761983bef4d0060746b5d5ee610ecfda31101a7f5460e9b7856d60a5ad9803c0762f8176
+
+
+# -----------------------------------------------------------------------
+# from VPT128.rsp
+
+Alen = 32
+Nlen = 13
+Tlen = 16
+
+[Plen = 0]
+
+Key = 2ebf60f0969013a54a3dedb19d20f6c8
+Nonce = 1de8c5e21f9db33123ff870add
+
+Count = 0
+Adata = e1de6c6119d7db471136285d10b47a450221b16978569190ef6a22b055295603
+Payload = 00
+CT = 0ead29ef205fbb86d11abe5ed704b880
+
+
+[Plen = 7]
+
+Key = dc8ec91184ba18eae31ac2d3b252673f
+Nonce = 0da4c988f521f5648259f2bec2
+
+Count = 70
+Adata = 6d5573c9279897d7d1602d8a95c04bb5ca3fad2dbe89a024b3651eb227e73bb5
+Payload = 2a5775986551c8
+CT = 4f259f2a718faea852a7c4358dfa9f5467357638acac90
+
+
+[Plen = 23]
+
+Key = cb83f77751e72711401cbbf4f61aa0ed
+Nonce = c0b461b2e15b8b116ef9281704
+
+Count = 230
+Adata = 2bd112231f903fa0dff085db48a2e2a96ec0199249b005d5ab4c2eab753f9ad0
+Payload = eede01b08f9a303cdf14c99d7a45732972c6eff2a1db06
+CT = feb114b7bd3b43497b62454a675a632c3546d2802462c6af57647efda119c59862cd5dd3904efc
+
+
+# -----------------------------------------------------------------------
+# from VPT192.rsp
+
+Alen = 32
+Nlen = 13
+Tlen = 16
+
+[Plen = 0]
+
+Key = 086e2967cde99e90faaea8a94e168bf0e066c503a849a9f3
+Nonce = 929542cd690f1babcf1696cb03
+
+Count = 0
+Adata = 58f70bab24e0a6137e5cd3eb18656f2b5ccddc3f538a0000c65190e4a3668e71
+Payload = 00
+CT = 3bf9d93af6ffac9ac84cd3202d4e0cc8
+
+[Plen = 13]
+
+Key = 0d423519e4110c06063061323f8c7c95387776b6ee4e4b6e
+Nonce = 39abe53826d9b8e300fe747533
+
+Count = 130
+Adata = cdd9bf1b4f865e922c678ec4947ea0cb02e78bd5c1538f33aeb818ad3f47e519
+Payload = 4021ff104ff1dbd91e46db249f
+CT = 7953d3cd66d093785d123f65ba37f16761dd6aedbfc789ad96edf1490d
+
+[Plen = 21]
+
+Key = f41e369a1599627e76983e9a4fc2e963dab4960b09ebe390
+Nonce = 68ef8285b90f28bcd3cb1bacea
+
+Count = 210
+Adata = dbe3e82e49624d968f5463ceb8af189fb3ad8b3b4122142b110d848a286dae71
+Payload = 81ad3f386bedcbf656ff535c63580d1f87e3c72326
+CT = 9f6028153e06d14d30b862a99a35413413c04a49dc6f68a03a11cf00d58f062a7b36465d13
+
+# -----------------------------------------------------------------------
+# from VPT256.rsp
+
+Alen = 32
+Nlen = 13
+Tlen = 16
+
+[Plen = 0]
+
+Key = c6c14c655e52c8a4c7e8d54e974d698e1f21ee3ba717a0adfa6136d02668c476
+Nonce = 291e91b19de518cd7806de44f6
+
+Count = 0
+Adata = b4f8326944a45d95f91887c2a6ac36b60eea5edef84c1c358146a666b6878335
+Payload = 00
+CT = ca482c674b599046cc7d7ee0d00eec1e
+
+[Plen = 7]
+
+Key = f7aaeff3a1dc0cc5ecf220c67ad9f6dda060b4f1be3cc609cb4f18b2342a88a2
+Nonce = d0d6871b9adc8623ac63faf00f
+
+Count = 70
+Adata = e97175c23c5b47da8ce67811c6d60a7499b3b7e1347ad860519285b67201fe38
+Payload = d48daa2919348d
+CT = eb32ab153a8e092fa325bafc176a07c31e6cc0a852d288
+
+[Plen = 23]
+
+Key = d34264a12c35cdd67ac105e2826b071e46f8131d1e325f8e0ae80a6447375135
+Nonce = 3891e308b9f44c5b5a8b59004a
+
+Count = 230
+Adata = 0cda000ed754456a844c9ed61843deea9dadf5e723ea1448057712996d660f8c
+Payload = 79ac1a6a9eca5e07ce635bfd666ef72b16f3f2e140d56c
+CT = 1abcc9b1649deaa0bfa7dcd23508282d9c50ca7fee72486950608d7bcb39dcf03a2cab01587f61
+
+
+# -----------------------------------------------------------------------
+# from VTT128.rsp
+
+Alen = 32
+Plen = 24
+Nlen = 13
+
+[Tlen = 4]
+
+Key = 43b1a6bc8d0d22d6d1ca95c18593cca5
+Nonce = 9882578e750b9682c6ca7f8f86
+
+Count = 0
+Adata = 2084f3861c9ad0ccee7c63a7e05aece5db8b34bd8724cc06b4ca99a7f9c4914f
+Payload = a2b381c7d1545c408fe29817a21dc435a154c87256346b05
+CT = cc69ed76985e0ed4c8365a72775e5a19bfccc71aeb116c85a8c74677
+
+[Tlen = 10]
+
+Key = 996a09a652fa6c82eae8be7886d7e75e
+Nonce = a8b3eb68f205a46d8f632c3367
+
+Count = 30
+Adata = c71620d0477c8137b77ec5c72ced4df3a1e987fd9af6b5b10853f0526d876cd5
+Payload = 84cdd7380f47524b86168ed95386faa402831f22045183d0
+CT = a7fbf9dd1b099ed3acf6bcbd0b6f7cae57bee99f9d084f826d86e69c07f053d1a607
+
+[Tlen = 16]
+
+Key = 4189351b5caea375a0299e81c621bf43
+Nonce = 48c0906930561e0ab0ef4cd972
+
+Count = 60
+Adata = 40a27c1d1e23ea3dbe8056b2774861a4a201cce49f19997d19206d8c8a343951
+Payload = 4535d12b4377928a7c0a61c9f825a48671ea05910748c8ef
+CT = 26c56961c035a7e452cce61bc6ee220d77b3f94d18fd10b6d80e8bf80f4a46cab06d4313f0db9be9
+
+
+# -----------------------------------------------------------------------
+# from VTT192.rsp
+
+Alen = 32
+Plen = 24
+Nlen = 13
+
+[Tlen = 4]
+
+Key = 11fd45743d946e6d37341fec49947e8c70482494a8f07fcc
+Nonce = c6aeebcb146cfafaae66f78aab
+
+Count = 0
+Adata = 7dc8c52144a7cb65b3e5a846e8fd7eae37bf6996c299b56e49144ebf43a1770f
+Payload = ee7e6075ba52846de5d6254959a18affc4faf59c8ef63489
+CT = 137d9da59baf5cbfd46620c5f298fc766de10ac68e774edf1f2c5bad
+
+[Tlen = 12]
+
+Key = 5a5667197f46b8027980d0a3166c0a419713d4df0629a860
+Nonce = 6236b01079d180fce156fbaab4
+
+Count = 40
+Adata = 29bdf65b29394d363d5243d4249bad087520f8d733a763daa1356be458d487e5
+Payload = d0e4024d6e33daafc011fe463545ed20f172872f6f33cefa
+CT = 479f3d408bfa00d1cd1c8bf11a167ce7ae4bcdb011f04e38733013b8ebe5e92b1917640c
+
+[Tlen = 16]
+
+Key = a7177fd129674c6c91c1c89f4408139afe187026b8114893
+Nonce = 31bb28f0e1e63c36ca3959dd18
+
+Count = 60
+Adata = 2529a834668187213f5342a1f3deea0dc2765478c7d71c9c21b9eb1351a5f6cb
+Payload = 2cea0f7304860a4f40a28c8b890db60f3891b9982478495e
+CT = 5bb7aa6ab9c02a5712d62343fbe61f774e598d6b87545612380ea23dcffc9574f672bca92e306411
+
+
+# -----------------------------------------------------------------------
+# from VTT256.rsp
+
+Alen = 32
+Plen = 24
+Nlen = 13
+
+[Tlen = 4]
+
+Key = 9074b1ae4ca3342fe5bf6f14bcf2f27904f0b15179d95a654f61e699692e6f71
+Nonce = 2e1e0132468500d4bd47862563
+
+Count = 0
+Adata = 3c5f5404370abdcb1edde99de60d0682c600b034e063b7d3237723da70ab7552
+Payload = 239029f150bccbd67edbb67f8ae456b4ea066a4beee065f9
+CT = 9c8d5dd227fd9f81237601830afee4f0115636c8e5d5fd743cb9afed
+
+[Tlen = 12]
+
+Key = 7f4af6765cad1d511db07e33aaafd57646ec279db629048aa6770af24849aa0d
+Nonce = dde2a362ce81b2b6913abc3095
+
+Count = 40
+Adata = 404f5df97ece7431987bc098cce994fc3c063b519ffa47b0365226a0015ef695
+Payload = 7ebef26bf4ecf6f0ebb2eb860edbf900f27b75b4a6340fdb
+CT = 353022db9c568bd7183a13c40b1ba30fcc768c54264aa2cd2927a053c9244d3217a7ad05
+
+[Tlen = 16]
+
+Key = 60823b64e0b2da3a7eb772bd5941c534e6ff94ea96b564e2b38f82c78bb54522
+Nonce = 48526f1bffc97dd65e42906983
+
+Count = 60
+Adata = fab62b3e5deda7a9c1128663cc81c44b74ab1bfe70bc1c9dec7c7fd08173b80a
+Payload = a8be794613835c4366e75817d228438f011a2ec8a86f9797
+CT = cc3efe04d84a4ec5cb6a6c28dc2c2d386a359d9550dbdec963ddd56464aed6d0613159d1aa181dcb
+
+
+
+
+
+
+
+
+
+

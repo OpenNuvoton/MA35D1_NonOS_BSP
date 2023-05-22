@@ -1,0 +1,21 @@
+{
+	"image":
+	[
+		{
+			"offset": "0x0",
+			"file": "conv/header.bin",
+			"type": 0
+		},
+		{
+			"offset": "0x80000",
+            "file": "Loader/GCC/Release/Loader.bin",
+			"type": 0
+		},
+		{
+			"offset": "0xC0000",
+            "file": "SampleCode/Template/GCC/Release/Template.bin",
+			"type": 0
+		}
+	]
+}
+
