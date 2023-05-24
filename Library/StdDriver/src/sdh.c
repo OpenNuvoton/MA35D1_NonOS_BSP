@@ -22,8 +22,6 @@
 /** @addtogroup SDH_EXPORTED_FUNCTIONS SDH Exported Functions
   @{
 */
-//#define SDH_MMC_ENABLE_8BIT /* eMMC only */
-#define SDH_ENABLE_1_8_V	/* SD only */
 
 #define SDH_BLOCK_SIZE	512ul
 #define MAX_TUNING_LOOP 16

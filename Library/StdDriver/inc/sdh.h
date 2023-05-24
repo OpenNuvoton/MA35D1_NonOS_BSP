@@ -16,6 +16,17 @@ extern "C"
 {
 #endif
 
+#define USING_SDH0
+
+#ifdef USING_SDH0
+	#define SDH	SDH0
+	#define SDH_FREQ         50000000ul   /*!< output 50MHz to SD  \hideinitializer */
+#else
+	#define SDH	SDH1
+	#define SDH_MMC_ENABLE_8BIT /* eMMC only */
+	#define SDH_ENABLE_1_8_V	/* SD only */
+	#define SDH_FREQ         200000000ul   /*!< output 200MHz to SD  \hideinitializer */
+#endif
 
 /** @addtogroup Standard_Driver Standard Driver
   @{
@@ -24,7 +35,6 @@ extern "C"
 /** @addtogroup SDH_Driver SDH Driver
   @{
 */
-
 
 /** @addtogroup SDH_EXPORTED_CONSTANTS SDH Exported Constants
   @{
@@ -157,8 +167,6 @@ extern "C"
 #define SDH_TYPE_MMC         3ul /*!< MMC card  \hideinitializer */
 #define SDH_TYPE_EMMC        4ul /*!< eMMC card  \hideinitializer */
 
-#define SDH_FREQ         200000000ul   /*!< output 200MHz to SD  \hideinitializer */
-//#define SDH_FREQ         50000000ul   /*!< output 50MHz to SD  \hideinitializer */
 #define INIT_FREQ         200000ul   /*!< output 50MHz to SDH \hideinitializer */
 
 #define  SDH_CTRL_UHS_MASK		0x0007
