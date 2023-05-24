@@ -98,5 +98,5 @@ int32_t main (void)
 
 
 
-/*** (C) COPYRIGHT 2016 Nuvoton Technology Corp. ***/
+/*** (C) COPYRIGHT 2023 Nuvoton Technology Corp. ***/
 

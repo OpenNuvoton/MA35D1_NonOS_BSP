@@ -657,8 +657,8 @@ extern int  sysIsKbHit(void);
 #include "ts.h"
 #include "hsusbd.h"
 #include "gmac.h"
-#include "nand.h"
 #include "sdh.h"
+#include "nfi.h"
 
 
 #ifdef __cplusplus
