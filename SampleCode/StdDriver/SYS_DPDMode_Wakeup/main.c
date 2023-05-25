@@ -1,7 +1,8 @@
 /**************************************************************************//**
  * @file     main.c
  *
- * @brief    Use timer to warm boot system from DPD mode.
+ * @brief    Let CA35 enter DPD mode only, DDR keep working. Use Timer 
+ *           to warm boot system from DPD mode.
  *
  * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
  *****************************************************************************/

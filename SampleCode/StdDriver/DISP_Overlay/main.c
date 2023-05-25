@@ -1,7 +1,8 @@
 /**************************************************************************//**
  * @file     main.c
  *
- * @brief    Demonstrate LCD Overlay display.
+ * @brief    Demonstrate LCD Overlay display. And demonstrate Alpha blending 
+ *           and ColorKey for Overlay.
  *
  * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
  ******************************************************************************/

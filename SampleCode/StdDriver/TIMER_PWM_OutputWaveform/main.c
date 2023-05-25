@@ -1,7 +1,7 @@
 /**************************************************************************//**
  * @file     main.c
  *
- * @brief    Demonstrate output different duty waveform in Timer0~Timer3 PWM.
+ * @brief    Enable 4 Timer PWM output channels with different frequency and duty ratio.
  *
  * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
  ******************************************************************************/
