@@ -4,7 +4,7 @@
  * @brief    Read the smartcard ATR from smartcard 0 interface.
  *
  *
- * @copyright (C) 2020 Nuvoton Technology Corp. All rights reserved.
+ * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
 *****************************************************************************/
 #include <stdio.h>
 #include "NuMicro.h"

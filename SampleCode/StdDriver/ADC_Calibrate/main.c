@@ -11,23 +11,22 @@
 #include "displib.h"
 
 extern void TMR2_IRQHandler(void);
-extern void TMR3_IRQHandler(void);
 extern void ADC0_IRQHandler(void);
 
 /* LCD attributes 1024x600 */
 DISP_LCD_INFO LcdPanelInfo =
 {
     /* Panel Resolution */
-    1024,
-    600,
+    DISP_RESOLUTION_X,
+    DISP_RESOLUTION_Y,
     /* DISP_LCD_TIMING */
     {
         51000000,
-        1024,
+		DISP_RESOLUTION_X,
         1,
         160,
         160,
-        600,
+		DISP_RESOLUTION_Y,
         1,
         23,
         12,
@@ -52,12 +51,11 @@ void SYS_Init(void)
     CLK_EnableModuleClock(ADC_MODULE);
     CLK_EnableModuleClock(GPB_MODULE);
     CLK_EnableModuleClock(UART0_MODULE);
-    CLK_EnableModuleClock(TMR2_MODULE);
 
     /* Select IP clock source */
-    CLK_SetModuleClock(ADC_MODULE, 0, CLK_CLKDIV4_ADC(450));  // Set ADC clock rate to 2MHz
+    CLK_SetModuleClock(ADC_MODULE, 0, CLK_CLKDIV4_ADC(450));  // Set ADC clock rate to 400kHz
     CLK_SetModuleClock(UART0_MODULE, CLK_CLKSEL2_UART0SEL_HXT, CLK_CLKDIV1_UART0(1));
-    CLK_SetModuleClock(TMR2_MODULE, CLK_CLKSEL1_TMR2SEL_HXT, 0);
+
     /*---------------------------------------------------------------------------------------------------------*/
     /* Init I/O Multi-function                                                                                 */
     /*---------------------------------------------------------------------------------------------------------*/
@@ -134,8 +132,7 @@ void DISP_Open(void)
 }
 
 /**
- * @brief Init timer for tslib
- * Timer2 & Timer3 is assigned
+ * @brief Init timer2 for tslib
  */
 void TMR_Init()
 {

@@ -46,7 +46,7 @@ void SSMCC_SetRegion0(uint32_t attrib)
         CLK->APBCLK2 |= (1 << 2);      /* enable ssmcc */
         /* set region 0 secure attribute */
         TZC0->REGION_ATTRIBUTES_0 = attrib & 0xC0000000;
-        TZC0->GATE_KEEPER = 0x7;
+        TZC0->GATE_KEEPER = 0xF;
         TZC2->REGION_ATTRIBUTES_0 = attrib & 0xC0000000;
         TZC2->GATE_KEEPER = 0x7;
 

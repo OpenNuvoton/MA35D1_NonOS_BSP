@@ -44,24 +44,8 @@ void SYS_Init()
     CLK->PLL[EPLL].CTL1 = 2 << CLK_PLLnCTL1_OUTDIV_Pos; // EPLL divide by 2 and enable
     CLK_WaitClockReady(CLK_STATUS_STABLE_EPLL);
 
-    // TODO : fix ssmcc.h, ssmcc_reg.h
-    // SSMCC Init
-    TZC0->GATE_KEEPER = 0xF; //TZC_GATE_KEEPER_open_request_Msk
-    TZC0->REGION_ATTRIBUTES_0 = 0xC0000000; //TZC_REGION_ATTRIBUTES_s_rd_en_Msk | TZC_REGION_ATTRIBUTES_s_wr_en_Msk
-    TZC0->REGION_ID_ACCESS_0 = 0x00010001; //(1 << TZC_REGION_ID_ACCESS_nsaid_rd_en_Pos) | (1 << TZC_REGION_ID_ACCESS_nsaid_wr_en_Pos)
-    TZC2->GATE_KEEPER = 0x7; // 0x7 << TZC_GATE_KEEPER_open_request_Pos
-    TZC2->REGION_ATTRIBUTES_0 = 0xC0000000;
-    TZC2->REGION_ID_ACCESS_0 = 0x00030003; //(3 << TZC_REGION_ID_ACCESS_nsaid_rd_en_Pos) | (3 << TZC_REGION_ID_ACCESS_nsaid_wr_en_Pos)
-
     // DDR Init
-    outp32(UMCTL2_BASE + 0x490, 0x01);
-    outp32(UMCTL2_BASE + 0x540, 0x01);
-    outp32(UMCTL2_BASE + 0x5f0, 0x01);
     outp32(UMCTL2_BASE + 0x6a0, 0x01);
-    outp32(UMCTL2_BASE + 0x750, 0x01);
-    outp32(UMCTL2_BASE + 0x800, 0x01);
-    outp32(UMCTL2_BASE + 0x8b0, 0x01);
-    outp32(UMCTL2_BASE + 0x960, 0x01);
 
 #if (USE_INDEP_HWSEM == 1)
     // Enable HWSEM clock
@@ -142,10 +126,10 @@ int main(void)
     global_timer_init();
 
     sysprintf("\n\nCPU @ %d Hz\n", SystemCoreClock);
-    sysprintf("+------------------------------------+\n");
-    sysprintf("|   MA35D1 GMAC Lwiperf Sample Code  |\n");
-    sysprintf("|           - Start as iperf server  |\n");
-    sysprintf("+------------------------------------+\n\n");
+    sysprintf("MA35D1 GMAC Lwiperf Sample Code\n");
+    sysprintf("\n-----------------------------------------------------------\n");
+	sysprintf("Server listening on 5001");
+	sysprintf("\n-----------------------------------------------------------\n");
 
     netif_Init(&netif, GMAC_INTF);
 

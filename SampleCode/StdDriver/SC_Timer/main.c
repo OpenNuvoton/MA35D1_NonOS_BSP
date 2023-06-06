@@ -3,7 +3,8 @@
  *
  * @brief    Demonstrate how to use SC embedded timer
  *
-  * @copyright (C) 2020 Nuvoton Technology Corp. All rights reserved.
+ *
+ * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
 *****************************************************************************/
 #include <stdio.h>
 #include "NuMicro.h"
