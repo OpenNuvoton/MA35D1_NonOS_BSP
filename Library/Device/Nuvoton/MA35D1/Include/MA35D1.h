@@ -652,6 +652,7 @@ extern int  sysIsKbHit(void);
 #include "kpi.h"
 #include "canfd.h"
 #include "ssmcc.h"
+#include "sspcc.h"
 #include "disp.h"
 #include "ccap.h"
 #include "ts.h"
