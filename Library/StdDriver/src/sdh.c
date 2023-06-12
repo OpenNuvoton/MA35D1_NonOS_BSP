@@ -115,7 +115,7 @@ int32_t SDH_reset(SDH_T *sdh, unsigned char mask)
        
         if (timeout == 0)
         {
-            sysprintf("SD Reset fail\n");
+			sysprintf("SD Reset fail\n");
             return -1;
         }
         timeout--;
@@ -165,8 +165,10 @@ static int SDH_transfer_data(SDH_T *sdh, struct mmc_data *data)
     //mask = 0xc00; /* SDHCI_DATA_AVAILABLE | SDHCI_SPACE_AVAILABLE */
     do {
         stat = sdh->NORMAL_INT_STAT_R;
-        if (stat & 0x8000)   /* SDHCI_INT_ERROR */
+        if (stat & 0x8000) {  /* SDHCI_INT_ERROR */
+			sysprintf("stat 0x%08x ret -1\n",stat);
             return -1;
+        }
 
         if (!transfer_done && (stat & (1<<3)))
         {	/* SDHCI_INT_DMA_END */
@@ -282,7 +284,7 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
         SDH_DelayMicrosecond(1);
         if (cmd_timeout--<=0)  /* 50ms */
         {
-            sysprintf("Timeout for status update!\n");
+			sysprintf("Timeout for status update! ret %d\n",ret);
             return -2;
         }
     }
@@ -294,9 +296,8 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
         sdh->NORMAL_INT_STAT_R = mask & 0xffff;
         sdh->ERROR_INT_STAT_R = ((mask & 0xffff0000)>>16);
     }
-    else {
+    else
         ret = -4;
-    }
 
     if (!ret && data)
         ret = SDH_transfer_data(sdh, data);
@@ -625,6 +626,7 @@ enum bus_mode SDH_set_mode(SDH_T *sdh, uint32_t freq)
 						SDH_tuning(sdh);
 					return mmc_modes[i];
 				}
+
 			}
 	}
     return -1;
@@ -691,7 +693,7 @@ int SDH_set_width(SDH_T *sdh)
     cmd.cmdarg = pSD->RCA;
     SDH_send_command(sdh, &cmd, 0);
 
-    if (pSD->CardType == SDH_TYPE_SD_HIGH)   /* SD */
+    if (pSD->CardType == SDH_TYPE_SD_HIGH || pSD->CardType == SDH_TYPE_SD_LOW)   /* SD */
     {
         cmd.cmdidx = MMC_CMD_APP_CMD;
         cmd.resp_type = MMC_RSP_R1;
@@ -712,13 +714,20 @@ int SDH_set_width(SDH_T *sdh)
     {
         cmd.cmdidx = SD_CMD_SWITCH_FUNC;
         cmd.resp_type = MMC_RSP_R1b;
-        #ifndef SDH_MMC_ENABLE_8BIT
+        if (sdh == SDH0) {
+            sysprintf("eMMC 4-bit\n");
+            /* set CMD6 argument Access field to 3, Index to 183, Value to 1 (4-bit mode) */
+            cmd.cmdarg = (3ul << 24) | (183ul << 16) | (1ul << 8);
+            sdh->HOST_CTRL1_R |= 0x2;
+            pSD->busWidth = 4;
+        } else {
+			#ifndef SDH1_MMC_ENABLE_8BIT
             sysprintf("eMMC 4-bit\n");
             /* set CMD6 argument Access field to 3, Index to 183, Value to 1 (4-bit mode) */
             cmd.cmdarg = (3ul << 24) | (183ul << 16) | (1ul << 8);
             sdh->HOST_CTRL1_R |= 0x2; 
             pSD->busWidth = 4;
-        #else
+			#else
             sysprintf("eMMC 8-bit\n");
             /* set CMD6 argument Access field to 3, Index to 183, Value to 2 (8-bit mode) */
             cmd.cmdarg = (3ul << 24) | (183ul << 16) | (2ul << 8);
@@ -726,7 +735,8 @@ int SDH_set_width(SDH_T *sdh)
             /* Set 8-bit bus width */
             sdh->HOST_CTRL1_R = (sdh->HOST_CTRL1_R & ~0x2) | 0x20;
             pSD->busWidth = 8;
-        #endif
+			#endif
+        }
         SDH_send_command(sdh, &cmd, 0);
     }
     return 0;
@@ -941,11 +951,13 @@ int32_t SDH_Init(SDH_T *sdh)
             SDH_DelayMicrosecond(10);
         }
         if (cmd.response[0] & 0x40000000) {
-#ifdef SDH_ENABLE_1_8_V
-    	if((cmd.response[0] & 0x41000000) == 0x41000000) {
-    		SDH_switch_voltage(sdh, MMC_SIGNAL_VOLTAGE_180);
-    		pSD->signalVoltage = MMC_SIGNAL_VOLTAGE_180;
-    	}
+#ifdef SDH1_ENABLE_1_8_V
+        	if (sdh == SDH1) {
+				if((cmd.response[0] & 0x41000000) == 0x41000000) {
+					SDH_switch_voltage(sdh, MMC_SIGNAL_VOLTAGE_180);
+					pSD->signalVoltage = MMC_SIGNAL_VOLTAGE_180;
+				}
+        	}
 #endif
             mmc->high_capacity = 0x40000000;
             pSD->CardType = SDH_TYPE_SD_HIGH;
@@ -1057,14 +1069,18 @@ int32_t SDH_Init(SDH_T *sdh)
 
     SDH_Get_SD_info(sdh);
     SDH_set_width(sdh);
-    SDH_switch_voltage(sdh, MMC_SIGNAL_VOLTAGE_180);
+
     /* set block length */
     cmd.cmdidx = MMC_CMD_SET_BLOCKLEN;
     cmd.resp_type = MMC_RSP_R1;
     cmd.cmdarg = 512;
     SDH_send_command(sdh, &cmd, 0);
 
-    SDH_set_mode(sdh, SDH_FREQ);
+
+    if (sdh == SDH0)
+    	SDH_set_mode(sdh, SDH0_FREQ);
+    else
+    	SDH_set_mode(sdh, SDH1_FREQ);
 
     return 0;
 }
@@ -1148,8 +1164,8 @@ int SDH_Read(SDH_T *sdh, uint8_t *pu8BufAddr, uint32_t u32StartSec, uint32_t u32
     data.blocksize = 512;
     data.flags = MMC_DATA_READ;
 
-    dcache_clean_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
-
+    //dcache_clean_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
+    dcache_clean_by_mva(pu8BufAddr,data.blocks*data.blocksize);
     err = SDH_send_command(sdh, &cmd, &data);
     if (err)
         return err;
@@ -1163,6 +1179,7 @@ int SDH_Read(SDH_T *sdh, uint8_t *pu8BufAddr, uint32_t u32StartSec, uint32_t u32
         if (err)
             return err;
     }
+    dcache_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
     return Successful;
 }
 
@@ -1207,12 +1224,11 @@ uint32_t SDH_Write(SDH_T *sdh, uint8_t *pu8BufAddr, uint32_t u32StartSec, uint32
     data.blocksize = 512;
     data.flags = MMC_DATA_WRITE;
     
-    dcache_clean_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
-
+    //dcache_clean_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
+    dcache_invalidate_by_mva(pu8BufAddr,data.blocks*data.blocksize);
     err = SDH_send_command(sdh, &cmd, &data);
     if (err)
         return err;
-
     if (u32SecCount > 1)
     {
         cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
@@ -1222,7 +1238,7 @@ uint32_t SDH_Write(SDH_T *sdh, uint8_t *pu8BufAddr, uint32_t u32StartSec, uint32
         if (err)
             return err;
     }
-
+    dcache_clean_by_mva(pu8BufAddr,data.blocks*data.blocksize);
     return Successful;
 }
 

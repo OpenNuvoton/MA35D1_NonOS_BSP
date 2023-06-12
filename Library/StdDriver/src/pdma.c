@@ -355,7 +355,9 @@ void PDMA_Trigger(PDMA_T *pdma, uint32_t u32Ch)
 
     if (u32ChReq == PDMA_MEM)
     {
+        dmb();
         pdma->SWREQ = (1ul << u32Ch);
+        dmb();
     }
     else {}
 }

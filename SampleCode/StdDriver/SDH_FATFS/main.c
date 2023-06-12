@@ -335,6 +335,14 @@ void SYS_Init(void)
 	GPIO_SetDriveStrength(PJ, 10, 1);
 	GPIO_SetDriveStrength(PJ, 11, 1);
 
+	/* PC Driver Strength */
+	GPIO_SetDriveStrength(PC,  0, 2);
+	GPIO_SetDriveStrength(PC,  1, 2);
+	GPIO_SetDriveStrength(PC,  2, 2);
+	GPIO_SetDriveStrength(PC,  3, 2);
+	GPIO_SetDriveStrength(PC,  4, 2);
+	GPIO_SetDriveStrength(PC,  5, 2);
+
     /* Lock protected registers */
     SYS_LockReg();
 }

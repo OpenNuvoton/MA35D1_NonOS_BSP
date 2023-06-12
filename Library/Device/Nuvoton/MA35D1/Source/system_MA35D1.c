@@ -43,7 +43,7 @@ void SystemCoreClockUpdate (void)
     SystemCoreClock = SYSTEM_CLOCK;
 }
 
-__attribute__ ((weak)) void main1(){}
+__attribute__ ((weak)) void main1(){while(1);}
 
 void global_timer_init(void) {
 

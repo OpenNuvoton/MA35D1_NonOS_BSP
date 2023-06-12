@@ -89,8 +89,13 @@ void UART0_Init()
     UART_Open(UART0, 115200);
 }
 
+
 int main(void)
 {
+	int i;
+	uint8_t *ps=(uint8_t *)nc_addr64(nc_addr64(au8SrcArray));
+	uint8_t *pd=(uint8_t *)nc_addr64(nc_addr64(au8DestArray));
+
     /* Unlock protected registers */
     SYS_UnlockReg();
 
@@ -109,7 +114,8 @@ int main(void)
     sysprintf("|    PDMA2 Memory to Memory Driver Sample Code          | \n");
     sysprintf("+------------------------------------------------------+ \n");
 
-
+    for (i=0; i < 256; i++)
+		ps[i]=i;
     /*------------------------------------------------------------------------------------------------------
 
                          au8SrcArray                         au8DestArray
@@ -178,5 +184,10 @@ int main(void)
     /* Close channel 2 */
     PDMA_Close(PDMA2);
 
+
+    for (i=0; i < 256; i++)
+		if(ps[i]!=pd[i])
+			sysprintf("data compare failed\n");
+    sysprintf("Data Compare Passed\n");
     while(1);
 }

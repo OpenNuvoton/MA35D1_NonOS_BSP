@@ -7,6 +7,7 @@
  * @copyright (C) 2021 Nuvoton Technology Corp. All rights reserved.
  ******************************************************************************/
 #include <stdio.h>
+#include <string.h>
 #include "NuMicro.h"
 
 uint32_t PDMA_TEST_LENGTH = 64;
@@ -77,7 +78,12 @@ void UART0_Init()
 
 int main(void)
 {
+	int i;
     uint32_t u32Src, u32Dst0, u32Dst1;
+    uint8_t *pau8SrcArray;
+    uint8_t *pau8DestArray0;
+    uint8_t *pau8DestArray1;
+    DMA_DESC_T *pDMA_DESC[2];
 
     /* Unlock protected registers */
     SYS_UnlockReg();
@@ -97,6 +103,14 @@ int main(void)
     sysprintf("|         PDMA Memory to Memory Driver Sample Code (Scatter-gather)     | \n");
     sysprintf("+-----------------------------------------------------------------------+ \n");
 
+    pau8SrcArray = nc_ptr(nc_addr64(au8SrcArray));
+    pau8DestArray0 = nc_ptr(nc_addr64(au8DestArray0));
+    pau8DestArray1 = nc_ptr(nc_addr64(au8DestArray1));
+	for (i = 0; i < 256; i++)
+		pau8SrcArray[i] = i;
+
+    pDMA_DESC[0] = (DMA_DESC_T *)(nc_ptr(nc_addr64(&DMA_DESC[0])));
+    pDMA_DESC[1] = (DMA_DESC_T *)(nc_ptr(nc_addr64(&DMA_DESC[1])));
     u32Src = ptr_to_u32(au8SrcArray);
     u32Dst0 = ptr_to_u32(au8DestArray0);
     u32Dst1 = ptr_to_u32(au8DestArray1);
@@ -123,10 +137,10 @@ int main(void)
 
     /* Open Channel 4 */
     PDMA_Open(PDMA2,1 << 4);
+
     /* Enable Scatter Gather mode, assign the first scatter-gather descriptor table is table 1,
        and set transfer mode as memory to memory */
     PDMA_SetTransferMode(PDMA2, 4, PDMA_MEM, 1, ptr_to_u32(&DMA_DESC[0]));
-
     /*------------------------------------------------------------------------------------------------------
 
                          au8SrcArray                         au8DestArray0
@@ -156,7 +170,7 @@ int main(void)
 
         Total transfer length = PDMA_TEST_LENGTH * 32 bits
     ------------------------------------------------------------------------------------------------------*/
-    DMA_DESC[0].ctl =
+    pDMA_DESC[0]->ctl =
         ((PDMA_TEST_LENGTH - 1) << PDMA_DSCT_CTL_TXCNT_Pos) | /* Transfer count is PDMA_TEST_LENGTH */ \
         PDMA_WIDTH_32 |   /* Transfer width is 32 bits(one word) */ \
         PDMA_SAR_INC |    /* Source increment size is 32 bits(one word) */ \
@@ -167,11 +181,11 @@ int main(void)
         PDMA_OP_SCATTER;  /* Operation mode is scatter-gather mode */
 
     /* Configure source address */
-    DMA_DESC[0].src = u32Src;
+    pDMA_DESC[0]->src = u32Src;
     /* Configure destination address */
-    DMA_DESC[0].dest = u32Dst0;
+    pDMA_DESC[0]->dest = u32Dst0;
     /* Configure next descriptor table address */
-    DMA_DESC[0].offset = ptr_to_u32(&DMA_DESC[1]); /* next descriptor table is table 2 */
+    pDMA_DESC[0]->offset = ptr_to_u32(&DMA_DESC[1]); /* next descriptor table is table 2 */
 
 
     /*------------------------------------------------------------------------------------------------------
@@ -202,7 +216,7 @@ int main(void)
 
         Total transfer length = PDMA_TEST_LENGTH * 32 bits
     ------------------------------------------------------------------------------------------------------*/
-    DMA_DESC[1].ctl =
+    pDMA_DESC[1]->ctl =
         ((PDMA_TEST_LENGTH - 1) << PDMA_DSCT_CTL_TXCNT_Pos) | /* Transfer count is PDMA_TEST_LENGTH */ \
         PDMA_WIDTH_32 |   /* Transfer width is 32 bits(one word) */ \
         PDMA_SAR_INC |    /* Source increment size is 32 bits(one word) */ \
@@ -211,13 +225,15 @@ int main(void)
         PDMA_BURST_128 |  /* Burst size is 128. No effect in single transfer type */ \
         PDMA_OP_BASIC;    /* Operation mode is basic mode */
 
-    DMA_DESC[1].src = u32Dst0;
-    DMA_DESC[1].dest = u32Dst1;
-    DMA_DESC[1].offset = 0; /* No next operation table. No effect in basic mode */
-
+    pDMA_DESC[1]->src = u32Dst0;
+    pDMA_DESC[1]->dest = u32Dst1;
+    pDMA_DESC[1]->offset = 0; /* No next operation table. No effect in basic mode */
 
     /* Generate a software request to trigger transfer with PDMA2 channel 4 */
     PDMA_Trigger(PDMA2,4);
+
+    /* Waiting for transfer done */
+    //while((PDMA_GET_TD_STS(PDMA2)&(1<<4))!=(1<<4));
 
     /* Waiting for transfer done */
     while(PDMA_IS_CH_BUSY(PDMA2,4));
@@ -227,6 +243,10 @@ int main(void)
     /* Close Channel 4 */
     PDMA_Close(PDMA2);
 
+    for (i=0; i < 256; i++)
+		if(pau8SrcArray[i]!=pau8DestArray1[i])
+			sysprintf("data compare failed\n");
+    sysprintf("Data Compare Passed\n");
     while(1);
 }
 

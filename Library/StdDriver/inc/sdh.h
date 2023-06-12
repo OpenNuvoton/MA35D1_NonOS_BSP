@@ -16,17 +16,13 @@ extern "C"
 {
 #endif
 
-#define USING_SDH0
+#define SDH	SDH1
 
-#ifdef USING_SDH0
-	#define SDH	SDH0
-	#define SDH_FREQ         50000000ul   /*!< output 50MHz to SD  \hideinitializer */
-#else
-	#define SDH	SDH1
-	#define SDH_MMC_ENABLE_8BIT /* eMMC only */
-	#define SDH_ENABLE_1_8_V	/* SD only */
-	#define SDH_FREQ         200000000ul   /*!< output 200MHz to SD  \hideinitializer */
-#endif
+#define SDH0_FREQ         50000000ul   /*!< output 50MHz to SD  \hideinitializer */
+
+#define SDH1_MMC_ENABLE_8BIT /* by SDH1 eMMC only */
+#define SDH1_ENABLE_1_8_V	/* by SDH1 SD only */
+#define SDH1_FREQ         200000000ul   /*!< output 200MHz to SD  \hideinitializer */
 
 /** @addtogroup Standard_Driver Standard Driver
   @{
