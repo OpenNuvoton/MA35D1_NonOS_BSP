@@ -32,6 +32,10 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "NuMicro.h"
+
+#define LWIP_HWSEM_CH  0
+#define LWIP_HWSEM_KEY 0x5A
 
 #ifndef configINTERRUPT_CONTROLLER_BASE_ADDRESS
     #error configINTERRUPT_CONTROLLER_BASE_ADDRESS must be defined.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-Cortex-A-Embedded-Processors.html
@@ -353,6 +357,9 @@ void vPortEndScheduler( void )
 
 void vPortEnterCritical( void )
 {
+#if ( configCritical_Section_In_Int == 1 )
+    HWSEM_Spin_Lock(HWSEM0, LWIP_HWSEM_CH, LWIP_HWSEM_KEY);
+#else
     /* Mask interrupts up to the max syscall interrupt priority. */
     uxPortSetInterruptMask();
 
@@ -370,11 +377,15 @@ void vPortEnterCritical( void )
     {
         configASSERT( ullPortInterruptNesting == 0 );
     }
+#endif
 }
 /*-----------------------------------------------------------*/
 
 void vPortExitCritical( void )
 {
+#if ( configCritical_Section_In_Int == 1 )
+    HWSEM_UNLOCK(HWSEM0, LWIP_HWSEM_CH, LWIP_HWSEM_KEY);
+#else
     if( ullCriticalNesting > portNO_CRITICAL_NESTING )
     {
         /* Decrement the nesting count as the critical section is being
@@ -390,6 +401,7 @@ void vPortExitCritical( void )
             portCLEAR_INTERRUPT_MASK();
         }
     }
+#endif
 }
 /*-----------------------------------------------------------*/
 

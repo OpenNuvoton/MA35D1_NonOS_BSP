@@ -349,9 +349,7 @@ void GMAC_pause_control(GMACdevice *gmacdev)
 
     /* DMA op mode */
     data = GMAC_READ((u64)&gmacdev->MacBase->DmaOpMode);
-    data |= (DmaThresdholdAct3K << GMAC_DmaOpMode_RFA_Pos) |
-            (DmaThresdholdAct4K << GMAC_DmaOpMode_RFD_Pos) |
-            GMAC_DmaOpMode_EFC_Msk;
+    data |= DmaThresdholdAct3K | DmaThresdholdDeact4K | GMAC_DmaOpMode_EFC_Msk;
     GMAC_WRITE((u64)&gmacdev->MacBase->DmaOpMode, data);
 
     /* Flow control */
@@ -929,7 +927,7 @@ bool GMAC_is_last_tx_desc(GMACdevice *gmacdev, DmaDesc *desc)
     if(GMAC_is_desc_enhanced_mode(gmacdev))
         return ((desc->status & eDescTxEndOfRing) == eDescTxEndOfRing);
     else
-        return ((desc->length & nDescTxEndOfRing) == nDescTxEndOfRing);
+        return ((desc->status & nDescTxEndOfRing) == nDescTxEndOfRing);
 }
 
 /**

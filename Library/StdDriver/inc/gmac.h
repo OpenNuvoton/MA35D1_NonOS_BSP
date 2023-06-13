@@ -275,6 +275,13 @@ enum DmaThresholdAct { // GMAC_DmaOpMode_RFA_Msk
     DmaThresdholdAct4K      = 3 << GMAC_DmaOpMode_RFA_Pos,      /* Full - 4Kbytes */
 };
 
+enum DmaThresholdDeact { // GMAC_DmaOpMode_RFD_Msk
+    DmaThresdholdDeact1K    = 0 << GMAC_DmaOpMode_RFD_Pos,      /* Full - 1Kbytes */
+    DmaThresdholdDeact2K    = 1 << GMAC_DmaOpMode_RFD_Pos,      /* Full - 2Kbytes */
+    DmaThresdholdDeact3K    = 2 << GMAC_DmaOpMode_RFD_Pos,      /* Full - 3Kbytes */
+    DmaThresdholdDeact4K    = 3 << GMAC_DmaOpMode_RFD_Pos,      /* Full - 4Kbytes */
+};
+
 enum GmacPBLReg { // GMAC_DmaBusMode_PBL_Msk
     DmaBurstLength32       = 0x20 << GMAC_DmaBusMode_PBL_Pos,   /* Dma burst length = 32 */
     DmaBurstLength16       = 0x10 << GMAC_DmaBusMode_PBL_Pos,   /* Dma burst length = 16 */
