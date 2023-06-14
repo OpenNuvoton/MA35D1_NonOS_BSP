@@ -31,11 +31,11 @@ HSUSBD_VENDOR_REQ g_hsusbd_pfnVendorRequest = NULL;
 HSUSBD_CLASS_REQ g_hsusbd_pfnClassRequest = NULL;
 HSUSBD_SET_INTERFACE_REQ g_hsusbd_pfnSetInterface = NULL;
 
-static uint8_t g_hsusbd_UsbConfig = 0ul;
-static uint8_t g_hsusbd_UsbAltInterface = 0ul;
+static uint32_t g_hsusbd_UsbConfig = 0ul;
+static uint32_t g_hsusbd_UsbAltInterface = 0ul;
+
 static uint8_t g_hsusbd_EnableTestMode = 0ul;
 static uint8_t g_hsusbd_TestSelector = 0ul;
-
 uint8_t volatile g_hsusbd_RemoteWakeupEn = 0ul; /*!< Remote wake up function enable flag */
 uint8_t volatile g_u8ResetAvailable = 1ul;	 /*!< Reset available flag */
 uint8_t volatile g_hsusbd_Configured = 0ul;
@@ -345,7 +345,9 @@ void HSUSBD_GetDescriptor(void)
  */
 void HSUSBD_StandardRequest(void)
 {
-    if ((gUsbCmd.bmRequestType & 0x80ul) == 0x80ul)   /* request data transfer direction */
+	uint8_t *ptr;
+
+	if ((gUsbCmd.bmRequestType & 0x80ul) == 0x80ul)   /* request data transfer direction */
     {
         /* Device to host */
         switch (gUsbCmd.bRequest)
@@ -392,7 +394,7 @@ void HSUSBD_StandardRequest(void)
             else if (gUsbCmd.bmRequestType == 0x82ul)
             {
                 uint8_t ep = (uint8_t)(gUsbCmd.wIndex & 0xFul);
-                g_hsusbd_buf[0] = (uint8_t)HSUSBD_GetStall((uint32_t)ep)? (uint8_t)1 : (uint8_t)0;
+                g_hsusbd_buf[0] = (uint8_t)HSUSBD_GetStall((uint32_t)gUsbCmd.wIndex);
             }
             g_hsusbd_buf[1] = (uint8_t)0ul;
             HSUSBD_PrepareCtrlIn(g_hsusbd_buf, 2ul);
@@ -419,10 +421,10 @@ void HSUSBD_StandardRequest(void)
                 epNum = (uint32_t)(gUsbCmd.wIndex & 0xFul);
                 if (epNum == 0)
                 {
-                	HSUSBD_SetStall(EP0);
+                	HSUSBD_SetStall(gUsbCmd.wIndex);
                 	return;
                 }
-                HSUSBD_ClearStall(epNum);
+                HSUSBD_ClearStall(gUsbCmd.wIndex);
             }
             else if ((gUsbCmd.wValue & 0xfful) == FEATURE_DEVICE_REMOTE_WAKEUP)
             {
@@ -441,9 +443,10 @@ void HSUSBD_StandardRequest(void)
         }
         case SET_CONFIGURATION:
         {
+        	ptr = (uint8_t *)((uint64_t)(&g_hsusbd_UsbConfig)|NON_CACHE);
         	if (gUsbCmd.bmRequestType == 0)	/* RECIP: device */
         		g_u8ResetAvailable = 1;
-            g_hsusbd_UsbConfig = (uint8_t)gUsbCmd.wValue;
+        	*ptr = g_hsusbd_UsbConfig = (uint8_t)gUsbCmd.wValue;
             g_hsusbd_Configured = (uint8_t)1ul;
         	HSUSBD_EP0_SendZero();
             break;
@@ -454,7 +457,7 @@ void HSUSBD_StandardRequest(void)
             {
                 uint32_t idx;
                 idx = (uint32_t)(gUsbCmd.wIndex & 0xFul);
-                HSUSBD_SetStall(idx);
+                HSUSBD_SetStall(gUsbCmd.wIndex);
                 if (idx == 0)
                 	return;
             }
@@ -472,10 +475,12 @@ void HSUSBD_StandardRequest(void)
         }
         case SET_INTERFACE:
         {
+        	ptr = (uint8_t *)((uint64_t)(&g_hsusbd_UsbAltInterface)|NON_CACHE);
+
         	if (gUsbCmd.bmRequestType == 0x1)	/* RECIP: interface */
         		g_u8ResetAvailable = 1;
 
-        	g_hsusbd_UsbAltInterface = (uint8_t)gUsbCmd.wValue;
+        	*ptr = g_hsusbd_UsbAltInterface = (uint8_t)gUsbCmd.wValue;
             if (g_hsusbd_pfnSetInterface != NULL)
             {
                 g_hsusbd_pfnSetInterface((uint32_t)g_hsusbd_UsbAltInterface);
@@ -616,13 +621,15 @@ void HSUSBD_EP0_CompleteRx(void)
 /**
  * @brief       Set USB endpoint stall state
  *
- * @param[in]   u32EpNum         USB endpoint
+ * @param[in]   u32Value         USB command index
  *
  * @details     Set USB endpoint stall state, endpoint will return STALL token.
  */
-void HSUSBD_SetStall(uint32_t u32EpNum)
+void HSUSBD_SetStall(uint32_t u32Value)
 {
-    if (HSUSBD->IEP[u32EpNum].DIEPCTL & HSUSBD_DIEPCTL_USBActEP_Msk)
+	uint32_t u32EpNum = u32Value & 0xf;
+
+    if ((u32Value & 0xf0) == 0x80)
     {
 		/* set the disable and stall bits */
 		if (HSUSBD->IEP[u32EpNum].DIEPCTL & HSUSBD_DIEPCTL_EPEna_Msk)
@@ -630,8 +637,12 @@ void HSUSBD_SetStall(uint32_t u32EpNum)
 
 		HSUSBD->IEP[u32EpNum].DIEPCTL |= HSUSBD_DIEPCTL_Stall_Msk;
     }
-
-    if (HSUSBD->OEP[u32EpNum].DOEPCTL & HSUSBD_DOEPCTL_USBActEP_Msk)
+    else if (u32Value == 0x00)
+    {
+		HSUSBD->IEP[u32EpNum].DIEPCTL |= HSUSBD_DIEPCTL_Stall_Msk;
+    	HSUSBD->OEP[u32EpNum].DOEPCTL |= HSUSBD_DOEPCTL_Stall_Msk;
+    }
+    else
     	HSUSBD->OEP[u32EpNum].DOEPCTL |= HSUSBD_DOEPCTL_Stall_Msk;
 
     if (u32EpNum == 0ul)
@@ -649,32 +660,39 @@ void HSUSBD_SetStall(uint32_t u32EpNum)
 /**
  * @brief       Clear USB endpoint stall state
  *
- * @param[in]   u32EpNum         USB endpoint
+ * @param[in]   u32Value         USB command index
  *
  * @details     Clear USB endpoint stall state, endpoint will return ACK/NAK token.
  */
-void HSUSBD_ClearStall(uint32_t u32EpNum)
+void HSUSBD_ClearStall(uint32_t u32Value)
 {
-	HSUSBD->IEP[u32EpNum].DIEPCTL = ((HSUSBD->IEP[u32EpNum].DIEPCTL & ~(HSUSBD_DIEPCTL_Stall_Msk)) | HSUSBD_DEPCTL_SETD0PID);
-	HSUSBD->OEP[u32EpNum].DOEPCTL = ((HSUSBD->OEP[u32EpNum].DOEPCTL & ~(HSUSBD_DOEPCTL_Stall_Msk)) | HSUSBD_DEPCTL_SETD0PID);
+	uint32_t u32EpNum = u32Value & 0xf;
+
+    if ((u32Value & 0xf0) == 0x80)
+    	HSUSBD->IEP[u32EpNum].DIEPCTL = ((HSUSBD->IEP[u32EpNum].DIEPCTL & ~(HSUSBD_DIEPCTL_Stall_Msk)) | HSUSBD_DEPCTL_SETD0PID);
+    else
+    	HSUSBD->OEP[u32EpNum].DOEPCTL = ((HSUSBD->OEP[u32EpNum].DOEPCTL & ~(HSUSBD_DOEPCTL_Stall_Msk)) | HSUSBD_DEPCTL_SETD0PID);
 }
 
 
 /**
  * @brief       Get USB endpoint stall state
  *
- * @param[in]   u32EpNum         USB endpoint
+ * @param[in]   u32Value         USB command index
  * @retval      0: USB endpoint is not stalled.
- * @retval      non-0: USB endpoint is stalled.
+ * @retval      1: USB endpoint is stalled.
  *
  * @details     Get USB endpoint stall state.
  */
-uint32_t HSUSBD_GetStall(uint32_t u32EpNum)
+uint32_t HSUSBD_GetStall(uint32_t u32Value)
 {
+	uint32_t u32EpNum = u32Value & 0xf;
 	uint32_t val = 0;
 
-	val = (HSUSBD->IEP[u32EpNum].DIEPCTL & HSUSBD_DIEPCTL_Stall_Msk);
-	val |= (HSUSBD->OEP[u32EpNum].DOEPCTL & HSUSBD_DOEPCTL_Stall_Msk);
+    if ((u32Value & 0xf0) == 0x80)
+    	val = (HSUSBD->IEP[u32EpNum].DIEPCTL & HSUSBD_DIEPCTL_Stall_Msk)? 1 : 0;
+    else
+    	val = (HSUSBD->OEP[u32EpNum].DOEPCTL & HSUSBD_DOEPCTL_Stall_Msk)? 1 : 0;
 
 	return val;
 }
@@ -700,6 +718,28 @@ void HSUSBD_PrepareCtrlIn(uint8_t pu8Buf[], uint32_t u32Size)
 	HSUSBD->IEP[EP0].DIEPDMA = (uint64_t)&ddma_ep0_in[0];
 	HSUSBD->IEP[EP0].DIEPCTL |= (HSUSBD_DIEPCTL_EPEna_Msk | HSUSBD_DIEPCTL_CNAK_Msk);
 }
+
+/**
+ * @brief       Control OUT transaction
+ *
+ * @param[in]   pu8Buf      Control IN data pointer
+ * @param[in]   u32Size     IN transfer size
+ *
+ * @details     This function is used to prepare Control IN transfer
+ */
+void HSUSBD_CtrlOut(uint8_t pu8Buf[], uint32_t u32Size)
+{
+    dcache_clean_invalidate_by_mva(ddma_ep0_out, sizeof(ddma_ep0_out));
+    ddma_ep0_out[1].buf = nc_addr64(pu8Buf);
+    ddma_ep0_out[1].status.d32 = 0x0a000000 | u32Size;
+    dcache_clean_invalidate_by_mva(ddma_ep0_out, sizeof(ddma_ep0_out));
+
+    gEp0State = WAIT_FOR_COMPLETE;
+
+    HSUSBD->OEP[EP0].DOEPDMA = (uint64_t)&ddma_ep0_out[1];
+	HSUSBD->OEP[EP0].DOEPCTL |= (HSUSBD_DOEPCTL_EPEna_Msk | HSUSBD_DOEPCTL_CNAK_Msk);
+}
+
 
 
 

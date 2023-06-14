@@ -358,6 +358,7 @@ void HSUSBD_StandardRequest(void);
 void HSUSBD_SetVendorRequest(HSUSBD_VENDOR_REQ pfnVendorReq);
 void HSUSBD_StartDMA(uint32_t ep, S_HSUSBD_DMA_DESC_T *desc, uint8_t buf[], uint32_t len);
 void HSUSBD_PrepareCtrlIn(uint8_t pu8Buf[], uint32_t u32Size);
+void HSUSBD_CtrlOut(uint8_t pu8Buf[], uint32_t u32Size);
 
 
 /*!@}*/ /* end of group HSUSBD_EXPORTED_FUNCTIONS */

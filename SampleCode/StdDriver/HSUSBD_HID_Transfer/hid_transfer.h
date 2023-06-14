@@ -1,16 +1,16 @@
 /***************************************************************************//**
- * @file     hid_mouse.h
+ * @file     hid_transfer.h
  * @brief    HSUSB HID Sample header file
  *
  * SPDX-License-Identifier: Apache-2.0
  * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
  ******************************************************************************/
-#ifndef __HID_MOUSE_H__
-#define __HID_MOUSE_H__
+#ifndef __USBD_HID_H__
+#define __USBD_HID_H__
 
 /* Define the vendor id and product id */
 #define USBD_VID                0x0416
-#define USBD_PID                0x8249
+#define USBD_PID                0x5020
 
 /*!<Define HID Class Specific Request */
 #define GET_REPORT              0x01
@@ -38,22 +38,22 @@
 /* Define EP maximum packet size */
 #define EP0_MAX_PKT_SIZE        64
 #define EP0_OTHER_MAX_PKT_SIZE  64
-#define EP1_MAX_PKT_SIZE        64
+#define EP1_MAX_PKT_SIZE        512
 #define EP1_OTHER_MAX_PKT_SIZE  64
 
 /* Define the interrupt In EP number */
 #define INT_IN_EP_NUM   0x01
+#define INT_OUT_EP_NUM  0x01
 
 /* Define Descriptor information */
-#define HID_DEFAULT_INT_IN_INTERVAL     10
+#define HID_DEFAULT_INT_IN_INTERVAL     4
 #define USBD_SELF_POWERED               0
 #define USBD_REMOTE_WAKEUP              0
 #define USBD_MAX_POWER                  50  /* The unit is in 2mA. ex: 50 * 2mA = 100mA */
 
-#define LEN_CONFIG_AND_SUBORDINATE      (LEN_CONFIG+LEN_INTERFACE+LEN_HID+LEN_ENDPOINT)
-
 
 /*-------------------------------------------------------------*/
+extern uint8_t  g_u8OutBuff[];
 
 /*-------------------------------------------------------------*/
 void HID_InitForHighSpeed(void);
@@ -61,8 +61,11 @@ void HID_InitForFullSpeed(void);
 void HID_Init(void);
 void HID_ClassRequest(void);
 void HSUSBD_IRQHandler(void);
-void HID_Process(void);
 
-#endif  /* __HID_MOUSE_H__ */
+void HID_SetInReport(void);
+void HID_GetOutReport(uint8_t *pu8EpBuf, uint32_t u32Size);
+
+
+#endif  /* __USBD_HID_H__ */
 
 /*** (C) COPYRIGHT 2023 Nuvoton Technology Corp. ***/
