@@ -148,7 +148,7 @@ void PMIC_I2C_MasterTx(unsigned int u32Status)
   */
 unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 {
-    unsigned int I2C_TIME_OUT_COUNT = 0x20000;
+    unsigned int I2C_TIME_OUT_COUNT = 0x200000;
     unsigned int u32Status;
     unsigned int u32time_out = 0;
 
@@ -164,7 +164,6 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
     {
         if (inp32((void *)REG_I2C0_CTL) & I2C_CTL_SI)
         {
-            u32time_out = 0;
             u32Status = inp32((void *)REG_I2C0_STATUS);
             PMIC_I2C_MasterTx(u32Status);
         }
@@ -210,7 +209,6 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
     {
         if (inp32((void *)REG_I2C0_CTL) & I2C_CTL_SI)
         {
-            u32time_out = 0;
             u32Status = inp32((void *)REG_I2C0_STATUS);
             PMIC_I2C_MasterRx(u32Status);
         }

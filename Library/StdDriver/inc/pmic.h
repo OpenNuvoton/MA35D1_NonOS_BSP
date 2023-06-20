@@ -56,6 +56,29 @@ extern "C"
 #define PMIC_SD_REG       0x42  /*!< PMIC set SD voltage register */
 #define PMIC_SD_VOL_1_80  0x2C  /*!< PMIC set SD voltage to 1.8V  */
 #define PMIC_SD_VOL_3_30  0x68  /*!< PMIC set SD voltage to 3.3V  */
+
+#define PMIC_LDO_REG       0x41  /*!< PMIC set LDO register           */
+
+#define PMIC_LDO4_REG      0x4A  /*!< PMIC set LDO4 voltage register  */
+#define PMIC_LDO4_VOL_1_00 0x0C  /*!< PMIC set LDO4 voltage to 1.00V  */
+#define PMIC_LDO4_VOL_1_20 0x14  /*!< PMIC set LDO4 voltage to 1.20V  */
+#define PMIC_LDO4_VOL_1_80 0x2C  /*!< PMIC set LDO4 voltage to 1.80V  */
+#define PMIC_LDO4_VOL_2_50 0x48  /*!< PMIC set LDO4 voltage to 2.50V  */
+#define PMIC_LDO4_VOL_3_30 0x68  /*!< PMIC set LDO4 voltage to 3.30V  */
+
+#define PMIC_LDO5_REG      0x4C  /*!< PMIC set LDO5 voltage register  */
+#define PMIC_LDO5_VOL_1_00 0x0C  /*!< PMIC set LDO5 voltage to 1.00V  */
+#define PMIC_LDO5_VOL_1_20 0x14  /*!< PMIC set LDO5 voltage to 1.20V  */
+#define PMIC_LDO5_VOL_1_80 0x2C  /*!< PMIC set LDO5 voltage to 1.80V  */
+#define PMIC_LDO5_VOL_2_50 0x48  /*!< PMIC set LDO5 voltage to 2.50V  */
+#define PMIC_LDO5_VOL_3_30 0x68  /*!< PMIC set LDO5 voltage to 3.30V  */
+
+#define PMIC_LDO6_REG      0x4E  /*!< PMIC set LDO6 voltage register  */
+#define PMIC_LDO6_VOL_1_00 0x0C  /*!< PMIC set LDO6 voltage to 1.00V  */
+#define PMIC_LDO6_VOL_1_20 0x14  /*!< PMIC set LDO6 voltage to 1.20V  */
+#define PMIC_LDO6_VOL_1_80 0x2C  /*!< PMIC set LDO6 voltage to 1.80V  */
+#define PMIC_LDO6_VOL_2_50 0x48  /*!< PMIC set LDO6 voltage to 2.50V  */
+#define PMIC_LDO6_VOL_3_30 0x68  /*!< PMIC set LDO6 voltage to 3.30V  */
 #endif
 
 #if (MA35D1_PMIC == PMIC_DIALOG)
