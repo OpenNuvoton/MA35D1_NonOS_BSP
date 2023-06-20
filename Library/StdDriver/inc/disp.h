@@ -50,6 +50,7 @@ void DISP_EnableDCUClk(void);
 uint64_t DISP_GeneratePixelClk(uint32_t u32PixClkInHz);
 void DISP_SuspendPixelClk(void);
 uint32_t DISP_GetIntFlag(void);
+void DISP_SetInputPixelSwizzle(uint8_t u8PixelOrder);
 
 /*! @}*/ /* end of group DISP_EXPORTED_FUNCTIONS */
 

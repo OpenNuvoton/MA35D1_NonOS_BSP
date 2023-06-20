@@ -47,6 +47,14 @@ typedef enum
 
 typedef enum
 {
+    eFmtSwizzle_ARGB = 0,      /*!< Pixel format data orders ARGB */
+    eFmtSwizzle_RGBA = 1,      /*!< Pixel format data orders RGBA */
+    eFmtSwizzle_ABGR = 2,      /*!< Pixel format data orders ABGR */
+    eFmtSwizzle_BGRA = 3       /*!< Pixel format data orders BGRA */
+} E_PIXEL_FMT_SWIZZLE;
+
+typedef enum
+{
 	eDPIFmt_D16CFG1,      /*!< DPI interface data format D16CFG1 */
 	eDPIFmt_D16CFG2,      /*!< DPI interface data format D16CFG2 */
 	eDPIFmt_D16CFG3,      /*!< DPI interface data format D16CFG3 */
@@ -134,6 +142,8 @@ typedef enum
 	eBM_SATURATED_ALPHA,
 	eBM_SATURATED_DEST_ALPHA
 } E_BLENDING_MODE;
+
+typedef void (VSYNC_CB)(void);    /*!< interrupt in callback function \hideinitializer */
 
 /* Error code */
 #define DISPLIB_SUCCESS                           0x00000000UL  /*!< Display successful without error   */
@@ -242,9 +252,11 @@ int DISPLIB_SetOverlayAddr(uint32_t u32DMAFBStartAddr);
 void DISPLIB_SetOverlaySize(DISP_OVERLAY_INFO OverlayInfo);
 void DISPLIB_SetOverlayRect(DISP_OVERLAY_INFO OverlayInfo);
 int32_t DISPLIB_SetOverlayConfig(DISP_OVERLAY_INFO OverlayInfo, uint32_t u32DMAFBStartAddr);
+int32_t DISPLIB_InstallVSyncCallback(VSYNC_CB *func);
 int32_t DISPLIB_LCDInit(const DISP_LCD_INFO LCDInfo);
 int32_t DISPLIB_LCDDeinit(void);
 int32_t DISPLIB_HDMIinit(void);
+int32_t DISPLIB_EDPinit(void);
 
 /*! @}*/ /* end of group DISP_EXPORTED_FUNCTIONS */
 

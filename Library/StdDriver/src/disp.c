@@ -67,6 +67,17 @@ uint32_t DISP_GetIntFlag(void)
     return (DISP->DisplayIntr & DISP_DisplayIntr_DISP0_Msk);
 }
 
+/**
+  * @brief      Set Display Input Pixel Format. Swizzle is used to switch the position of components
+  *             in pixel data.
+  * @param[in]  u8PixelOrder is the DISP pixel format orders
+  */
+void DISP_SetInputPixelSwizzle(uint8_t u8PixelOrder)
+{
+    DISP->FrameBufferConfig0 &= ~DISP_FrameBufferConfig0_SWIZZLE_Msk;
+    DISP->FrameBufferConfig0 |= (u8PixelOrder << DISP_FrameBufferConfig0_SWIZZLE_Pos);
+}
+
 /*! @}*/ /* end of group DISP_EXPORTED_FUNCTIONS */
 
 /*! @}*/ /* end of group DISP_Driver */
