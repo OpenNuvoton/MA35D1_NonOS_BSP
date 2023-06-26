@@ -257,6 +257,7 @@ int32_t DISPLIB_LCDInit(const DISP_LCD_INFO LCDInfo);
 int32_t DISPLIB_LCDDeinit(void);
 int32_t DISPLIB_HDMIinit(void);
 int32_t DISPLIB_EDPinit(void);
+int32_t DISPLIB_MIPIinit(void);
 
 /*! @}*/ /* end of group DISP_EXPORTED_FUNCTIONS */
 
