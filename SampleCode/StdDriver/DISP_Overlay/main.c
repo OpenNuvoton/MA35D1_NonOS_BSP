@@ -13,15 +13,7 @@
 #define DDR_ADR_FRAMEBUFFER   0x88000000UL
 #define DDR_ADR_OVERLAY       0x89000000UL
 
-uint8_t DISP_Frame[]=
-{
-#include "framebuffer_image_1024x600.dat"
-};
-
-uint8_t DISP_Overlay[]=
-{
-#include "overlay_image_640x480.dat"
-};
+extern uint32_t ImageDataBase, ImageDataLimit, OverlayImageDataBase, OverlayImageDataLimit;
 
 /* LCD attributes 1024x600 */
 DISP_LCD_INFO LcdPanelInfo =
@@ -210,6 +202,7 @@ void ColorKeyForOverlay(void)
 int main(void)
 {
     uint8_t u8Char;
+    uint32_t file_size;
 
     /* Init System, IP clock and multi-function I/O
        In the end of SYS_Init() will issue SYS_LockReg()
@@ -225,8 +218,10 @@ int main(void)
     DISP_Open();
 
     /* Prepare DISP Framebuffer/Overlay image */
-    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(DISP_Frame)), sizeof(DISP_Frame));
-    memcpy((void *)(nc_ptr(DDR_ADR_OVERLAY)), (const void *)(nc_ptr(DISP_Overlay)), sizeof(DISP_Overlay));
+    file_size = ptr_to_u32(&ImageDataLimit) - ptr_to_u32(&ImageDataBase);
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageDataBase)), file_size);
+    file_size = ptr_to_u32(&OverlayImageDataLimit) - ptr_to_u32(&OverlayImageDataBase);
+    memcpy((void *)(nc_ptr(DDR_ADR_OVERLAY)), (const void *)(nc_ptr(&OverlayImageDataBase)), file_size);
 
     /* Configure display attributes of LCD panel */
     DISPLIB_LCDInit(LcdPanelInfo);

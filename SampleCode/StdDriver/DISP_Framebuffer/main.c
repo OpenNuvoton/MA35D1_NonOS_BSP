@@ -14,16 +14,7 @@
 #define DISPLAY_ARGB8
 //#define DISPLAY_RGB565
 
-uint8_t DISP_Frame[]=
-{
-#ifdef DISPLAY_ARGB8
-#include "image_argb8_1024x600.dat"
-#endif
-
-#ifdef DISPLAY_RGB565
-#include "image_rgb565_1024x600.dat"
-#endif
-};
+extern uint32_t ImageARGB8DataBase, ImageARGB8DataLimit, ImageRGB565DataBase, ImageRGB565DataLimit;
 
 /* LCD attributes 1024x600 */
 DISP_LCD_INFO LcdPanelInfo =
@@ -116,6 +107,8 @@ void DISP_Open(void)
 
 int main(void)
 {
+    uint32_t file_size;
+
     /* Init System, IP clock and multi-function I/O
        In the end of SYS_Init() will issue SYS_LockReg()
        to lock protected register. If user want to write
@@ -139,17 +132,23 @@ int main(void)
 #endif
     sysprintf("+------------------------------------------------------------------------+\n");
 
-    /* Prepare DISP Framebuffer image */
-    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(DISP_Frame)), sizeof(DISP_Frame));
-
     /* Configure display attributes of LCD panel */
     DISPLIB_LCDInit(LcdPanelInfo);
 
 #ifdef DISPLAY_ARGB8
+    file_size = ptr_to_u32(&ImageARGB8DataLimit) - ptr_to_u32(&ImageARGB8DataBase);
+    /* Prepare DISP Framebuffer image */
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageARGB8DataBase)), file_size);
+
     /* Configure DISP Framebuffer settings  */
     DISPLIB_SetFBConfig(eFBFmt_A8R8G8B8, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
 #endif
 #ifdef DISPLAY_RGB565
+    file_size = ptr_to_u32(&ImageRGB565DataLimit) - ptr_to_u32(&ImageRGB565DataBase);
+    /* Prepare DISP Framebuffer image */
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageRGB565DataBase)), file_size);
+
+    /* Configure DISP Framebuffer settings  */
     DISPLIB_SetFBConfig(eFBFmt_R5G6B5, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
 #endif
 

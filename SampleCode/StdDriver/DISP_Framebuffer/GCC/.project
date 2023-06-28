@@ -60,6 +60,11 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Library/StdDriver/src</locationURI>
 		</link>
 		<link>
+			<name>User/image.gnu.S</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/image.gnu.S</locationURI>
+		</link>
+		<link>
 			<name>User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/main.c</locationURI>

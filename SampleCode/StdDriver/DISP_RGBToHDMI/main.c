@@ -12,10 +12,7 @@
 
 #define DDR_ADR_FRAMEBUFFER   0x88000000UL
 
-uint8_t DISP_Frame[]=
-{
-#include "image_rgb565_1920x1080.dat"
-};
+extern uint32_t ImageRGB565DataBase, ImageRGB565DataLimit;
 
 /* LCD attributes */
 DISP_LCD_INFO LcdPanelInfo =
@@ -121,6 +118,8 @@ void LT8618_HDMI_Init(void)
 
 int main(void)
 {
+    uint32_t file_size;
+
     /* Init System, IP clock and multi-function I/O
        In the end of SYS_Init() will issue SYS_LockReg()
        to lock protected register. If user want to write
@@ -139,7 +138,8 @@ int main(void)
     sysprintf("+-----------------------------------------------------+\n");
 
     /* Prepare DISP Framebuffer image */
-    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(DISP_Frame)), sizeof(DISP_Frame));
+    file_size = ptr_to_u32(&ImageRGB565DataLimit) - ptr_to_u32(&ImageRGB565DataBase);
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageRGB565DataBase)), file_size);
 
     /* Configure display attributes of LCD panel */
     DISPLIB_LCDInit(LcdPanelInfo);
