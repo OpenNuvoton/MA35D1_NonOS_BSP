@@ -11,8 +11,8 @@
 
 #define DDR_ADR_FRAMEBUFFER   0x88000000UL
 
-#define DISPLAY_ARGB8
-//#define DISPLAY_RGB565
+//#define DISPLAY_ARGB8
+#define DISPLAY_RGB565
 
 extern uint32_t ImageARGB8DataBase, ImageARGB8DataLimit, ImageRGB565DataBase, ImageRGB565DataLimit;
 
@@ -122,6 +122,9 @@ int main(void)
     /* Open DISP IP Clock and set multi-function pins */
     DISP_Open();
 
+    /* Assign the highest AXI port priority to Display */
+    DISPLIB_DDR_AXIPort_Priority();
+
     sysprintf("\n+------------------------------------------------------------------------+\n");
     sysprintf("|                This sample code show image under LCD Panel             |\n");
 #ifdef DISPLAY_ARGB8
@@ -143,6 +146,7 @@ int main(void)
     /* Configure DISP Framebuffer settings  */
     DISPLIB_SetFBConfig(eFBFmt_A8R8G8B8, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
 #endif
+
 #ifdef DISPLAY_RGB565
     file_size = ptr_to_u32(&ImageRGB565DataLimit) - ptr_to_u32(&ImageRGB565DataBase);
     /* Prepare DISP Framebuffer image */

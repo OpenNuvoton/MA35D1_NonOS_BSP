@@ -128,6 +128,9 @@ int main(void)
     /* Open DISP IP Clock and set multi-function pins */
     DISP_Open();
 
+    /* Assign the highest AXI port priority to Display */
+    DISPLIB_DDR_AXIPort_Priority();
+
     sysprintf("\n+------------------------------------------------------------------------+\n");
     sysprintf("|      This sample code shows RGB888 image by RGB to MIPI transmitter    |\n");
     sysprintf("+------------------------------------------------------------------------+\n");

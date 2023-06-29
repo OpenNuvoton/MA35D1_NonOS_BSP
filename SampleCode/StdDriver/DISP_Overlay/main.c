@@ -217,6 +217,9 @@ int main(void)
     /* Open DISP IP Clock and set multi-function pins */
     DISP_Open();
 
+    /* Assign the highest AXI port priority to Display */
+    DISPLIB_DDR_AXIPort_Priority();
+
     /* Prepare DISP Framebuffer/Overlay image */
     file_size = ptr_to_u32(&ImageDataLimit) - ptr_to_u32(&ImageDataBase);
     memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageDataBase)), file_size);
