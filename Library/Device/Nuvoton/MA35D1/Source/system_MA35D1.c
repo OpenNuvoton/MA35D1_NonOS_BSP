@@ -102,9 +102,24 @@ void SystemInit1 (void)
     arm64_enable_int();
 }
 
+void Init_AXI_ports(void)
+{
+    SYS_UnlockReg();
+	outp32(UMCTL2_BASE+0x490, 0x1);
+	outp32(UMCTL2_BASE+0x540, 0x1);
+	outp32(UMCTL2_BASE+0x5f0, 0x1);
+	outp32(UMCTL2_BASE+0x6a0, 0x1);
+	outp32(UMCTL2_BASE+0x750, 0x1);
+	outp32(UMCTL2_BASE+0x800, 0x1);
+	outp32(UMCTL2_BASE+0x8b0, 0x1);
+	SYS->MISCFCR0 &= ~0x800000; /* DDR control register clock gating enable */
+}
+
 void SystemInit0 (void)
 {
     SYS_UnlockReg();
+
+	Init_AXI_ports();
 
     /* TODO: Enable Clock */
     CLK->SYSCLK0 |= 0x7f7f0000;
