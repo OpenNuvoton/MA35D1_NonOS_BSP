@@ -66,12 +66,12 @@ void SSMCC_SetRegion(SSMCC_PARAM_T param)
 {
         TZC0->REGION[param.region_no].REGION_BASE_LOW = param.base_address;
         TZC0->REGION[param.region_no].REGION_TOP_LOW = param.base_address + param.size - 1;
-        TZC0->REGION[param.region_no].REGION_ATTRIBUTES = 0x7 | (param.attribute & 0xC0000000);
+        TZC0->REGION[param.region_no].REGION_ATTRIBUTES = 0xf | (param.attribute & 0xC0000000);
         TZC0->REGION[param.region_no].REGION_ID_ACCESS = param.attribute & 0x00010001;         /* bit0: Non-secure, bit1: M4 */
 
         TZC2->REGION[param.region_no].REGION_BASE_LOW = param.base_address;
         TZC2->REGION[param.region_no].REGION_TOP_LOW = param.base_address + param.size - 1;
-        TZC2->REGION[param.region_no].REGION_ATTRIBUTES = 0x7 | (param.attribute & 0xC0000000);
+        TZC2->REGION[param.region_no].REGION_ATTRIBUTES = 0xf | (param.attribute & 0xC0000000);
         TZC2->REGION[param.region_no].REGION_ID_ACCESS = param.attribute & 0x00030003;         /* bit0: Non-secure, bit1: M4 */
 }
 
