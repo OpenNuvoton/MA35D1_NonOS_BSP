@@ -137,11 +137,11 @@ void SSMCC_SetRegion1(void)
 	if (dram_size == 4)
 		dram_size = 0x8000000;   /* 128 MB */
 	else if (dram_size == 5)
-		dram_size == 0x10000000; /* 256 MB */
+		dram_size = 0x10000000; /* 256 MB */
 	else if (dram_size == 6)
-		dram_size == 0x20000000; /* 512 MB */
+		dram_size = 0x20000000; /* 512 MB */
 	else
-		dram_size == 0x80000000; /* 2GB */
+		dram_size = 0x80000000; /* 2GB */
 #endif
 	param.size = dram_size;
 	param.attribute = SSMCC_SECURE_READ|SSMCC_SECURE_WRITE|SSMCC_NONSECURE_READ|
@@ -160,8 +160,8 @@ void SystemInit0 (void)
 	/* TODO: Enable Clock */
 	CLK->SYSCLK0 |= 0x7f7f0000;
 
-	SSMCC_SetRegion0(SSMCC_SECURE_READ|SSMCC_SECURE_WRITE|SSMCC_NONSECURE_READ|
-					 SSMCC_NONSECURE_WRITE|SSMCC_M4NS_READ|SSMCC_M4NS_WRITE);
+	//SSMCC_SetRegion0(SSMCC_SECURE_READ|SSMCC_SECURE_WRITE|SSMCC_NONSECURE_READ|
+	//				 SSMCC_NONSECURE_WRITE|SSMCC_M4NS_READ|SSMCC_M4NS_WRITE);
 	SSMCC_SetRegion0(SSMCC_SECURE_READ|SSMCC_SECURE_WRITE);
 
 	SSMCC_SetRegion1();
