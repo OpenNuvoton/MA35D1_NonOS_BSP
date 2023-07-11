@@ -85,11 +85,6 @@ void RunCore1(void) {
 	cnt=1000;
 	while(cnt--);
 	sev();
-
-	cnt=1000;
-	while(SYS->CA35WRBADR1!=0 && (cnt--)>0);
-	SYS->CA35WRBADR1=  ptr_to_u32(&(start64));
-	sev();
 }
 
 void SystemInit1 (void)
