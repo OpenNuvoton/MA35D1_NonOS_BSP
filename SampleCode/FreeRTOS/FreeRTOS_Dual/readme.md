@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
 *****************************************************************************/
+
 FreeRTOS independently on Core1 and Core0
 Customer should rebuild the project and burn binary files.
 
@@ -14,4 +15,4 @@ The flow is as follow.
 2. Rebuild the FreeRTOS_Core0 project to generate the new FreeRTOS_Core0.bin.
 3. Use the NuWriter to program the storage.
 	- Burn FreeRTOS_Core1.bin to DDR 0x88000000 
-	- Burn FreeRTOS_Core1.bin to DDR 0x80000000 and Run
+	- Burn FreeRTOS_Core0.bin to DDR 0x80400000 and Run
