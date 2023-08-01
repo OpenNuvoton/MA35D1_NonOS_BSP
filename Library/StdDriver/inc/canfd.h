@@ -377,23 +377,56 @@ typedef struct
 } CANFD_TX_EVNT_ELEM_T;
 
 /// @cond HIDDEN_SYMBOLS
-#define CANFD_READ_REG_TIMEOUT    1024                 /*!< CANFD read register time-out count */
+#define CANFD_READ_REG_TIMEOUT    32                 /*!< CANFD read register time-out count */
+#define CANFD_REG_READ_TIME       2
 
 __STATIC_INLINE uint32_t CANFD_ReadReg(uint32_t u32RegAddr);
 
 __STATIC_INLINE uint32_t CANFD_ReadReg(uint32_t u32RegAddr)
 {
     uint32_t u32ReadReg;
+    uint32_t u32ReadReg_1;
     uint32_t u32TimeOutCnt = CANFD_READ_REG_TIMEOUT;
+    uint32_t u32TimeOutCnt_1 = 0;
     u32ReadReg = 0UL;
 
     do{
         u32ReadReg = inpw(ptr_to_u32(u32RegAddr));
+
+        if(u32ReadReg != 0x0)
+        {
+            while(1)
+            {
+                u32ReadReg_1 = inpw(ptr_to_u32(u32RegAddr));
+
+                if(u32ReadReg_1 == 0x0)
+                {
+                    u32TimeOutCnt_1 = 0;
+                    break;
+                }
+
+                if(u32ReadReg_1 == u32ReadReg)
+                {
+                    u32TimeOutCnt_1++;
+                }
+                else
+                {
+                    u32ReadReg = u32ReadReg_1;
+                    u32TimeOutCnt_1 = 0;
+                }
+
+                if(u32TimeOutCnt_1 > CANFD_REG_READ_TIME)
+                {
+                    return u32ReadReg;
+                }
+            }
+        }
+
         if(--u32TimeOutCnt == 0UL)
         {
             break;
         }
-      }while(u32ReadReg == 0UL);
+    }while(u32ReadReg == 0UL);
 
     return u32ReadReg;
 }

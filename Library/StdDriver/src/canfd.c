@@ -210,11 +210,10 @@
  */
 void *CANFD_MemSet(void *s, int c, size_t count)
 {
-    unsigned char *p = s;
-
+    char *xs = s;
     while (count--)
-        if ((unsigned char)c == *p++)
-    return (void *)(p - 1);
+        *xs++ = c;
+    return s;
 }
 /// @endcond HIDDEN_SYMBOLS
 
@@ -326,15 +325,15 @@ void CANFD_GetDefaultConfig(CANFD_FD_T *psConfig, uint8_t u8OpMode)
     psConfig->u32MRamSize  = (uint32_t)CANFD_SRAM_SIZE;
 
     /* CAN FD Standard message ID elements as 32 elements    */
-    psConfig->sElemSize.u32SIDFC = 32;
+    psConfig->sElemSize.u32SIDFC = 4; //32;
     /* CAN FD Extended message ID elements as 16 elements    */
-    psConfig->sElemSize.u32XIDFC = 16;
+    psConfig->sElemSize.u32XIDFC = 4; //16;
     /* CAN FD RX FIFO0 elements as 16 elements    */
-    psConfig->sElemSize.u32RxFifo0 = 16;
+    psConfig->sElemSize.u32RxFifo0 = 32;
     /* CAN FD RX FIFO1 elements as 16 elements    */
-    psConfig->sElemSize.u32RxFifo1 = 16;
+    psConfig->sElemSize.u32RxFifo1 = 32;
     /* CAN FD RX Buffer elements as 16 elements    */
-    psConfig->sElemSize.u32RxBuf = 16;
+    psConfig->sElemSize.u32RxBuf = 32;
     /* CAN FD TX Buffer elements as 8 elements    */
     psConfig->sElemSize.u32TxBuf = 8;
     /* CAN FD TX Event FIFO elements as 8 elements    */
@@ -454,7 +453,7 @@ uint32_t CANFD_SetBitRate(CANFD_T *psCanfd, uint32_t u32BaudRate, int32_t u32Sou
     int best_tseg = 0, best_brp = 0, brp = 0;
     int tsegall, tseg = 0, tseg1 = 0, tseg2 = 0;
     int spt_error = 1000, spt = 0, sampl_pt;
-    uint64_t clock_freq = (uint64_t)0, u64PCLK_DIV = (uint64_t)1;
+    uint64_t clock_freq = (uint64_t)0;
     int sjw = (uint32_t)2;
     int reg_btp = 0;
     int tseg1_min = 0, tseg2_min = 0;
@@ -570,7 +569,7 @@ uint32_t CANFD_SetBitRate(CANFD_T *psCanfd, uint32_t u32BaudRate, int32_t u32Sou
     tseg1 = tseg1 - 1;
     tseg2 = tseg2 - 1;
 
-    u32BaudRate = clock_freq / (best_brp * (tseg1 + tseg2 + 1));
+    u32BaudRate = clock_freq / ((best_brp +1) * (tseg1 + tseg2 + 3));
 
     if(u32Set_NBTP)
     {
@@ -584,7 +583,7 @@ uint32_t CANFD_SetBitRate(CANFD_T *psCanfd, uint32_t u32BaudRate, int32_t u32Sou
          * This is mentioned in the "Bit Time Requirements for CAN FD"
          * paper presented at the International CAN Conference 2013
          */
-        if (best_brp > 2500000)
+        if (u32BaudRate > 2500000)
         {
             u32 tdco, ssp;
 
@@ -798,7 +797,7 @@ void CANFD_Open(CANFD_T *psCanfd, CANFD_FD_T *psCanfdStr)
         CANFD_InitTxEvntFifo(psCanfd, &psCanfdStr->sMRamStartAddr, &psCanfdStr->sElemSize, 0);
 
     /*Reject all Non-matching Frames Extended ID and Frames Standard ID,Reject all remote frames with 11-bit standard IDs and 29-bit extended IDs */
-    CANFD_SetGFC(psCanfd, eCANFD_REJ_NON_MATCH_FRM, eCANFD_REJ_NON_MATCH_FRM, 1, 1);
+    //CANFD_SetGFC(psCanfd, eCANFD_REJ_NON_MATCH_FRM, eCANFD_REJ_NON_MATCH_FRM, 1, 1);
 
     if (psCanfdStr->sBtConfig.bEnableLoopBack)
     {
@@ -915,6 +914,8 @@ void CANFD_EnableInt(CANFD_T *psCanfd, uint32_t u32IntLine0, uint32_t u32IntLine
     {
         /*Setting the CANFD0_IRQ0 Interrupt*/
         psCanfd->IE |= u32IntLine0;
+        /*Setting Interrupt Line selection*/
+        psCanfd->ILS &= ~u32IntLine0;
         /* Enable CAN FD specified interrupt */
         psCanfd->ILE |= ((uint32_t)1U << 0);
     }
@@ -922,6 +923,8 @@ void CANFD_EnableInt(CANFD_T *psCanfd, uint32_t u32IntLine0, uint32_t u32IntLine
     if (u32IntLine1 != 0)
     {
         /*Setting the CANFD0_IRQ1 Interrupt*/
+    	psCanfd->IE |= u32IntLine1;
+    	/*Setting Interrupt Line selection*/
         psCanfd->ILS |= u32IntLine1;
         /* Enable CAN FD specified interrupt */
         psCanfd->ILE |= ((uint32_t)1U << 1);
@@ -990,7 +993,7 @@ void CANFD_DisableInt(CANFD_T *psCanfd, uint32_t u32IntLine0, uint32_t u32IntLin
     if (u32IntLine1 != 0)
     {
         /*Clear the CANFD0_IRQ1 Interrupt*/
-        psCanfd->ILS &= ~u32IntLine1;
+        psCanfd->IE &= ~u32IntLine1;
         /* Disable CAN FD specified interrupt */
         psCanfd->ILE &= ~((uint32_t)1U << 1);
     }
