@@ -54,7 +54,7 @@
 #define LWIP_PROVIDE_ERRNO              1
 
 #ifdef GLOBAL_NOASSERT
-#define LWIP_NOASSERT
+    #define LWIP_NOASSERT
 #endif
 
 /* TCP Maximum segment size. */
@@ -78,6 +78,7 @@
 #define DEFAULT_ACCEPTMBOX_SIZE         5
 #define DEFAULT_UDP_RECVMBOX_SIZE       5
 #define DEFAULT_RAW_RECVMBOX_SIZE       5
+#define LWIP_SO_RCVTIMEO                1
 
 #define LWIP_USING_HW_CHECKSUM          1
 /* ---------- Checksum options ---------- */

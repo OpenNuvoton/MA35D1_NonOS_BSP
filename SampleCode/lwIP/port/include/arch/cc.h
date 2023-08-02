@@ -104,6 +104,4 @@ typedef uint64_t   sys_prot_t;
 #endif
 
 
-#define LWIP_PROVIDE_ERRNO  1
-
 #endif /* __CC_H__ */

@@ -51,6 +51,7 @@
 #define LWIP_SOCKET_SET_ERRNO           0
 #define LWIP_NETCONN                    1
 #define LWIP_SOCKET                     0
+#define LWIP_PROVIDE_ERRNO              1
 
 #ifdef GLOBAL_NOASSERT
 #define LWIP_NOASSERT
