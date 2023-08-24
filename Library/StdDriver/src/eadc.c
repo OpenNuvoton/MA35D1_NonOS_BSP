@@ -113,16 +113,23 @@ void EADC_SetTriggerDelayTime(EADC_T *eadc, \
 /**
   * @brief Set ADC extend sample time.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 18.
-  * @param[in] u32ExtendSampleTime Decides the extend sampling time, the range is from 0~255 ADC clock. Valid value are from 0 to 0xFF.
+  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 8.
+  * @param[in] u32ExtendSampleTime Decides the extend sampling time, the range is from 0~3 ADC clock. Valid value are from 0 to 0xFF.
   * @details When A/D converting at high conversion rate, the sampling time of analog input voltage may not enough if input channel loading is heavy,
   *         user can extend A/D sampling time after trigger source is coming to get enough sampling time.
   */
 void EADC_SetExtendSampleTime(EADC_T *eadc, uint32_t u32ModuleNum, uint32_t u32ExtendSampleTime)
 {
-    eadc->SCTL[u32ModuleNum] &= ~EADC_SCTL_EXTSMPT_Msk;
-
-    eadc->SCTL[u32ModuleNum] |= (u32ExtendSampleTime << EADC_SCTL_EXTSMPT_Pos);
+	if (u32ModuleNum < 8)
+	{
+		eadc->SELSMP0 &= ~(EADC_SELSMP0_SELSMP0_Msk << (u32ModuleNum << 2));
+		eadc->SELSMP0 |= (u32ExtendSampleTime << (u32ModuleNum << 2));
+	}
+	else
+	{
+		eadc->SELSMP1 &= ~(EADC_SELSMP1_SELSMP8_Msk);
+		eadc->SELSMP1 |= (u32ExtendSampleTime);
+	}
 
 }
 

@@ -108,15 +108,15 @@ void SYS_Init(void)
     SYS->GPE_MFPH |= (SYS_GPE_MFPH_PE14MFP_UART0_TXD | SYS_GPE_MFPH_PE15MFP_UART0_RXD);
 
     /* Set PL multi-function pins for EPWM1 Channel 0 and 2 */
-    SYS->GPL_MFPL &= ~(SYS_GPL_MFPL_PL0MFP_Msk | SYS_GPL_MFPL_PL2MFP_Msk);
-    SYS->GPL_MFPL |= (SYS_GPL_MFPL_PL0MFP_EPWM1_CH0 | SYS_GPL_MFPL_PL2MFP_EPWM1_CH2);
+    SYS->GPG_MFPL &= ~(SYS_GPG_MFPL_PG4MFP_Msk | SYS_GPG_MFPL_PG6MFP_Msk);
+    SYS->GPG_MFPL |= (SYS_GPG_MFPL_PG4MFP_EPWM1_CH0 | SYS_GPG_MFPL_PG6MFP_EPWM1_CH2);
 
 }
 
 void UART0_Init()
 {
     /* Configure UART0 and set UART0 baud rate */
-    UART_Open(UART16, 115200);
+    UART_Open(UART0, 115200);
 }
 
 int32_t main(void)
