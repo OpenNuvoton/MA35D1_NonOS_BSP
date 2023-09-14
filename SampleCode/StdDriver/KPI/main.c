@@ -10,69 +10,51 @@
 
 void KPI_IRQHandler(void)
 {
-    uint32_t i;
-    uint32_t u32KPI_Status;
-    u32KPI_Status = KPI->KPISTATUS;
+    uint32_t u32Column_Num;
+    uint32_t u32Mask_Col = 1;
+    uint32_t u32Key_Event[4];
+    uint32_t i, j;
 
-    if(u32KPI_Status & KPI_KPISTATUS_PKEYINT_Msk) // Press Key
+    u32Column_Num = ((KPI->KPICONF & KPI_KPICONF_KCOL_Msk) >> KPI_KPICONF_KCOL_Pos) + 1;
+
+    for (i = 0; i < u32Column_Num; i++)
     {
-        uint32_t u32KPE0 = KPI->KPIKPE0;
-        uint32_t u32KPE1 = KPI->KPIKPE1;
-
-        while(u32KPE0 != 0x0)
-        {
-            for(i = 0; i < 32; i++)
-            {
-                if((0x1 << i) & u32KPE0)
-                {
-                    KPI->KPIKPE0 = (0x1 << i); // clear interrupt
-                    sysprintf("\n Press Key (Row%d, Column%d) \n", i/8, i%8);
-                    u32KPE0 = KPI->KPIKPE0;
-                }
-            }
-        }
-
-        while(u32KPE1 != 0x0)
-        {
-            for(i = 0; i < 32; i++)
-            {
-                if((0x1 << i) & u32KPE1)
-                {
-                    KPI->KPIKPE1 = (0x1 << i); // clear interrupt
-                    sysprintf("\n Press Key (Row%d, Column%d) \n", (i/8 + 4), i%8);
-                    u32KPE1 = KPI->KPIKPE1;
-                }
-            }
-        }
+        u32Mask_Col = u32Mask_Col * 2;
     }
 
-    if(u32KPI_Status & KPI_KPISTATUS_RKEYINT_Msk) // Release key
+    u32Mask_Col = u32Mask_Col - 1;
+    u32Mask_Col = (u32Mask_Col) | (u32Mask_Col << 8) | (u32Mask_Col << 16) |
+                  (u32Mask_Col << 24);
+
+    u32Key_Event[0] = KPI->KPIKPE0;
+    u32Key_Event[1] = KPI->KPIKPE1;
+    u32Key_Event[2] = KPI->KPIKRE0;
+    u32Key_Event[3] = KPI->KPIKRE1;
+
+    // Clear interrupt
+    KPI->KPIKPE0 = u32Key_Event[0];
+    KPI->KPIKPE1 = u32Key_Event[1];
+    KPI->KPIKRE0 = u32Key_Event[2];
+    KPI->KPIKRE1 = u32Key_Event[3];
+
+    // Mask unused column
+    u32Key_Event[0] = u32Key_Event[0] & u32Mask_Col;
+    u32Key_Event[1] = u32Key_Event[1] & u32Mask_Col;
+    u32Key_Event[2] = u32Key_Event[2] & u32Mask_Col;
+    u32Key_Event[3] = u32Key_Event[3] & u32Mask_Col;
+
+    for (j = 0; j < 4; j++)
     {
-        uint32_t u32KRE0 = KPI->KPIKRE0;
-        uint32_t u32KRE1 = KPI->KPIKRE1;
-
-        while(u32KRE0 != 0x0)
+        if (u32Key_Event[j] != 0)
         {
-            for(i = 0; i < 32; i++)
+            for (i = 0; i < 32; i++)
             {
-                if((0x1 << i) & u32KRE0)
+                if (u32Key_Event [j] & (1<<i))
                 {
-                    KPI->KPIKRE0 = (0x1 << i); // clear interrupt
-                    sysprintf("\n Release Key (Row%d, Column%d) \n", i/8, i%8);
-                    u32KRE0 = KPI->KPIKRE0;
-                }
-            }
-        }
-
-        while(u32KRE1 != 0x0)
-        {
-            for(i = 0; i < 32; i++)
-            {
-                if((0x1 << i) & u32KRE1)
-                {
-                    KPI->KPIKRE1 = (0x1 << i); // clear interrupt
-                    sysprintf("\n Release Key (Row%d, Column%d) \n", (i/8 + 4), i%8);
-                    u32KRE1 = KPI->KPIKRE1;
+                    if (j < 2)
+                        sysprintf("\n Press Key (Row%d, Column%d) \n", i/8, i%8);
+                    else
+                        sysprintf("\n Release Key (Row%d, Column%d) \n", i/8, i%8);
                 }
             }
         }
@@ -103,10 +85,23 @@ void SYS_Init(void)
     SYS->GPE_MFPH |= (SYS_GPE_MFPH_PE14MFP_UART0_TXD | SYS_GPE_MFPH_PE15MFP_UART0_RXD);
 
     /* Set KPI multi-function pin */
-    SYS->GPF_MFPL &= ~(SYS_GPF_MFPL_PF0MFP_Msk | SYS_GPF_MFPL_PF1MFP_Msk | SYS_GPF_MFPL_PF2MFP_Msk |
-                       SYS_GPF_MFPL_PF4MFP_Msk | SYS_GPF_MFPL_PF5MFP_Msk | SYS_GPF_MFPL_PF6MFP_Msk);
-    SYS->GPF_MFPL |= SYS_GPF_MFPL_PF0MFP_KPI_COL0 | SYS_GPF_MFPL_PF1MFP_KPI_COL1 | SYS_GPF_MFPL_PF2MFP_KPI_COL2 |
-                     SYS_GPF_MFPL_PF4MFP_KPI_ROW0 | SYS_GPF_MFPL_PF5MFP_KPI_ROW1 | SYS_GPF_MFPL_PF6MFP_KPI_ROW2;
+    SYS->GPF_MFPL = SYS_GPF_MFPL_PF0MFP_KPI_COL0 | SYS_GPF_MFPL_PF1MFP_KPI_COL1 |
+                    SYS_GPF_MFPL_PF2MFP_KPI_COL2 | SYS_GPF_MFPL_PF3MFP_KPI_COL3 |
+                    SYS_GPF_MFPL_PF4MFP_KPI_ROW0 | SYS_GPF_MFPL_PF5MFP_KPI_ROW1 |
+                    SYS_GPF_MFPL_PF6MFP_KPI_ROW2 | SYS_GPF_MFPL_PF7MFP_KPI_ROW3 ;
+
+    /* Set KPI pin is pull high */
+    PF->PUSEL &= ~(GPIO_PUSEL_PUSEL0_Msk | GPIO_PUSEL_PUSEL1_Msk | GPIO_PUSEL_PUSEL2_Msk |
+                   GPIO_PUSEL_PUSEL3_Msk | GPIO_PUSEL_PUSEL4_Msk | GPIO_PUSEL_PUSEL5_Msk |
+                   GPIO_PUSEL_PUSEL6_Msk | GPIO_PUSEL_PUSEL7_Msk);
+    PF->PUSEL |= (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL0_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL1_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL2_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL3_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL4_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL5_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL6_Pos) |
+                 (GPIO_PUSEL_PULL_UP << GPIO_PUSEL_PUSEL7_Pos);
 
     /* Lock protected registers */
     SYS_LockReg();;
@@ -114,7 +109,7 @@ void SYS_Init(void)
 
 int32_t main (void)
 {
-    uint32_t u32RowNum = 3, u32ColNum = 3;
+    uint32_t u32RowNum = 4, u32ColNum = 4;
     /* Init System, IP clock and multi-function I/O
        In the end of SYS_Init() will issue SYS_LockReg()
        to lock protected register. If user want to write

@@ -23,7 +23,7 @@
 
 
 /// @cond HIDDEN_SYMBOLS
-#define KPICONF_VALUE   0x00288059
+#define KPICONF_VALUE   0x00030100
 /// @endcond HIDDEN_SYMBOLS
 
 
@@ -38,6 +38,7 @@
 void KPI_Open(KPI_T* kpi, uint32_t u32Row, uint32_t u32Col)
 {
     uint32_t u32Reg;
+    uint32_t i;
 
     kpi->KPICONF = 0x0;
     kpi->KPI3KCONF = 0x0;
@@ -45,15 +46,15 @@ void KPI_Open(KPI_T* kpi, uint32_t u32Row, uint32_t u32Col)
 
     if(u32Row < 2)
         u32Row = 1;
-    else if (u32Row > 6)
-        u32Row = 6;
+    else if (u32Row > 8)
+        u32Row = 7;
     else
         u32Row = u32Row - 1;
 
     if(u32Col < 2)
         u32Col = 1;
     else if(u32Col > 8)
-        u32Col = 8;
+        u32Col = 7;
     else
         u32Col = u32Col - 1;
 
