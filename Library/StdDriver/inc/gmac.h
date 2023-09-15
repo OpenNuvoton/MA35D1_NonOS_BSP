@@ -63,7 +63,7 @@ enum MIIMODE {
 #define DEFAULT_LOOP_VARIABLE   10000
 
 #define TRANSMIT_DESC_SIZE      32 //Tx Descriptors needed in the Descriptor pool/queue
-#define RECEIVE_DESC_SIZE       32 //Rx Descriptors needed in the Descriptor pool/queue
+#define RECEIVE_DESC_SIZE       128 //Rx Descriptors needed in the Descriptor pool/queue
 
 /******************************************************************************
  * Descriptor
@@ -511,6 +511,7 @@ struct sk_buff {
     unsigned char data[2048];
     unsigned int len;
     unsigned int volatile rdy;
+    void *pData;
 };
 
 struct net_device_stats {

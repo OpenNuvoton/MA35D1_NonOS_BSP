@@ -262,26 +262,6 @@ s32 GMAC_open(int intf, int mode)
 }
 
 /**
- * @brief Function to register GMAC interrupt handler and enable interrupt
- * @param[in] intf GMAC interface
- *          - \ref GMACINTF0
- *          - \ref GMACINTF1
- * @return Always returns 0.
- */
-s32 GMAC_register_interrupt(int intf)
-{
-    if(intf == GMACINTF0) {
-        IRQ_SetHandler(GMAC0_IRQn, GMAC_int_handler0);
-        IRQ_Enable(GMAC0_IRQn);
-    } else {
-        IRQ_SetHandler(GMAC1_IRQn, GMAC_int_handler1);
-        IRQ_Enable(GMAC1_IRQn);
-    }
-
-    return 0;
-}
-
-/**
  * @brief This gives up the receive Descriptor queue in ring or chain mode.
  * This function is tightly coupled to the platform and operating system
  * Once device's Dma is stopped the memory descriptor memory and the buffer memory deallocation,
@@ -483,7 +463,7 @@ void GMAC_handle_transmit_over(int intf)
  * @return None.
  * @note This function runs in interrupt context.
  */
-void GMAC_handle_received_data(int intf)
+uint32_t GMAC_handle_received_data(int intf, struct sk_buff *prskb)
 {
     GMACdevice *gmacdev;
     s32 desc_index;
@@ -494,7 +474,8 @@ void GMAC_handle_received_data(int intf)
     u32 ext_status;
     u32 time_stamp_high;
     u32 time_stamp_low;
-    struct sk_buff *rb = &rxbuf[intf];
+    u32 ret = 0;
+    struct sk_buff *rb = prskb;
 
     //struct sk_buff *skb; //This is the pointer to hold the received data
 
@@ -574,15 +555,12 @@ void GMAC_handle_received_data(int intf)
                         gmacdev->NetStats.rx_ip_payload_errors++;
                     }
                 }
-#ifdef CACHE_ON
-                memcpy((void *)rb->data, (void *)((u64)dma_addr1 | NON_CACHE), len);
-                memcpy((void *)rb->data + len, (void *)((u64)(dma_addr1 | NON_CACHE) + len), 4);
-#else
-                memcpy((void *)rb->data, (void *)((u64)dma_addr1), len);
-                memcpy((void *)rb->data + len, (void *)((u64)dma_addr1 + len), 4);
-#endif
+
                 rb->rdy = 1;
                 rb->len = len;
+                rb->pData = (void *)((u64)dma_addr1 | NON_CACHE);
+                ret++;
+                rb = (struct sk_buff *)rb + 1;
 
                 gmacdev->NetStats.rx_packets++;
                 gmacdev->NetStats.rx_bytes += len;
@@ -605,6 +583,8 @@ void GMAC_handle_received_data(int intf)
 
         }
     } while(desc_index >= 0); // do until desc is empty
+
+    return ret;
 }
 
 /**
@@ -672,12 +652,13 @@ void GMAC_powerdown_mac(GMACdevice *gmacdev)
  * @return None
  * @note This function runs in interrupt context
  */
-void GMAC_int_handler0(void)
+uint32_t GMAC_int_handler0(struct sk_buff *prskb)
 {
     GMACdevice *gmacdev = &GMACdev[GMACINTF0];
     u32 interrupt, dma_status_reg, mac_status_reg;
     u32 dma_addr;
     u32 volatile reg;
+	uint32_t ret = 0;
 
     // Check GMAC interrupt
     mac_status_reg = GMAC_GET_INT_SUMMARY(gmacdev);
@@ -708,7 +689,7 @@ void GMAC_int_handler0(void)
     dma_status_reg = GMAC_GET_DMA_STATUS(gmacdev);
 
     if(dma_status_reg == 0)
-        return;
+        return ret;
 
     GMAC_disable_interrupt_all(gmacdev);
 
@@ -752,7 +733,7 @@ void GMAC_int_handler0(void)
 
     if(interrupt & GMACDmaRxNormal) {
         TR("%s:: Rx Normal \n", __FUNCTION__);
-        GMAC_handle_received_data(GMACINTF0);
+		ret = GMAC_handle_received_data(GMACINTF0, prskb);
     }
 
     if(interrupt & GMACDmaRxAbnormal) {
@@ -801,6 +782,8 @@ void GMAC_int_handler0(void)
 
     /* Enable the interrupt before returning from ISR*/
     GMAC_enable_interrupt(gmacdev, DMA_INT_ENABLE);
+
+	return ret;
 }
 
 /**
@@ -810,12 +793,13 @@ void GMAC_int_handler0(void)
  * @return None
  * @note This function runs in interrupt context
  */
-void GMAC_int_handler1(void)
+uint32_t GMAC_int_handler1(struct sk_buff *prskb)
 {
     GMACdevice *gmacdev = &GMACdev[GMACINTF1];
     u32 interrupt, dma_status_reg, mac_status_reg;
     u32 dma_addr;
     u32 volatile reg;
+    uint32_t ret = 0;
 
     // Check GMAC interrupt
     mac_status_reg = GMAC_GET_INT_SUMMARY(gmacdev);
@@ -846,7 +830,7 @@ void GMAC_int_handler1(void)
     dma_status_reg = GMAC_GET_DMA_STATUS(gmacdev);
 
     if(dma_status_reg == 0)
-        return;
+        return ret;
 
     GMAC_disable_interrupt_all(gmacdev);
 
@@ -890,7 +874,7 @@ void GMAC_int_handler1(void)
 
     if(interrupt & GMACDmaRxNormal) {
         TR("%s:: Rx Normal \n", __FUNCTION__);
-        GMAC_handle_received_data(GMACINTF1);
+        ret = GMAC_handle_received_data(GMACINTF1, prskb);
     }
 
     if(interrupt & GMACDmaRxAbnormal) {
@@ -939,4 +923,6 @@ void GMAC_int_handler1(void)
 
     /* Enable the interrupt before returning from ISR*/
     GMAC_enable_interrupt(gmacdev, DMA_INT_ENABLE);
+
+    return ret;
 }

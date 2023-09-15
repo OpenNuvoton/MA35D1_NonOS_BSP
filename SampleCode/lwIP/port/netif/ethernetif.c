@@ -66,6 +66,9 @@
 struct netif *_netif0;
 struct netif *_netif1;
 
+#define NUM_OF_RXSKB 32
+struct sk_buff rxskbuf[NUM_OF_RXSKB]; // application buffer queue
+
 extern u8_t mac_addr0[6];
 extern u8_t mac_addr1[6];
 extern struct sk_buff txbuf[GMAC_CNT];
@@ -86,39 +89,35 @@ struct ethernetif
 
 uint32_t GMAC0_ReceivePkt(struct sk_buff *prskb)
 {
-    prskb->rdy = 0;
-
-    GMAC_int_handler0();
-
-    return prskb->rdy;
+    return GMAC_int_handler0(prskb);
 }
 
 void GMAC0_IRQHandler(void)
 {
-    struct sk_buff *rskb = &rxbuf[GMACINTF0];
+    struct sk_buff *rskb = &rxskbuf[0];
+    uint32_t packetCnt;
 
-    if(GMAC0_ReceivePkt(rskb) != 0)
+    packetCnt = GMAC0_ReceivePkt(rskb);
+    if(packetCnt != 0)
     {
-        ethernetif_input0(rskb->len, rskb->data);
+        ethernetif_input0(packetCnt);
     }
 }
 
 uint32_t GMAC1_ReceivePkt(struct sk_buff *prskb)
 {
-    prskb->rdy = 0;
-
-    GMAC_int_handler1();
-
-    return prskb->rdy;
+    return GMAC_int_handler1(prskb);
 }
 
 void GMAC1_IRQHandler(void)
 {
-    struct sk_buff *rskb = &rxbuf[GMACINTF1];
+    struct sk_buff *rskb = &rxskbuf[0];
+    uint32_t packetCnt;
 
-    if(GMAC1_ReceivePkt(rskb) != 0)
+    packetCnt = GMAC1_ReceivePkt(rskb);
+    if(packetCnt != 0)
     {
-        ethernetif_input1(rskb->len, rskb->data);
+        ethernetif_input1(packetCnt);
     }
 }
 
@@ -150,6 +149,7 @@ low_level_init0(struct netif *netif)
     GMAC_open(GMACINTF0, GMAC_MODE);
     IRQ_SetPriority((IRQn_ID_t)GMAC0_IRQn, (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1) << portPRIORITY_SHIFT);
     IRQ_SetHandler(GMAC0_IRQn, GMAC0_IRQHandler);
+    IRQ_SetTarget(GMAC0_IRQn, IRQ_CPU_0);
     IRQ_Enable(GMAC0_IRQn);
 }
 
@@ -181,6 +181,7 @@ low_level_init1(struct netif *netif)
     GMAC_open(GMACINTF1, GMAC_MODE);
     IRQ_SetPriority((IRQn_ID_t)GMAC1_IRQn, (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1) << portPRIORITY_SHIFT);
     IRQ_SetHandler(GMAC1_IRQn, GMAC1_IRQHandler);
+    IRQ_SetTarget(GMAC1_IRQn, IRQ_CPU_0);
     IRQ_Enable(GMAC1_IRQn);
 }
 
@@ -351,11 +352,7 @@ low_level_input(struct netif *netif, u16_t len, u8_t *buf)
         len = 0;
         /* We iterate over the pbuf chain until we have read the entire
         * packet into the pbuf. */
-        for(q = p; q != NULL; q = q->next)
-        {
-            memcpy((u8_t*)q->payload, (u8_t*)&buf[len], q->len);
-            len = len + q->len;
-        }
+        p->payload = (u8_t*)buf;
 
 #if ETH_PAD_SIZE
         pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
@@ -383,42 +380,49 @@ low_level_input(struct netif *netif, u16_t len, u8_t *buf)
  * @param netif the lwip network interface structure for this ethernetif
  */
 void
-ethernetif_input0(u16_t len, u8_t *buf)
+ethernetif_input0(uint32_t packetCnt)
 {
     struct eth_hdr *ethhdr;
     struct pbuf *p;
+    u16_t i;
 
-    /* move received packet into a new pbuf */
-    p = low_level_input(_netif0, len, buf);
-    /* no packet could be read, silently ignore this */
-    if (p == NULL) return;
+    for(i = 0; i < packetCnt; i++) {
+        /* move received packet into a new pbuf */
+#if (LWIP_USING_HW_CHECKSUM == 1)
+        p = low_level_input(_netif0, (&rxskbuf[i])->len, (&rxskbuf[i])->pData);
+#else
+        p = low_level_input(_netif0, (&rxskbuf[i])->len + 4, (&rxskbuf[i])->pData);
+#endif
+        /* no packet could be read, silently ignore this */
+        if (p == NULL) return;
 
-    /* points to packet payload, which starts with an Ethernet header */
-    ethhdr = p->payload;
+        /* points to packet payload, which starts with an Ethernet header */
+        ethhdr = p->payload;
 
-    switch (htons(ethhdr->type))
-    {
-    /* IP or ARP packet? */
-    case ETHTYPE_IP:
-    case ETHTYPE_ARP:
-#if PPPOE_SUPPORT
-    /* PPPoE packet? */
-    case ETHTYPE_PPPOEDISC:
-    case ETHTYPE_PPPOE:
-#endif /* PPPOE_SUPPORT */
-        /* full packet send to tcpip_thread to process */
-        if (_netif0->input(p, _netif0)!=ERR_OK)
+        switch (htons(ethhdr->type))
         {
-            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+        /* IP or ARP packet? */
+        case ETHTYPE_IP:
+        case ETHTYPE_ARP:
+    #if PPPOE_SUPPORT
+        /* PPPoE packet? */
+        case ETHTYPE_PPPOEDISC:
+        case ETHTYPE_PPPOE:
+    #endif /* PPPOE_SUPPORT */
+            /* full packet send to tcpip_thread to process */
+            if (_netif0->input(p, _netif0)!=ERR_OK)
+            {
+                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+                pbuf_free(p);
+                p = NULL;
+            }
+            break;
+
+        default:
             pbuf_free(p);
             p = NULL;
+            break;
         }
-        break;
-
-    default:
-        pbuf_free(p);
-        p = NULL;
-        break;
     }
 }
 
@@ -433,42 +437,49 @@ ethernetif_input0(u16_t len, u8_t *buf)
  * @param netif the lwip network interface structure for this ethernetif
  */
 void
-ethernetif_input1(u16_t len, u8_t *buf)
+ethernetif_input1(uint32_t packetCnt)
 {
     struct eth_hdr *ethhdr;
     struct pbuf *p;
+    u16_t i;
 
-    /* move received packet into a new pbuf */
-    p = low_level_input(_netif1, len, buf);
-    /* no packet could be read, silently ignore this */
-    if (p == NULL) return;
+    for(i = 0; i < packetCnt; i++) {
+        /* move received packet into a new pbuf */
+#if (LWIP_USING_HW_CHECKSUM == 1)
+        p = low_level_input(_netif1, (&rxskbuf[i])->len, (&rxskbuf[i])->pData);
+#else
+        p = low_level_input(_netif1, (&rxskbuf[i])->len + 4, (&rxskbuf[i])->pData);
+#endif
+        /* no packet could be read, silently ignore this */
+        if (p == NULL) return;
 
-    /* points to packet payload, which starts with an Ethernet header */
-    ethhdr = p->payload;
+        /* points to packet payload, which starts with an Ethernet header */
+        ethhdr = p->payload;
 
-    switch (htons(ethhdr->type))
-    {
-    /* IP or ARP packet? */
-    case ETHTYPE_IP:
-    case ETHTYPE_ARP:
-#if PPPOE_SUPPORT
-    /* PPPoE packet? */
-    case ETHTYPE_PPPOEDISC:
-    case ETHTYPE_PPPOE:
-#endif /* PPPOE_SUPPORT */
-        /* full packet send to tcpip_thread to process */
-        if (_netif1->input(p, _netif1)!=ERR_OK)
+        switch (htons(ethhdr->type))
         {
-            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+        /* IP or ARP packet? */
+        case ETHTYPE_IP:
+        case ETHTYPE_ARP:
+    #if PPPOE_SUPPORT
+        /* PPPoE packet? */
+        case ETHTYPE_PPPOEDISC:
+        case ETHTYPE_PPPOE:
+    #endif /* PPPOE_SUPPORT */
+            /* full packet send to tcpip_thread to process */
+            if (_netif1->input(p, _netif1)!=ERR_OK)
+            {
+                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+                pbuf_free(p);
+                p = NULL;
+            }
+            break;
+
+        default:
             pbuf_free(p);
             p = NULL;
+            break;
         }
-        break;
-
-    default:
-        pbuf_free(p);
-        p = NULL;
-        break;
     }
 }
 
