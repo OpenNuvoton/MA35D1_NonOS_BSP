@@ -696,8 +696,6 @@ void CANFD_Open(CANFD_T *psCanfd, CANFD_FD_T *psCanfdStr)
     uint32_t u32CANFD_CLK;
     if (psCanfd == (CANFD_T *)CANFD0)
     {
-        SYS_ResetModule(CANFD0_RST);
-
         if(CANFD_GetClockSource(0) == 1)
         {
             u32CANFD_CLK = CLK_GetPLLClockFreq(VPLL)/((CANFD_GetClockDiv(0) + 1)<<1);
@@ -709,8 +707,6 @@ void CANFD_Open(CANFD_T *psCanfd, CANFD_FD_T *psCanfdStr)
     }
     else if (psCanfd == (CANFD_T *)CANFD1)
     {
-        SYS_ResetModule(CANFD1_RST);
-
         if(CANFD_GetClockSource(1) == 1)
         {
             u32CANFD_CLK = CLK_GetPLLClockFreq(VPLL)/((CANFD_GetClockDiv(1) + 1)<<1);
@@ -722,8 +718,6 @@ void CANFD_Open(CANFD_T *psCanfd, CANFD_FD_T *psCanfdStr)
     }
     else if (psCanfd == (CANFD_T *)CANFD2)
     {
-        SYS_ResetModule(CANFD2_RST);
-
         if(CANFD_GetClockSource(CANFD2_MODULE) == 0)
         {
             u32CANFD_CLK = CLK_GetPLLClockFreq(VPLL)/((CANFD_GetClockDiv(2) + 1)<<1);
@@ -735,8 +729,6 @@ void CANFD_Open(CANFD_T *psCanfd, CANFD_FD_T *psCanfdStr)
     }
     else if (psCanfd == (CANFD_T *)CANFD3)
     {
-        SYS_ResetModule(CANFD3_RST);
-
         if(CANFD_GetClockSource(CANFD3_MODULE) == 1)
         {
             u32CANFD_CLK = CLK_GetPLLClockFreq(VPLL)/((CANFD_GetClockDiv(3) + 1)<<1);

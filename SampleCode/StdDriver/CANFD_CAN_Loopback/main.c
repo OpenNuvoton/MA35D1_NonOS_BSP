@@ -51,8 +51,8 @@ void SYS_Init(void)
     /*---------------------------------------------------------------------------------------------------------*/
     /* Init System Clock                                                                                       */
     /*---------------------------------------------------------------------------------------------------------*/
-	CLK_SetPLLClockFreq(APLL, PLL_OPMODE_INTEGER, FREQ_PLLSRC, 150000000);
-	CLK_WaitClockReady(CLK_STATUS_STABLE_APLL);
+    CLK_SetPLLClockFreq(APLL, PLL_OPMODE_INTEGER, FREQ_PLLSRC, 150000000);
+    CLK_WaitClockReady(CLK_STATUS_STABLE_APLL);
 
     /* Enable IP clock */
     CLK_SetModuleClock(CANFD0_MODULE, CLK_CLKSEL4_CANFD0SEL_APLL, 0);
@@ -137,6 +137,12 @@ void CAN_Loopback(void)
     sCANFD_Config.sBtConfig.bEnableLoopBack = TRUE;
     sCANFD_Config.sBtConfig.sNormBitRate.u32BitRate = 1000000;
     sCANFD_Config.sBtConfig.sDataBitRate.u32BitRate = 0;
+
+    /*Reset CAN FD IP*/
+    SYS_UnlockReg();
+    SYS_ResetModule(CANFD0_RST);
+    SYS_LockReg();
+
     /*Open the CAN FD feature*/
     CANFD_Open(CANFD0, &sCANFD_Config);
 

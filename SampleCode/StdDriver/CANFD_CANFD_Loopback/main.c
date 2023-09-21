@@ -140,6 +140,11 @@ void CANFD_CANFD_Loopback(void)
     sCANFD_Config.sBtConfig.bEnableLoopBack = TRUE;
     sCANFD_Config.sBtConfig.sNormBitRate.u32BitRate = 1000000;
     sCANFD_Config.sBtConfig.sDataBitRate.u32BitRate = 2000000;
+
+    SYS_UnlockReg();
+    SYS_ResetModule(CANFD0_RST);
+    SYS_LockReg();
+
     CANFD_Open(CANFD0, &sCANFD_Config);
 
     /* receive 0x110~0x11F in CAN FD0 rx fifo1 buffer by setting mask 0 */
