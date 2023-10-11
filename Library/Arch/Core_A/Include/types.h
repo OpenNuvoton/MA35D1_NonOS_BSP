@@ -19,6 +19,7 @@
 /* types.h is supposed to provide stdint and stddef defined in here: */
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -36,11 +37,6 @@ typedef int sint32;
 
 #define FALSE	0
 #define TRUE	1
-
-// ychuang
-typedef char  bool;
-#define false   0
-#define true    1
 
 /*
  * This may mean something else on architectures where the bits are numbered
