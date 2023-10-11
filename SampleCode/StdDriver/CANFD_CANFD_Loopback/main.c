@@ -35,6 +35,12 @@ void CANFD00_IRQHandler(void)
     /*Receive the Rx Fifo1 buffer */
     CANFD_ReadRxFifoMsg(CANFD0, 1, &g_sRxMsgFrame);
     g_u8RxFIFO1CompleteFlag = 1;
+
+    if(CANFD0->IR & CANFD_IR_BO_Msk)
+    {
+        CANFD_ClearStatusFlag(CANFD0, CANFD_IR_BO_Msk);
+        CANFD0->CCCR &= ~CANFD_CCCR_INIT_Msk;
+    }
 }
 
 void *_MemSet(void *s, int c, size_t count)

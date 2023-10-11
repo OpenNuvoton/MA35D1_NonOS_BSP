@@ -35,6 +35,12 @@ void CANFD00_IRQHandler(void)
     CANFD_ClearStatusFlag(CANFD0, CANFD_IR_TOO_Msk | CANFD_IR_RF0N_Msk);
     CANFD_ReadRxFifoMsg(CANFD0, 0, &g_sRxMsgFrame);
     g_u8RxFifo0CompleteFlag = 1;
+
+    if(CANFD0->IR & CANFD_IR_BO_Msk)
+    {
+        CANFD_ClearStatusFlag(CANFD0, CANFD_IR_BO_Msk);
+        CANFD0->CCCR &= ~CANFD_CCCR_INIT_Msk;
+    }
 }
 
 void *_MemSet(void *s, int c, size_t count)
