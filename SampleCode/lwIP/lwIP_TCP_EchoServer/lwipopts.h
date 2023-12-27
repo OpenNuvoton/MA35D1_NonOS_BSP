@@ -54,7 +54,7 @@
 #define LWIP_PROVIDE_ERRNO              1
 
 #ifdef GLOBAL_NOASSERT
-#define LWIP_NOASSERT
+    #define LWIP_NOASSERT
 #endif
 
 /* TCP Maximum segment size. */
@@ -65,7 +65,7 @@
 #define MEM_SIZE                        1600
 #define MEMP_NUM_PBUF                   32
 #define PBUF_POOL_SIZE                  64
-#define TCP_WND                         40960 //Max: 65535
+#define TCP_WND                         16384 //Max: 65535
 #define TCP_SND_BUF                     8192
 #define TCP_SND_QUEUELEN                (4 * TCP_SND_BUF/TCP_MSS)
 #define MEMP_NUM_TCP_SEG                64
