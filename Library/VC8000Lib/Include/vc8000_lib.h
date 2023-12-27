@@ -78,7 +78,7 @@ struct pp_params {
 	uint32_t pp_out_paddr;     /*!< PP output physical address */
 };                             /*!< VC8000 post-processing parameters */
 
-typedef void (VC8K_PP_CB)(void);    /*!< VC8000 PP done callback function \hideinitializer */
+typedef void (VC8K_H264Dec_CB)(void);    /*!< VC8000 H264 decode done callback function \hideinitializer */
 
 /*! @}*/ /* end of group VC8000_EXPORTED_STRUCTURES */
 
@@ -203,20 +203,20 @@ int VC8000_JPEG_Decode_Run(int handle, uint8_t *in, uint32_t in_size, uint8_t *o
 int VC8000_JPEG_Close_Instance(int handle);
 
 /**
-  * @brief    Install VC8000 PP callback function which will be called
-  *           from VC8000 PP done interrupt.
-  * @param[in]  func   The VC8000 PP callback function pointer.
+  * @brief    Install VC8000 H264 decode done callback function which will be called
+  *           on each H264 frame decode done.
+  * @param[in]  func   The VC8000 H264 decode done callback function pointer.
   * @retval   0     Success
   * @retval   < 0   Failed. Refer to error code definitions.
   */
-int32_t VC8000_InstallPPCallback(VC8K_PP_CB *func);
+int32_t VC8000_InstallH264DecCallback(VC8K_H264Dec_CB *func);
 
 /**
-  * @brief    Disable VC8000 PP callback function.
+  * @brief    Disable VC8000 H264 decode done callback function.
   * @retval   0     Success
   * @retval   < 0   Failed. Refer to error code definitions.
   */
-int32_t VC8000_DisablePPCallback(void);
+int32_t VC8000_DisableH264DecCallback(void);
 
 
 /*! @}*/ /* end of group VC8000_EXPORTED_FUNCTIONS */

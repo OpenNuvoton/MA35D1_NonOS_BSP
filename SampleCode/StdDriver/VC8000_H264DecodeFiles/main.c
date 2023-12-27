@@ -18,28 +18,22 @@
 #define LCD_WIDTH         1024
 #define LCD_HEIGHT        600
 #define DISP_BUFF_SIZE    (LCD_WIDTH * LCD_HEIGHT * 4 * 4)  /* 1024 x 600 RGB888 */
-#define DISP_BUFF_CNT     3
 
 #define jiffies           (EL0_GetCurrentPhysicalValue() / 12000)
 
 #define FRAME_RATE_CONTROL
-#define FRAME_RATE        25
+#define FRAME_RATE        30
 #define FRAME_INTERVAL    (1000 / FRAME_RATE)
 
-#define FRAME_BUFF_SIZE   0x100000
+#define STREAM_BUFF_SIZE  0x100000
 #define MIN_REMAIN        (256 * 1024)
 
-
-uint8_t  _DisplayBuff[DISP_BUFF_SIZE * DISP_BUFF_CNT] __attribute__((aligned(32)));
+uint8_t  _DisplayBuff[DISP_BUFF_SIZE] __attribute__((aligned(32)));
 uint8_t  _VC8000Buff[0x2000000] __attribute__((aligned(32)));  /* 32 MB */
-uint8_t  _FrameBuff[FRAME_BUFF_SIZE] __attribute__((aligned(32)));
+uint8_t  _StreamBuff[STREAM_BUFF_SIZE] __attribute__((aligned(32)));
 
-static volatile int  _disp_draw_idx = 0;       /* Index to the display buffer on drawing */
 static int _h264_handle;
 static struct pp_params _pp;
-
-static volatile int  _decode_cnt = 0;
-
 
 /* LCD attributes 1024x600 */
 DISP_LCD_INFO LcdPanelInfo =
@@ -211,19 +205,6 @@ DWORD get_fattime (void)
 	return tmr;
 }
 
-void vc8000_pp_callback(void)
-{
-	DISPLIB_SetFBAddr(ptr_to_u32(&_DisplayBuff[DISP_BUFF_SIZE *_disp_draw_idx]));
-	//DISPLIB_EnableOutput(eLayer_Video);
-
-	_disp_draw_idx = (_disp_draw_idx + 1) % DISP_BUFF_CNT;
-	_pp.pp_out_paddr =  ptr_to_u32(&_DisplayBuff[DISP_BUFF_SIZE *_disp_draw_idx]);
-	if (VC8000_H264_Update_PP(_h264_handle, &_pp) != 0)
-		sysprintf("VC8000_H264_Update_PP failed!\n");
-
-	_decode_cnt++;
-}
-
 static int is_h264_file(char *fname)
 {
 	int  slen = strlen(fname);
@@ -237,8 +218,10 @@ static int is_h264_file(char *fname)
 int do_h264_decode(char *fname, uint32_t fsize)
 {
 	FIL       hFile, *pFile = NULL;
-	int       data_len, next_frame_offs, remain, ret;
-	uint8_t   *frame_buff = nc_ptr(_FrameBuff);
+	int       remain, next_frame_offs, ret;
+	uint8_t   *stream_buff = nc_ptr(_StreamBuff);
+	int       frame_size, r;
+	int       decode_cnt;
 	uint32_t  play_len;
 	uint64_t  start_time, next_frame_time;
 	int       last_decode_cnt = 0;
@@ -267,14 +250,14 @@ int do_h264_decode(char *fname, uint32_t fsize)
 		goto err_out;
 	}
 
-	ret = f_read(pFile, frame_buff, FRAME_BUFF_SIZE, &data_len);
+	ret = f_read(pFile, stream_buff, STREAM_BUFF_SIZE, &remain);
 	if (ret != 0)
 	{
 		sysprintf("Read file failed! (%d)\n", ret);
 		goto err_out;
 	}
 
-	_decode_cnt = 0;
+	decode_cnt = 0;
 	play_len = 0;
 	next_frame_offs = 0;
 	start_time = jiffies;
@@ -282,57 +265,50 @@ int do_h264_decode(char *fname, uint32_t fsize)
 	{
 #ifdef FRAME_RATE_CONTROL
 		/* frame rate control */
-		while (jiffies - start_time < FRAME_INTERVAL * _decode_cnt);
+		while (jiffies - start_time < FRAME_INTERVAL * decode_cnt);
 #endif
-		ret = VC8000_H264_Decode_Run(_h264_handle, frame_buff + next_frame_offs, data_len, NULL, &remain);
+
+		r = 0;
+		ret = VC8000_H264_Decode_Run(_h264_handle, stream_buff + next_frame_offs, remain, NULL, &r);
 		if (ret != 0)
-		{
-			sysprintf("VC8000_H264_Decode_Run error: %d\n", ret);
 			break;
-		}
+
+		decode_cnt++;
+		next_frame_offs += (remain - r);
+		play_len += (remain - r);
+		remain = r;
 
 		if (jiffies - fps_check_jiffy >= 1000)
 		{
-			sysprintf("FPS: %d\n", _decode_cnt - last_decode_cnt);
-			last_decode_cnt = _decode_cnt;
+			sysprintf("[%d%c] FPS: %d\n", ((play_len/1024) * 100) / (fsize/1024), '%', decode_cnt - last_decode_cnt);
+			last_decode_cnt = decode_cnt;
 			fps_check_jiffy = jiffies;
 		}
 
-		play_len += (data_len - remain);
-		// sysprintf("[%d%c]\n", (play_len * 100) / fsize, '%');
 		// sysprintf("Decode done: %d / %d\n", remain, data_len);
-#if 0
+
 		if (sysIsKbHit())
 		{
 			sysgetchar();
 			break;
 		}
-#endif
 
-		if ((remain == 0) && (data_len > MIN_REMAIN))
-			sysprintf("Warning - large frame met. May have to enlarge MIN_REMAIN!\n");
-
-		if ((remain == 0) & f_eof(pFile))
+		if (remain == 0 && f_eof(pFile))
 			break;
 
 		if ((remain < MIN_REMAIN) && !f_eof(pFile))
 		{
 			if (remain > 0)
-				memcpy(frame_buff, frame_buff + next_frame_offs + (data_len - remain), remain);
+				memcpy(stream_buff, stream_buff + next_frame_offs, remain);
 
-			ret = f_read(pFile, frame_buff + remain, FRAME_BUFF_SIZE - MIN_REMAIN, &data_len);
+			ret = f_read(pFile, stream_buff + remain, STREAM_BUFF_SIZE - remain, &r);
 			if (ret != 0)
 			{
 				sysprintf("Read file error! (%d)\n", ret);
 				goto err_out;
 			}
-			data_len += remain;
+			remain += r;
 			next_frame_offs = 0;
-		}
-		else
-		{
-			next_frame_offs += (data_len - remain);
-			data_len = remain;
 		}
 	}
 	VC8000_H264_Close_Instance(_h264_handle);
@@ -436,8 +412,6 @@ int32_t main(void)
 	/* Start to display */
 	DISPLIB_EnableOutput(eLayer_Video);
 
-	_disp_draw_idx = 0;
-
 	sysprintf("Detecting USB disk...\n");
 	while (1)
 	{
@@ -475,7 +449,8 @@ int32_t main(void)
 	_pp.pp_out_dst = VC8000_PP_OUT_DST_USER;
 	_pp.pp_out_paddr =  ptr_to_u32(_DisplayBuff);
 
-	VC8000_InstallPPCallback(vc8000_pp_callback);
+	DISPLIB_SetFBAddr(ptr_to_u32(_DisplayBuff));
+
 	IRQ_SetTarget(VDE_IRQn, IRQ_CPU_0);
 
 	while (1)
