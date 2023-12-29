@@ -66,7 +66,7 @@ extern void (*mbedtls_test_hook_test_fail)( const char * test, int line, const c
  * Although structs defined in header files are publicly available,
  * their members are private and should not be accessed by the user.
  */
-#define MBEDTLS_ALLOW_PRIVATE_ACCESS
+//#define MBEDTLS_ALLOW_PRIVATE_ACCESS
 
 /** Byte Reading Macros
  *

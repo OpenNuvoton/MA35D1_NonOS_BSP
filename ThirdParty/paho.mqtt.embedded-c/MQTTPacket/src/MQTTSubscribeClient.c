@@ -86,7 +86,7 @@ exit:
 }
 
 
-
+extern void sysprintf(char * pcStr,...);
 /**
   * Deserializes the supplied (wire) buffer into suback data
   * @param packetid returned integer - the MQTT packet identifier
