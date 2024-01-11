@@ -177,6 +177,13 @@ void SystemInit0 (void)
 	/* Enable interrupts */
 	arm64_enable_int();
 
+#if (MA35D1_PMIC == PMIC_IP6103)
+	ma35d1_write_pmic(PMIC_DEVICE_ADDR, 0x27, 0x00);
+	ma35d1_write_pmic(PMIC_DEVICE_ADDR, 0x2e, 0x00);
+	ma35d1_write_pmic(PMIC_DEVICE_ADDR, 0x35, 0x00);
+	ma35d1_write_pmic(PMIC_DEVICE_ADDR, 0x3c, 0x00);
+#endif
+
 	/* set PMIC 1.25V */
 	ma35d1_write_pmic(PMIC_DEVICE_ADDR, PMIC_CPU_REG, PMIC_CPU_VOL_1_25);
 
