@@ -12,49 +12,41 @@ void AccessEBIWithPDMA(void);
 
 void Configure_EBI_16BIT_Pins(void)
 {
-    /* EBI CS0 pin on PG.1 */
-    SYS->GPG_MFPL |=SYS_GPG_MFPL_PG1MFP_EBI_nCS0;
-    /* EBI RD and WR pins on PG.6 and PG.7 */
-    SYS->GPG_MFPL |=SYS_GPG_MFPL_PG6MFP_EBI_nRD;
-    SYS->GPG_MFPL |=SYS_GPG_MFPL_PG7MFP_EBI_nWR;
-    /* EBI ALE pin on PB.9 */
-    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB9MFP_EBI_ALE;
-    /* EBI MCLK pin on PB.10 */
-    SYS->GPB_MFPH |=SYS_GPB_MFPH_PB10MFP_EBI_MCLK;
-    /* EBI WRL and WRH pins on PL.11 and PL.10 */
-    SYS->GPL_MFPH |=SYS_GPL_MFPH_PL11MFP_EBI_nWRL;
-    SYS->GPL_MFPH |=SYS_GPL_MFPH_PL10MFP_EBI_nWRH;
-
-    /* EBI AD0~4 pins on PG.11~15 */
-    SYS->GPG_MFPH |= SYS_GPG_MFPH_PG11MFP_EBI_AD0;
-    SYS->GPG_MFPH |= SYS_GPG_MFPH_PG12MFP_EBI_AD1;
-    SYS->GPG_MFPH |= SYS_GPG_MFPH_PG13MFP_EBI_AD2;
-    SYS->GPG_MFPH |= SYS_GPG_MFPH_PG14MFP_EBI_AD3;
-    SYS->GPG_MFPH |= SYS_GPG_MFPH_PG15MFP_EBI_AD4;
-
-    /* EBI AD5~8 pins on PL.6~9 */
-    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL6MFP_EBI_AD5;
+    /* EBI AD0 ~ AD15 pins */
+    SYS->GPK_MFPH |= SYS_GPK_MFPH_PK9MFP_EBI_AD0;
+    SYS->GPK_MFPH |= SYS_GPK_MFPH_PK10MFP_EBI_AD1;
+    SYS->GPK_MFPH |= SYS_GPK_MFPH_PK11MFP_EBI_AD2;
+    SYS->GPM_MFPL |= SYS_GPM_MFPL_PM0MFP_EBI_AD3;
+    SYS->GPM_MFPL |= SYS_GPM_MFPL_PM1MFP_EBI_AD4;
+    SYS->GPM_MFPL |= SYS_GPM_MFPL_PM2MFP_EBI_AD5;
     SYS->GPL_MFPL |= SYS_GPL_MFPL_PL7MFP_EBI_AD6;
     SYS->GPL_MFPH |= SYS_GPL_MFPH_PL8MFP_EBI_AD7;
     SYS->GPL_MFPH |= SYS_GPL_MFPH_PL9MFP_EBI_AD8;
+    SYS->GPA_MFPH |= SYS_GPA_MFPH_PA9MFP_EBI_AD9;
+    SYS->GPA_MFPH |= SYS_GPA_MFPH_PA10MFP_EBI_AD10;
+    SYS->GPA_MFPH |= SYS_GPA_MFPH_PA11MFP_EBI_AD11;
+    SYS->GPA_MFPH |= SYS_GPA_MFPH_PA12MFP_EBI_AD12;
+    SYS->GPA_MFPH |= SYS_GPA_MFPH_PA13MFP_EBI_AD13;
+    SYS->GPL_MFPH |= SYS_GPL_MFPH_PL15MFP_EBI_AD14;
+    SYS->GPK_MFPH |= SYS_GPK_MFPH_PK8MFP_EBI_AD15;
 
-    /* EBI AD9~10 pins on PD.10~11 */
-    SYS->GPD_MFPH |= SYS_GPD_MFPH_PD10MFP_EBI_AD9;
-    SYS->GPD_MFPH |= SYS_GPD_MFPH_PD11MFP_EBI_AD10;
-    /* EBI AD11~14 pin on PL.0~3 */
-    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL0MFP_EBI_AD11;
-    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL1MFP_EBI_AD12;
-    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL2MFP_EBI_AD13;
-    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL3MFP_EBI_AD14;
-    /* EBI AD15 pin on PG.0 */
-    SYS->GPG_MFPL |= SYS_GPG_MFPL_PG0MFP_EBI_AD15;
+    /* EBI ADDR16 ~ ADDR19 pins */
+    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB12MFP_EBI_ADR16;
+    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB13MFP_EBI_ADR17;
+    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB14MFP_EBI_ADR18;
+    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB15MFP_EBI_ADR19;
 
-    /* EBI ADR16~19 pins on PG.2~5 */
-    SYS->GPG_MFPL |= SYS_GPG_MFPL_PG2MFP_EBI_ADR16;
-    SYS->GPG_MFPL |= SYS_GPG_MFPL_PG3MFP_EBI_ADR17;
-    SYS->GPG_MFPL |= SYS_GPG_MFPL_PG4MFP_EBI_ADR18;
-    SYS->GPG_MFPL |= SYS_GPG_MFPL_PG5MFP_EBI_ADR19;
+    /* EBI ALE pin on PB.11 */
+    SYS->GPB_MFPH |= SYS_GPB_MFPH_PB11MFP_EBI_ALE;
+    /* EBI nCS0 pin on PJ.0 */
+    SYS->GPJ_MFPL |= SYS_GPJ_MFPL_PJ0MFP_EBI_nCS0;
 
+    /* EBI nWR and nRD pins on PL.5 and PL.4 */
+    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL4MFP_EBI_nRD;
+    SYS->GPL_MFPL |= SYS_GPL_MFPL_PL5MFP_EBI_nWR;
+
+    /* EBI WRL and WRH pins on PL.11 and PL.10 */
+    SYS->GPL_MFPH |= SYS_GPL_MFPH_PL11MFP_EBI_nWRL | SYS_GPL_MFPH_PL10MFP_EBI_nWRH;
 }
 
 void SYS_Init(void)
@@ -97,19 +89,19 @@ int main(void)
     sysprintf("********************************************************************\n");
     sysprintf("* Please connect IS61WV204816BLL to EBI bank0 before accessing !!  *\n");
     sysprintf("* EBI pins settings:                                               *\n");
-    sysprintf("*   - AD0  ~  AD4   on PG.11 ~ PG.15                               *\n");
-    sysprintf("*   - AD5  ~  AD8   on PL.6  ~ PL.9                                *\n");
-    sysprintf("*   - AD9  ~  AD10  on PD.10 ~ PD.11                               *\n");
-    sysprintf("*   - AD11  ~ AD14  on PL.0  ~ PL.3                                *\n");
-    sysprintf("*   - AD15          on PG.0                                        *\n");
-    sysprintf("*   - ADR16 ~ ADR19 on PG.2  ~ PG.5                                *\n");
-    sysprintf("*   - nWR  on PG.7                                                 *\n");
-    sysprintf("*   - nRD  on PG.6                                                 *\n");
+    sysprintf("*   - AD0  ~  AD2   on PK.9  ~ PK.11                               *\n");
+    sysprintf("*   - AD3  ~  AD5   on PM.0  ~ PM.2                                *\n");
+    sysprintf("*   - AD6  ~  AD8   on PL.7  ~ PL.9                                *\n");
+    sysprintf("*   - AD9   ~ AD13  on PA.9  ~ PA.13                               *\n");
+    sysprintf("*   - AD14          on PL.15                                       *\n");
+    sysprintf("*   - AD15          on PK.8                                        *\n");
+    sysprintf("*   - ADR16 ~ ADR19 on PB.12 ~ PB.15                               *\n");
+    sysprintf("*   - nWR  on PL.5                                                 *\n");
+    sysprintf("*   - nRD  on PL.4                                                 *\n");
     sysprintf("*   - nWRL on PL.11                                                *\n");
     sysprintf("*   - nWRH on PL.10                                                *\n");
-    sysprintf("*   - nCS0 on PG.1                                                 *\n");
-    sysprintf("*   - ALE  on PB.9                                                 *\n");
-    sysprintf("*   - MCLK on PB.10                                                *\n");
+    sysprintf("*   - nCS0 on PJ.0                                                 *\n");
+    sysprintf("*   - ALE  on PB.11                                                *\n");
     sysprintf("********************************************************************\n\n");
 
     /* Configure multi-function pins for EBI 16-bit application */
@@ -140,9 +132,16 @@ int main(void)
 /* Global variables for PDMA                                                                               */
 /*---------------------------------------------------------------------------------------------------------*/
 uint32_t PDMA_TEST_LENGTH = 64;
-uint32_t SrcArray[64];
-uint32_t DestArray[64];
-uint32_t volatile u32IsTestOver = 0;
+#ifdef __ICCARM__
+#pragma data_alignment=4
+uint8_t au8SrcArray[256];
+uint8_t au8DestArray[256];
+#else
+__attribute__((aligned(4))) uint8_t au8SrcArray[256];
+__attribute__((aligned(4))) uint8_t au8DestArray[256];
+#endif
+
+uint32_t volatile g_u32IsTestOver = 0;
 
 /**
  * @brief       DMA IRQ
@@ -157,16 +156,16 @@ void PDMA2_IRQHandler(void)
 {
     uint32_t status = PDMA_GET_INT_STATUS(PDMA2);
 
-    if(status & PDMA_INTSTS_ABTIF_Msk)    /* abort */
+    if(status & PDMA_INTSTS_ABTIF_Msk) /* abort */
     {
         if(PDMA_GET_ABORT_STS(PDMA2) & PDMA_ABTSTS_ABTIF2_Msk)
-            u32IsTestOver = 2;
+            g_u32IsTestOver = 2;
         PDMA_CLR_ABORT_FLAG(PDMA2, PDMA_ABTSTS_ABTIF2_Msk);
     }
-    else if(status & PDMA_INTSTS_TDIF_Msk)      /* done */
+    else if(status & PDMA_INTSTS_TDIF_Msk) /* done */
     {
         if(PDMA_GET_TD_STS(PDMA2) & PDMA_TDSTS_TDIF2_Msk)
-            u32IsTestOver = 1;
+            g_u32IsTestOver = 1;
         PDMA_CLR_TD_FLAG(PDMA2, PDMA_TDSTS_TDIF2_Msk);
     }
     else
@@ -177,60 +176,92 @@ void AccessEBIWithPDMA(void)
 {
     uint32_t i;
     uint32_t u32Result0 = 0x5A5A, u32Result1 = 0x5A5A;
+    uint8_t *ps=(uint8_t *)nc_addr64(nc_addr64(au8SrcArray));
+    uint32_t u32TimeOutCnt = 0;
 
     sysprintf("[[ Access EBI with PDMA ]]\n");
 
     /* Enable PDMA clock source */
     CLK_EnableModuleClock(PDMA2_MODULE);
 
-    for(i=0; i<64; i++)
+    for(i=0; i<256; i++)
     {
-        SrcArray[i] = 0x76570000 + i;
-        u32Result0 += SrcArray[i];
+        ps[i] = 0x76570000 + i;
+        u32Result0 += ps[i];
     }
 
     /* Open Channel 2 */
-    PDMA_Open(PDMA2, (1<<2));
+    PDMA_Open(PDMA2,1 << 2);
+    /* Transfer count is PDMA_TEST_LENGTH, transfer width is 32 bits(one word) */
+    PDMA_SetTransferCnt(PDMA2,2, PDMA_WIDTH_32, PDMA_TEST_LENGTH);
+    /* Set source address is au8SrcArray, destination address is au8DestArray, Source/Destination increment size is 32 bits(one word) */
+    PDMA_SetTransferAddr(PDMA2,2, ptr_to_u32(au8SrcArray), PDMA_SAR_INC, ptr_to_u32(EBI_BANK0_BASE_ADDR), PDMA_DAR_INC);
+    /* Request source is memory to memory */
+    PDMA_SetTransferMode(PDMA2,2, PDMA_MEM, FALSE, 0);
+    /* Transfer type is burst transfer and burst size is 4 */
+    PDMA_SetBurstType(PDMA2,2, PDMA_REQ_BURST, PDMA_BURST_4);
 
-    //burst size is 4
-    PDMA_SetBurstType(PDMA2, 2, PDMA_REQ_BURST, PDMA_BURST_4);
+    /* Enable interrupt */
+    PDMA_EnableInt(PDMA2,2, PDMA_INT_TRANS_DONE);
 
-    /* transfer width is one word(32 bit) */
-    PDMA_SetTransferCnt(PDMA2, 2, PDMA_WIDTH_32, PDMA_TEST_LENGTH);
-    PDMA_SetTransferAddr(PDMA2, 2, ptr_to_u32(SrcArray), PDMA_SAR_INC, EBI_BANK0_BASE_ADDR, PDMA_DAR_INC);
-    PDMA_SetTransferMode(PDMA2, 2, PDMA_MEM, FALSE, 0);
-
-    PDMA_EnableInt(PDMA2, 2, PDMA_INT_TRANS_DONE);
     /* Enable GIC for PDMA */
     IRQ_SetHandler((IRQn_ID_t)PDMA2_IRQn, PDMA2_IRQHandler);
+
+    /* Enable IRQ */
     IRQ_Enable ((IRQn_ID_t)PDMA2_IRQn);
 
-    u32IsTestOver = 0;
-    PDMA_Trigger(PDMA2, 2);
-    while(u32IsTestOver == 0);
+    g_u32IsTestOver = 0;
+
+    /* Generate a software request to trigger transfer with PDMA channel 2  */
+    PDMA_Trigger(PDMA2,2);
+
+    u32TimeOutCnt = SystemCoreClock; /* 1 second time-out */
+    while(g_u32IsTestOver == 0)
+    {
+        if(--u32TimeOutCnt == 0)
+        {
+            sysprintf("Wait for PDMA time-out!\n");
+            while(1);
+        }
+    }
     /* Transfer internal SRAM to EBI SRAM done */
 
     /* Clear internal SRAM data */
-    for(i=0; i<64; i++)
+    for(i = 0; i < 256; i++)
     {
-        SrcArray[i] = 0x0;
+        ps[i] = 0x0;
     }
 
     /* transfer width is one word(32 bit) */
-    PDMA_SetTransferCnt(PDMA2, 2, PDMA_WIDTH_32, PDMA_TEST_LENGTH);
-    PDMA_SetTransferAddr(PDMA2, 2, EBI_BANK0_BASE_ADDR, PDMA_SAR_INC, ptr_to_u32(SrcArray), PDMA_DAR_INC);
-    PDMA_SetTransferMode(PDMA2, 2, PDMA_MEM, FALSE, 0);
+    /* Transfer count is PDMA_TEST_LENGTH, transfer width is 32 bits(one word) */
+    PDMA_SetTransferCnt(PDMA2,2, PDMA_WIDTH_32, PDMA_TEST_LENGTH);
+    /* Set source address is au8SrcArray, destination address is au8DestArray, Source/Destination increment size is 32 bits(one word) */
+    PDMA_SetTransferAddr(PDMA2, 2, ptr_to_u32(EBI_BANK0_BASE_ADDR), PDMA_SAR_INC, ptr_to_u32(au8SrcArray), PDMA_DAR_INC);
+    /* Request source is memory to memory */
+    PDMA_SetTransferMode(PDMA2,2, PDMA_MEM, FALSE, 0);
 
-    u32IsTestOver = 0;
-    PDMA_Trigger(PDMA2, 2);
-    while(u32IsTestOver == 0);
-    /* Transfer EBI SRAM to internal SRAM done */
-    for(i=0; i<64; i++)
+    g_u32IsTestOver = 0;
+
+    /* Generate a software request to trigger transfer with PDMA channel 2  */
+    PDMA_Trigger(PDMA2,2);
+
+    u32TimeOutCnt = SystemCoreClock; /* 1 second time-out */
+    while(g_u32IsTestOver == 0)
     {
-        u32Result1 += SrcArray[i];
+        if(--u32TimeOutCnt == 0)
+        {
+            sysprintf("Wait for PDMA time-out!\n");
+            while(1);
+        }
     }
 
-    if(u32IsTestOver == 1)
+    /* Transfer EBI SRAM to internal SRAM done */
+    for(i = 0; i < 256; i++)
+    {
+        u32Result1 += ps[i];
+    }
+
+    if(g_u32IsTestOver == 1)
     {
         if((u32Result0 == u32Result1) && (u32Result0 != 0x5A5A))
         {
