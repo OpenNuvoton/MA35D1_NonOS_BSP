@@ -191,10 +191,6 @@ struct dwc2_udc {
 };
 
 /*---------------------- USB Device Controller -------------------------*/
-/**
-    @addtogroup USBD USB Device Controller(USBD)
-    Memory Mapped Structure for USBD Controller
-@{ */
 
 /* Device Logical IN Endpoint-Specific Registers */
 struct dwc2_dev_in_endp
@@ -363,5 +359,4 @@ int usb_recv(uint8_t *buf, uint32_t len);
 int usb_send(uint8_t *buf, uint32_t len);
 void SendAck(uint32_t status);
 
-/**@}*/ /* end of USBD register group */
 

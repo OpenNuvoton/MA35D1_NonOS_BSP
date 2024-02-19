@@ -23,6 +23,11 @@
 
 */
 
+/*---------------------- System Security Memory Configuration Controller -------------------------*/
+/** @addtogroup SSMCC System Security Memory Configuration Controller(SSMCC)
+    Memory Mapped Structure for SSMCC Controller
+@{ */
+
 typedef struct
 {
     /**
@@ -70,12 +75,6 @@ typedef struct
     __I  uint32_t RESERVE2[2];         /*!< [0x0018] */
 } REGION_T;
 
-/*---------------------- System Security Memory Configuration Controller -------------------------*/
-/**
-    @addtogroup SSMCC System Security Memory Configuration Controller(SSMCC)
-    Memory Mapped Structure for SSMCC Controller
-@{ */
-
 typedef struct
 {
 
@@ -104,8 +103,7 @@ typedef struct
 
 } SSMCC_T;
 
-/**
-    @addtogroup SSMCC_CONST SSMCC Bit Field Definition
+/** @addtogroup SSMCC_CONST SSMCC Bit Field Definition
     Constant Definitions for SSMCC Controller
 @{ */
 
@@ -799,8 +797,7 @@ typedef struct
 
 } TZC_T;
 
-/**
-    @addtogroup TZC_CONST TZC Bit Field Definition
+/** @addtogroup TZC_CONST TZC Bit Field Definition
     Constant Definitions for TZC Controller
 @{ */
 

@@ -4,7 +4,7 @@
  * @brief    KPI register definition header file
  *
  * SPDX-License-Identifier: Apache-2.0
- * @copyright (C) 20 Nuvoton Technology Corp. All rights reserved.
+ * @copyright (C) 2023 Nuvoton Technology Corp. All rights reserved.
  *****************************************************************************/
 #ifndef __KPI_REG_H__
 #define __KPI_REG_H__
@@ -17,8 +17,7 @@
    @{
 */
 
-/**
-    @addtogroup Keypad Interface (KPI)
+/** @addtogroup KPI Keypad Interface (KPI)
     Memory Mapped Structure for KPI Controller
 @{ */
 
@@ -301,8 +300,7 @@ typedef struct
 
 } KPI_T;
 
-/**
-    @addtogroup KPI_CONST KPI Bit Field Definition
+/** @addtogroup KPI_CONST KPI Bit Field Definition
     Constant Definitions for KPI Controller
 @{ */
 
@@ -398,6 +396,7 @@ typedef struct
 
 /**@}*/ /* KPI_CONST */
 /**@}*/ /* end of KPI register group */
+/**@}*/ /* end of REGISTER group */
 
 #if defined ( __CC_ARM   )
     #pragma no_anon_unions

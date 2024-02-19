@@ -12,10 +12,13 @@
     #pragma anon_unions
 #endif
 
-/**
-   @addtogroup REGISTER Control Register
+/** @addtogroup REGISTER Control Register
    @{
 */
+
+/** @addtogroup CLK System Clock Controller(CLK)
+    Memory Mapped Structure for CLK Controller
+@{ */
 
 typedef struct
 {
@@ -109,11 +112,6 @@ typedef struct
     __IO uint32_t RESERVE;           /*!< [0x000c] Reserved                                                         */
 
 } PLL_T;
-
-/**
-    @addtogroup CLK System Clock Controller(CLK)
-    Memory Mapped Structure for CLK Controller
-@{ */
 
 typedef struct
 {
@@ -1769,8 +1767,7 @@ typedef struct
 
 } CLK_T;
 
-/**
-    @addtogroup CLK_CONST CLK Bit Field Definition
+/** @addtogroup CLK_CONST CLK Bit Field Definition
     Constant Definitions for CLK Controller
 @{ */
 
