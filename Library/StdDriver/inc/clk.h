@@ -414,10 +414,10 @@ typedef enum
 #define LVRDB_MODULE     ((0UL<<29)|(0UL<<26)         |(0x1UL<<22)       |(3UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(3UL<<0))  /*!< LVRDB Module \hideinitializer */
 #define DDR0_MODULE      ((0UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(4UL<<0))  /*!< DDR0 Module \hideinitializer */
 #define DDR6_MODULE      ((0UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(5UL<<0))  /*!< DDR6 Module \hideinitializer */
-#define CANFD0_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(16UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(8UL<<0))  /*!< CANFD0 Module \hideinitializer */
-#define CANFD1_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(17UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(9UL<<0))  /*!< CANFD1 Module \hideinitializer */
-#define CANFD2_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(18UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(10UL<<0)) /*!< CANFD2 Module \hideinitializer */
-#define CANFD3_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(19UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(11UL<<0)) /*!< CANFD3 Module \hideinitializer */
+#define CANFD0_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(16UL<<17)        |(0UL<<14)         |(0x7UL<<10)       |(0UL<<5)         |(8UL<<0))  /*!< CANFD0 Module \hideinitializer */
+#define CANFD1_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(17UL<<17)        |(0UL<<14)         |(0x7UL<<10)       |(4UL<<5)         |(9UL<<0))  /*!< CANFD1 Module \hideinitializer */
+#define CANFD2_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(18UL<<17)        |(0UL<<14)         |(0x7UL<<10)       |(8UL<<5)         |(10UL<<0)) /*!< CANFD2 Module \hideinitializer */
+#define CANFD3_MODULE    ((0UL<<29)|(4UL<<26)         |(0x1UL<<22)       |(19UL<<17)        |(0UL<<14)         |(0x7UL<<10)       |(12UL<<5)        |(11UL<<0)) /*!< CANFD3 Module \hideinitializer */
 #define SD0_MODULE       ((0UL<<29)|(0UL<<26)         |(0x3UL<<22)       |(16UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(16UL<<0)) /*!< SD0 Module \hideinitializer */
 #define SD1_MODULE       ((0UL<<29)|(0UL<<26)         |(0x3UL<<22)       |(18UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(17UL<<0)) /*!< SD1 Module \hideinitializer */
 #define NAND_MODULE      ((0UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(18UL<<0)) /*!< NAND Module \hideinitializer */

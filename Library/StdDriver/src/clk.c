@@ -352,14 +352,14 @@ uint32_t CLK_GetPCLK3Freq(void)
   * |\ref I2S0_MODULE      |\ref CLK_CLKSEL4_I2S0SEL_SYSCLK1_DIV2   | x                         |
   * |\ref I2S1_MODULE      |\ref CLK_CLKSEL4_I2S1SEL_APLL           | x                         |
   * |\ref I2S1_MODULE      |\ref CLK_CLKSEL4_I2S1SEL_SYSCLK1_DIV2   | x                         |
-  * |\ref CANFD0_MODULE    |\ref CLK_CLKSEL4_CANFD0SEL_APLL         | x                         |
-  * |\ref CANFD0_MODULE    |\ref CLK_CLKSEL4_CANFD0SEL_VPLL         | x                         |
-  * |\ref CANFD1_MODULE    |\ref CLK_CLKSEL4_CANFD1SEL_APLL         | x                         |
-  * |\ref CANFD1_MODULE    |\ref CLK_CLKSEL4_CANFD1SEL_VPLL         | x                         |
-  * |\ref CANFD2_MODULE    |\ref CLK_CLKSEL4_CANFD2SEL_APLL         | x                         |
-  * |\ref CANFD2_MODULE    |\ref CLK_CLKSEL4_CANFD2SEL_VPLL         | x                         |
-  * |\ref CANFD3_MODULE    |\ref CLK_CLKSEL4_CANFD3SEL_APLL         | x                         |
-  * |\ref CANFD3_MODULE    |\ref CLK_CLKSEL4_CANFD3SEL_VPLL         | x                         |
+  * |\ref CANFD0_MODULE    |\ref CLK_CLKSEL4_CANFD0SEL_APLL         |\ref CLK_CLKDIV0_CANFD0(x) |
+  * |\ref CANFD0_MODULE    |\ref CLK_CLKSEL4_CANFD0SEL_VPLL         |\ref CLK_CLKDIV0_CANFD0(x) |
+  * |\ref CANFD1_MODULE    |\ref CLK_CLKSEL4_CANFD1SEL_APLL         |\ref CLK_CLKDIV0_CANFD1(x) |
+  * |\ref CANFD1_MODULE    |\ref CLK_CLKSEL4_CANFD1SEL_VPLL         |\ref CLK_CLKDIV0_CANFD1(x) |
+  * |\ref CANFD2_MODULE    |\ref CLK_CLKSEL4_CANFD2SEL_APLL         |\ref CLK_CLKDIV0_CANFD2(x) |
+  * |\ref CANFD2_MODULE    |\ref CLK_CLKSEL4_CANFD2SEL_VPLL         |\ref CLK_CLKDIV0_CANFD2(x) |
+  * |\ref CANFD3_MODULE    |\ref CLK_CLKSEL4_CANFD3SEL_APLL         |\ref CLK_CLKDIV0_CANFD3(x) |
+  * |\ref CANFD3_MODULE    |\ref CLK_CLKSEL4_CANFD3SEL_VPLL         |\ref CLK_CLKDIV0_CANFD3(x) |
   * |\ref CLKO_MODULE      |\ref CLK_CLKSEL4_CKOSEL_HXT             | x                         |
   * |\ref CLKO_MODULE      |\ref CLK_CLKSEL4_CKOSEL_LXT             | x                         |
   * |\ref CLKO_MODULE      |\ref CLK_CLKSEL4_CKOSEL_LIRC            | x                         |
