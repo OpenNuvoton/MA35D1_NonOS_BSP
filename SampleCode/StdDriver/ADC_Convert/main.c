@@ -34,7 +34,7 @@ void SYS_Init(void)
     CLK_EnableModuleClock(UART0_MODULE);
 
     /* Select IP clock source */
-    CLK_SetModuleClock(ADC_MODULE, 0, CLK_CLKDIV4_ADC(20));  // Set ADC clock rate to 9MHz
+    CLK_SetModuleClock(ADC_MODULE, 0, CLK_CLKDIV4_ADC(900));  // Set ADC clock rate to 200kHz
     CLK_SetModuleClock(UART0_MODULE, CLK_CLKSEL2_UART0SEL_HXT, CLK_CLKDIV1_UART0(1));
 
     /* Set PB.12 to input mode */
@@ -74,8 +74,8 @@ int32_t main (void)
     ADC_Open(ADC0, ADC_INPUT_MODE_NORMAL_CONV, ADC_HIGH_SPEED_MODE, ADC_CH_4_MASK);
 
     // Power on ADC
+    ADC0->CONF |= ADC_REFSEL_AVDD;
     ADC_POWER_ON(ADC0);
-
 
     // Enable ADC convert complete interrupt
     ADC_EnableInt(ADC0, ADC_IER_MIEN_Msk);
