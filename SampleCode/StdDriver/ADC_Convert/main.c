@@ -73,8 +73,14 @@ int32_t main (void)
     // Enable channel 0
     ADC_Open(ADC0, ADC_INPUT_MODE_NORMAL_CONV, ADC_HIGH_SPEED_MODE, ADC_CH_4_MASK);
 
-    // Power on ADC
+    /* We set ADC reference voltage to internal reference(AVDD) here.
+       If you would like to use ADC with external voltage reference,
+       connect ADC0 ch0 to the reference voltage (VREF). Please note
+       that ADC0 ch0 is designated for external reference voltage source,
+       and the conversion function is disabled for it in this mode. */
     ADC0->CONF |= ADC_REFSEL_AVDD;
+
+    // Power on ADC
     ADC_POWER_ON(ADC0);
 
     // Enable ADC convert complete interrupt
