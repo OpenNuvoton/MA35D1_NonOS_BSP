@@ -302,14 +302,14 @@ typedef enum
 /*---------------------------------------------------------------------------------------------------------*/
 /*  CLKDIV0 constant definitions.                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/
-#define CLK_CLKDIV0_CANFD0(x)              (((x) - 1UL) << CLK_CLKDIV0_CANFD0DIV_Pos) /*!< CLKDIV0 Setting for CANFD0 clock divider. It could be 1~8 \hideinitializer */
-#define CLK_CLKDIV0_CANFD1(x)              (((x) - 1UL) << CLK_CLKDIV0_CANFD1DIV_Pos) /*!< CLKDIV0 Setting for CANFD1 clock divider. It could be 1~8 \hideinitializer */
-#define CLK_CLKDIV0_CANFD2(x)              (((x) - 1UL) << CLK_CLKDIV0_CANFD2DIV_Pos) /*!< CLKDIV0 Setting for CANFD2 clock divider. It could be 1~8 \hideinitializer */
-#define CLK_CLKDIV0_CANFD3(x)              (((x) - 1UL) << CLK_CLKDIV0_CANFD3DIV_Pos) /*!< CLKDIV0 Setting for CANFD3 clock divider. It could be 1~8 \hideinitializer */
+#define CLK_CLKDIV0_CANFD0(x)              ((((x) >> 1UL) - 1UL) << CLK_CLKDIV0_CANFD0DIV_Pos) /*!< CLKDIV0 Setting for CANFD0 clock divider. It could be 2, 4, 6, ..., 16 \hideinitializer */
+#define CLK_CLKDIV0_CANFD1(x)              ((((x) >> 1UL) - 1UL) << CLK_CLKDIV0_CANFD1DIV_Pos) /*!< CLKDIV0 Setting for CANFD1 clock divider. It could be 2, 4, 6, ..., 16 \hideinitializer */
+#define CLK_CLKDIV0_CANFD2(x)              ((((x) >> 1UL) - 1UL) << CLK_CLKDIV0_CANFD2DIV_Pos) /*!< CLKDIV0 Setting for CANFD2 clock divider. It could be 2, 4, 6, ..., 16 \hideinitializer */
+#define CLK_CLKDIV0_CANFD3(x)              ((((x) >> 1UL) - 1UL) << CLK_CLKDIV0_CANFD3DIV_Pos) /*!< CLKDIV0 Setting for CANFD3 clock divider. It could be 2, 4, 6, ..., 16 \hideinitializer */
 #define CLK_CLKDIV0_GMAC1(x)               (((x) - 1UL) << CLK_CLKDIV0_GMAC1DIV_Pos)  /*!< CLKDIV0 Setting for GMAC1 clock divider. It could be 1~4 \hideinitializer */
 #define CLK_CLKDIV0_GMAC0(x)               (((x) - 1UL) << CLK_CLKDIV0_GMAC0DIV_Pos)  /*!< CLKDIV0 Setting for GMAC0 clock divider. It could be 1~4 \hideinitializer */
 #define CLK_CLKDIV0_ACLK0(x)               (((x) - 1UL) << CLK_CLKDIV0_ACLK0DIV_Pos)  /*!< CLKDIV0 Setting for ACLK0 clock divider. It could be 1~2 \hideinitializer */
-#define CLK_CLKDIV0_DCUP(x)                (((x) - 1UL) << CLK_CLKDIV0_DCUPDIV_Pos)   /*!< CLKDIV0 Setting for DCUP clock divider. It could be 1~8 \hideinitializer */
+#define CLK_CLKDIV0_DCUP(x)                ((((x) >> 1UL) - 1UL) << CLK_CLKDIV0_DCUPDIV_Pos)   /*!< CLKDIV0 Setting for DCUP clock divider. It could be 2, 4, 6, ..., 16 \hideinitializer */
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*  CLKDIV1 constant definitions.                                                                          */
@@ -391,7 +391,7 @@ typedef enum
 #define ROM_MODULE       ((1UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(10UL<<0)) /*!< ROM Module \hideinitializer */
 #define TRA_MODULE       ((1UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(11UL<<0)) /*!< TRA Module \hideinitializer */
 #define DBG_MODULE       ((1UL<<29)|(0UL<<26)         |(0x1UL<<22)       |(27UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(12UL<<0)) /*!< DBG Module \hideinitializer */
-#define CLKO_MODULE      ((1UL<<29)|(4UL<<26)         |(0xfUL<<22)       |(24UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(13UL<<0)) /*!< CLKO Module \hideinitializer */
+#define CLKO_MODULE      ((1UL<<29)|(4UL<<26)         |(0xFUL<<22)       |(24UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(13UL<<0)) /*!< CLKO Module \hideinitializer */
 #define GTMR_MODULE      ((1UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(14UL<<0)) /*!< GTMR Module \hideinitializer */
 #define GPA_MODULE       ((1UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(16UL<<0)) /*!< GPA Module \hideinitializer */
 #define GPB_MODULE       ((1UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(17UL<<0)) /*!< GPB Module \hideinitializer */
@@ -445,23 +445,23 @@ typedef enum
 #define TMR9_MODULE      ((2UL<<29)|(2UL<<26)         |(0x7UL<<22)       |(4UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(9UL<<0))  /*!< TMR9 Module \hideinitializer */
 #define TMR10_MODULE     ((2UL<<29)|(2UL<<26)         |(0x7UL<<22)       |(8UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(10UL<<0)) /*!< TMR10 Module \hideinitializer */
 #define TMR11_MODULE     ((2UL<<29)|(2UL<<26)         |(0x7UL<<22)       |(12UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(11UL<<0)) /*!< TMR11 Module \hideinitializer */
-#define UART0_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(16UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(12UL<<0)) /*!< UART0 Module \hideinitializer */
-#define UART1_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(18UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(13UL<<0)) /*!< UART1 Module \hideinitializer */
-#define UART2_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(20UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(14UL<<0)) /*!< UART2 Module \hideinitializer */
-#define UART3_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(22UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(15UL<<0)) /*!< UART3 Module \hideinitializer */
-#define UART4_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(24UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(16UL<<0)) /*!< UART4 Module \hideinitializer */
-#define UART5_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(26UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(17UL<<0)) /*!< UART5 Module \hideinitializer */
-#define UART6_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(28UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(18UL<<0)) /*!< UART6 Module \hideinitializer */
-#define UART7_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(30UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(19UL<<0)) /*!< UART7 Module \hideinitializer */
-#define UART8_MODULE     ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(0UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(20UL<<0)) /*!< UART8 Module \hideinitializer */
-#define UART9_MODULE     ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(2UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(21UL<<0)) /*!< UART9 Module \hideinitializer */
-#define UART10_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(4UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(22UL<<0)) /*!< UART10 Module \hideinitializer */
-#define UART11_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(6UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(23UL<<0)) /*!< UART11 Module \hideinitializer */
-#define UART12_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(8UL<<17)         |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(24UL<<0)) /*!< UART12 Module \hideinitializer */
-#define UART13_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(10UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(25UL<<0)) /*!< UART13 Module \hideinitializer */
-#define UART14_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(12UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(26UL<<0)) /*!< UART14 Module \hideinitializer */
-#define UART15_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(14UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(27UL<<0)) /*!< UART15 Module \hideinitializer */
-#define UART16_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(16UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(28UL<<0)) /*!< UART16 Module \hideinitializer */
+#define UART0_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(16UL<<17)        |(1UL<<14)         |(0xFUL<<10)       |(16UL<<5)        |(12UL<<0)) /*!< UART0 Module \hideinitializer */
+#define UART1_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(18UL<<17)        |(1UL<<14)         |(0xFUL<<10)       |(20UL<<5)        |(13UL<<0)) /*!< UART1 Module \hideinitializer */
+#define UART2_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(20UL<<17)        |(1UL<<14)         |(0xFUL<<10)       |(24UL<<5)        |(14UL<<0)) /*!< UART2 Module \hideinitializer */
+#define UART3_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(22UL<<17)        |(1UL<<14)         |(0xFUL<<10)       |(28UL<<5)        |(15UL<<0)) /*!< UART3 Module \hideinitializer */
+#define UART4_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(24UL<<17)        |(2UL<<14)         |(0xFUL<<10)       |(0UL<<5)         |(16UL<<0)) /*!< UART4 Module \hideinitializer */
+#define UART5_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(26UL<<17)        |(2UL<<14)         |(0xFUL<<10)       |(4UL<<5)         |(17UL<<0)) /*!< UART5 Module \hideinitializer */
+#define UART6_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(28UL<<17)        |(2UL<<14)         |(0xFUL<<10)       |(8UL<<5)         |(18UL<<0)) /*!< UART6 Module \hideinitializer */
+#define UART7_MODULE     ((2UL<<29)|(2UL<<26)         |(0x3UL<<22)       |(30UL<<17)        |(2UL<<14)         |(0xFUL<<10)       |(12UL<<5)        |(19UL<<0)) /*!< UART7 Module \hideinitializer */
+#define UART8_MODULE     ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(0UL<<17)         |(2UL<<14)         |(0xFUL<<10)       |(16UL<<5)        |(20UL<<0)) /*!< UART8 Module \hideinitializer */
+#define UART9_MODULE     ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(2UL<<17)         |(2UL<<14)         |(0xFUL<<10)       |(20UL<<5)        |(21UL<<0)) /*!< UART9 Module \hideinitializer */
+#define UART10_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(4UL<<17)         |(2UL<<14)         |(0xFUL<<10)       |(24UL<<5)        |(22UL<<0)) /*!< UART10 Module \hideinitializer */
+#define UART11_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(6UL<<17)         |(2UL<<14)         |(0xFUL<<10)       |(28UL<<5)        |(23UL<<0)) /*!< UART11 Module \hideinitializer */
+#define UART12_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(8UL<<17)         |(3UL<<14)         |(0xFUL<<10)       |(0UL<<5)         |(24UL<<0)) /*!< UART12 Module \hideinitializer */
+#define UART13_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(10UL<<17)        |(3UL<<14)         |(0xFUL<<10)       |(4UL<<5)         |(25UL<<0)) /*!< UART13 Module \hideinitializer */
+#define UART14_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(12UL<<17)        |(3UL<<14)         |(0xFUL<<10)       |(8UL<<5)         |(26UL<<0)) /*!< UART14 Module \hideinitializer */
+#define UART15_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(14UL<<17)        |(3UL<<14)         |(0xFUL<<10)       |(12UL<<5)        |(27UL<<0)) /*!< UART15 Module \hideinitializer */
+#define UART16_MODULE    ((2UL<<29)|(3UL<<26)         |(0x3UL<<22)       |(16UL<<17)        |(3UL<<14)         |(0xFUL<<10)       |(16UL<<5)        |(28UL<<0)) /*!< UART16 Module \hideinitializer */
 #define RTC_MODULE       ((2UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(29UL<<0)) /*!< RTC Module \hideinitializer */
 #define DDRP_MODULE      ((2UL<<29)|(MODULE_NoMsk<<26)|(MODULE_NoMsk<<22)|(MODULE_NoMsk<<17)|(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(30UL<<0)) /*!< DDRP Module \hideinitializer */
 #define KPI_MODULE       ((2UL<<29)|(4UL<<26)         |(1UL<<22)         |(30UL<<17)        |(MODULE_NoMsk<<14)|(MODULE_NoMsk<<10)|(MODULE_NoMsk<<5)|(31UL<<0)) /*!< KPI Module \hideinitializer */

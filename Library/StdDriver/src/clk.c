@@ -212,7 +212,6 @@ uint32_t CLK_GetPCLK3Freq(void)
   * |\ref DCU_MODULE       |\ref CLK_CLKSEL0_DCUSEL_EPLL_DIV2       | x                         |
   * |\ref DCU_MODULE       |\ref CLK_CLKSEL0_DCUSEL_SYSPLL          | x                         |
   * |\ref DCUP_MODULE      | x                                      |\ref CLK_CLKDIV0_DCUP(x)   |
-  * |\ref DCUP_MODULE      | x                                      |\ref CLK_CLKDIV0_DCUP(x)   |
   * |\ref GFX_MODULE       |\ref CLK_CLKSEL0_GFXSEL_SYSPLL          | x                         |
   * |\ref GFX_MODULE       |\ref CLK_CLKSEL0_GFXSEL_EPLL            | x                         |
   * |\ref TMR0_MODULE      |\ref CLK_CLKSEL1_TMR0SEL_HXT            | x                         |
