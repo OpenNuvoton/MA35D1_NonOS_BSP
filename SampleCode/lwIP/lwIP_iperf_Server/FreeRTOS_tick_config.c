@@ -64,6 +64,7 @@ void vConfigureTickInterrupt( void )
     /* Enable timer interrupt, connect to handler */
     TIMER_EnableInt(TIMER11);
     IRQ_SetHandler((IRQn_ID_t)TMR11_IRQn, FreeRTOS_Tick_Handler);
+    IRQ_SetTarget((IRQn_ID_t)TMR11_IRQn, IRQ_CPU_0);
     IRQ_Enable((IRQn_ID_t)TMR11_IRQn);
 
     vClearTickInterrupt();

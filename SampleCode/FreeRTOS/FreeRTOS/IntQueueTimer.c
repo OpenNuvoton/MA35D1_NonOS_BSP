@@ -120,6 +120,10 @@ void vInitialiseTimerForIntQueueTest( void )
     IRQ_SetHandler((IRQn_ID_t)TMR1_IRQn, TMR1_IRQHandler);
     IRQ_SetHandler((IRQn_ID_t)TMR2_IRQn, TMR2_IRQHandler);
 
+    IRQ_SetTarget((IRQn_ID_t)TMR0_IRQn, IRQ_CPU_0);
+    IRQ_SetTarget((IRQn_ID_t)TMR1_IRQn, IRQ_CPU_0);
+    IRQ_SetTarget((IRQn_ID_t)TMR2_IRQn, IRQ_CPU_0);
+
     IRQ_Enable((IRQn_ID_t)TMR0_IRQn);
     IRQ_Enable((IRQn_ID_t)TMR1_IRQn);
     IRQ_Enable((IRQn_ID_t)TMR2_IRQn);
