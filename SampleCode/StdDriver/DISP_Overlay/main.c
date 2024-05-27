@@ -136,11 +136,11 @@ void DISP_Open(void)
     /* Enable DISP Core Clock */
     CLK_EnableModuleClock(DCU_MODULE);
 
+    /* Select DISP Core Clock source */
+    CLK_SetModuleClock(DCU_MODULE, CLK_CLKSEL0_DCUSEL_EPLL_DIV2, 0);
+
     /* Select DISP pixel clock source to VPLL */
     DISP_GeneratePixelClk(LcdPanelInfo.sLcdTiming.u32PCF);
-
-    /* Select DISP pixel clock source */
-    CLK_SetModuleClock(DCUP_MODULE, CLK_CLKSEL0_DCUSEL_EPLL_DIV2, 0);
 
     /* Set multi-function pins for LCD Display Controller */
     SYS->GPG_MFPH = SYS->GPG_MFPH & ~(SYS_GPG_MFPH_PG8MFP_Msk | SYS_GPG_MFPH_PG9MFP_Msk | SYS_GPG_MFPH_PG10MFP_Msk) |

@@ -30,17 +30,53 @@ void DISP_EnableDCUClk(void)
 }
 
 /**
+  * @brief      Find a matching DISP pixel clock.
+  * @param[in]  u32PixClkInHz is the DISP pixel clock input frequency
+  * @return     DISP pixel Clock Divide Number.
+  */
+uint32_t DISP_FindPixelClk(uint32_t u32PixClkInHz)
+{
+    uint32_t ClkDivideFactor[] = {2, 4, 6, 8, 10, 12, 14, 16};
+    uint32_t FactorIdx, tmpFreq, u32PixClkDivfactor;
+    uint64_t u64PixClkOut;
+
+    for (FactorIdx = 0; FactorIdx < 8; FactorIdx++)
+    {
+        tmpFreq = u32PixClkInHz * ClkDivideFactor[FactorIdx];
+        if(tmpFreq < 85700000)
+            continue;
+        else
+        {
+            u32PixClkDivfactor = FactorIdx;
+            break;
+        }
+    }
+    u64PixClkOut = u32PixClkInHz*ClkDivideFactor[u32PixClkDivfactor];
+
+    /* Apply new divider */
+    CLK->CLKDIV0 = (CLK->CLKDIV0 & ~(CLK_CLKDIV0_DCUPDIV_Msk)) | (u32PixClkDivfactor << CLK_CLKDIV0_DCUPDIV_Pos);
+
+    //sysprintf("0x%08x, div [ %d ]: %d -> Target PixCLK: %ld Hz\n", CLK->CLKDIV0, u32PixClkDivfactor, ClkDivideFactor[u32PixClkDivfactor], u64PixClkOut);
+
+    return u32PixClkDivfactor;
+}
+
+/**
   * @brief      Generate VPLL frequency as DISP pixel clock.
   * @param[in]  u32PixClkInHz is the DISP pixel clock input frequency
   * @return     DISP pixel clock output frequency.
   */
 uint64_t DISP_GeneratePixelClk(uint32_t u32PixClkInHz)
 {
-    uint64_t u64PixClkOut;
+    uint64_t u64PixClkOut, u64PixClkTmp;
+    uint32_t u32PixClkDivfactor;
+    uint32_t ClkDivideFactor[] = {2, 4, 6, 8, 10, 12, 14, 16};
 
+    u32PixClkDivfactor = DISP_FindPixelClk(u32PixClkInHz);
     /* Set new VPLL clock frequency. */
-    u32PixClkInHz <<= 1U;
-    u64PixClkOut = CLK_SetPLLClockFreq(VPLL, PLL_OPMODE_INTEGER, __HXT, (uint64_t)u32PixClkInHz);
+    u64PixClkTmp = ClkDivideFactor[u32PixClkDivfactor] * u32PixClkInHz;
+    //sysprintf("0x%08x, div: %d -> VPLL: %ld Hz\n", CLK->CLKDIV0, u32PixClkDivfactor, u64PixClkTmp);
+    u64PixClkOut = CLK_SetPLLClockFreq(VPLL, PLL_OPMODE_INTEGER, __HXT, (uint64_t)u64PixClkTmp);
 
     /* Waiting clock ready */
     CLK_WaitClockReady(CLK_STATUS_STABLE_VPLL);
