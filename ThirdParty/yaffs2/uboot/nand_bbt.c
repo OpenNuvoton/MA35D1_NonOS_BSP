@@ -753,7 +753,8 @@ static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
 			len = (size_t)(numblocks >> sft);
 			len += offs;
 			/* Make it page aligned! */
-			//len = ALIGN(len, mtd->writesize);
+			pr_info("1. len %d, size %d\n", len, mtd->writesize);
+			len = ALIGN(len, mtd->writesize);
 			if (len < mtd->writesize)
 				len = mtd->writesize;
 			else
@@ -766,7 +767,8 @@ static int write_bbt(struct mtd_info *mtd, uint8_t *buf,
 			/* Calc length */
 			len = (size_t)(numblocks >> sft);
 			/* Make it page aligned! */
-			//len = ALIGN(len, mtd->writesize);
+			pr_info("2. len %d, size %d\n", len, mtd->writesize);
+			len = ALIGN(len, mtd->writesize);
             if (len < mtd->writesize)
                 len = mtd->writesize;
             else

@@ -403,7 +403,7 @@ int main()
 		/* Initial NAND */
         nfiOpen();
 
-		LoadNand(APP_OFFSET_SPINAND, APP_SIZE, APP_EXE_ADDR);
+		LoadNand(APP_OFFSET_NAND, APP_SIZE, APP_EXE_ADDR);
 		break;
 
     default:

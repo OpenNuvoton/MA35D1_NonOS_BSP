@@ -755,7 +755,6 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.bytes = nuvoton_nand_oob.eccbytes / nand->ecc.steps;
 	nand->ecc.total = nuvoton_nand_oob.eccbytes;
 
-    nand->options = 0;
     nand->bbt_options = (NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB);
 
     // Redundant area size

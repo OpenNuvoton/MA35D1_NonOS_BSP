@@ -4,12 +4,12 @@
 		{
 			"offset": "0x0",
 			"file": "conv/header.bin",
-			"type": 0
+			"type": 128
 		},
 		{
 			"offset": "0x80000",
             "file": "Loader/GCC/Release/Loader.bin",
-			"type": 0
+			"type": 128
 		},
 		{
 			"offset": "0xC0000",
