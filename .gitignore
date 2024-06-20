@@ -78,3 +78,4 @@ Samplecode/*/packages/
 !SampleCode/StdDriver/HWSEM_Signal/HWSEM_Signal_rtp.bin
 !SampleCode/OpenAMP/Share_Memory_SDRAM/share_memory_sdram.bin
 !SampleCode/OpenAMP/Share_Memory_SRAM/share_memory_demo.bin
+!SampleCode/StdDriver/SYS_LowPowerMode/pd1.bin
