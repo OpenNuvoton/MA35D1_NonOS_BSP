@@ -113,6 +113,7 @@ void Init_AXI_ports(void)
 	outp32(UMCTL2_BASE+0x800, 0x1);
 	outp32(UMCTL2_BASE+0x8b0, 0x1);
 	SYS->MISCFCR0 &= ~0x800000; /* DDR control register clock gating enable */
+	CLK->CLKSEL0 |= 0x4;
 }
 
 void SSMCC_SetRegion1(void)
