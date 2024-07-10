@@ -12,9 +12,11 @@
 #define DDR_ADR_FRAMEBUFFER   0x88000000UL
 
 //#define DISPLAY_ARGB8
-#define DISPLAY_RGB565
+//#define DISPLAY_RGB565
+//#define DISPLAY_YUV422
+#define DISPLAY_NV12
 
-extern uint32_t ImageARGB8DataBase, ImageARGB8DataLimit, ImageRGB565DataBase, ImageRGB565DataLimit;
+extern uint32_t ImageARGB8DataBase, ImageARGB8DataLimit, ImageRGB565DataBase, ImageRGB565DataLimit, ImageYUV422DataBase, ImageYUV422DataLimit, ImageNV12DataBase, ImageNV12DataLimit;
 
 /* LCD attributes 1024x600 */
 DISP_LCD_INFO LcdPanelInfo =
@@ -133,6 +135,12 @@ int main(void)
 #ifdef DISPLAY_RGB565
     sysprintf("|                Image format is RGB565                                  |\n");
 #endif
+#ifdef DISPLAY_YUV422
+    sysprintf("|                Image format is YUV422                                  |\n");
+#endif
+#ifdef DISPLAY_NV12
+    sysprintf("|                Image format is NV12                                    |\n");
+#endif
     sysprintf("+------------------------------------------------------------------------+\n");
 
     /* Configure display attributes of LCD panel */
@@ -154,6 +162,24 @@ int main(void)
 
     /* Configure DISP Framebuffer settings  */
     DISPLIB_SetFBConfig(eFBFmt_R5G6B5, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
+#endif
+
+#ifdef DISPLAY_YUV422
+    file_size = ptr_to_u32(&ImageYUV422DataLimit) - ptr_to_u32(&ImageYUV422DataBase);
+    /* Prepare DISP Framebuffer image */
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageYUV422DataBase)), file_size);
+
+    /* Configure DISP Framebuffer settings  */
+    DISPLIB_SetFBConfig(eFBFmt_YUY2, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
+#endif
+
+#ifdef DISPLAY_NV12
+    file_size = ptr_to_u32(&ImageNV12DataLimit) - ptr_to_u32(&ImageNV12DataBase);
+    /* Prepare DISP Framebuffer image */
+    memcpy((void *)(nc_ptr(DDR_ADR_FRAMEBUFFER)), (const void *)(nc_ptr(&ImageNV12DataBase)), file_size);
+
+    /* Configure DISP Framebuffer settings  */
+    DISPLIB_SetFBConfig(eFBFmt_NV12, LcdPanelInfo.u32ResolutionWidth, LcdPanelInfo.u32ResolutionHeight, DDR_ADR_FRAMEBUFFER);
 #endif
 
     /* Start to display */
