@@ -16,7 +16,7 @@
 
     .align  4
 Core1DataBase:
-    .incbin "../../pd1.bin"
+    .incbin "../../../pd1.bin"
 Core1DataLimit:
 
 

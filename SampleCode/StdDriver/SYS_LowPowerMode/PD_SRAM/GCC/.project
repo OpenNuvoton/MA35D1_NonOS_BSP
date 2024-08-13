@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>SYS_LowPowerMode</name>
+	<name>PD_SRAM</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -55,19 +55,109 @@
 			<locationURI>PARENT-4-PROJECT_LOC/Library/StdDriver/src</locationURI>
 		</link>
 		<link>
+			<name>User/src</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src</locationURI>
+		</link>
+		<link>
+			<name>Arch/Arch/mmu_MA35D1.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Device/Nuvoton/MA35D1/Source/mmu_MA35D1.c</locationURI>
+		</link>
+		<link>
+			<name>Arch/Arch/system_MA35D1.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Device/Nuvoton/MA35D1/Source/system_MA35D1.c</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/cache.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/cache.c</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/cpu.S</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/cpu.S</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/irq_ctrl_gic.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/irq_ctrl_gic.c</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/mmu.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/mmu.c</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/vector_sram.S</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/vector_sram.S</locationURI>
+		</link>
+		<link>
+			<name>Arch/Core_A/vectors.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/Arch/Core_A/Source/vectors.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/clk.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/clk.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/gpio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/gpio.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/pd.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/pd.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/pmic.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/pmic.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/ssmcc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/ssmcc.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/sys.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/sys.c</locationURI>
+		</link>
+		<link>
+			<name>Library/Library/timer.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Library/StdDriver/src/timer.c</locationURI>
+		</link>
+		<link>
+			<name>User/src/gcc_arm.ld</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/gcc_arm.ld</locationURI>
+		</link>
+		<link>
+			<name>User/src/retarget.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/src/retarget.c</locationURI>
+		</link>
+		<link>
 			<name>User/main.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/main.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/main.c</locationURI>
 		</link>
 		<link>
 			<name>User/image.S</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/image.S</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/image.S</locationURI>
 		</link>
 		<link>
 			<name>User/src</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/src</locationURI>
 		</link>
 	</linkedResources>
 	<filteredResources>
@@ -105,6 +195,15 @@
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-clk.c</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1678090332645</id>
+			<name>Library/Library</name>
+			<type>5</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-gpio.c</arguments>
 			</matcher>
 		</filter>
 		<filter>
