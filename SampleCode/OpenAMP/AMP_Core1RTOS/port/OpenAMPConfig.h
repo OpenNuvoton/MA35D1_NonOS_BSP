@@ -8,7 +8,7 @@
 *****************************************************************************/
 
 /* Configurable parameters */
-#define SHARED_RSC_TABLE       ( 0x8A000000UL )
+#define SHARED_RSC_TABLE       ( 0x84008000UL )
 #define SHARED_MEM_PA          ( SHARED_RSC_TABLE + SHARED_BUF_OFFSET )
 #define RING_TX                ( SHARED_MEM_PA )
 #define RING_TX_SIZE           ( 0x8000 )
