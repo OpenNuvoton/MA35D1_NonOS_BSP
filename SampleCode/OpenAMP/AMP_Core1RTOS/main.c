@@ -504,6 +504,14 @@ void vCmdTask( void *pvParameters )
                 case '3':
                     amp_destroy_ept(&amp_ept[c-'0']);
                     break;
+                case 'd':
+                    /* It is required before powering dowm. */
+                    IRQ_Disable((IRQn_ID_t)NonSecPhysicalTimer_IRQn);
+                    IRQ_Disable((IRQn_ID_t)RXIPI_IRQ_NUM);
+                    IRQ_Disable((IRQn_ID_t)TMR10_IRQn);
+                    sysprintf("Disabled IRQs for Core1.\n");
+                    __WFI();
+                    break;
                 case 'g':
                     ma35_rpmsg_get_buffer_size(&avail, &total);
                     sysprintf("Avail/Total shared memory: %d/%d bytes\n", avail, total);

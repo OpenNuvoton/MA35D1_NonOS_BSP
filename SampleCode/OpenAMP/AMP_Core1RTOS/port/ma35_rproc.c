@@ -151,17 +151,20 @@ void RxIPI_IRQHandler(void)
 
 	if(rsc_table->reserved[1] == IPI_CMD_REQUEST)
 	{
-		/* Get remap first */
-		rsc_table = get_resource_table(0, &rsc_size);
-		/* Copy resource table from local to shared momory */
-		memcpy((void *)resource_table_shmem, rsc_table, rsc_size);
-		rsc_table = (void *)resource_table_shmem;
-		ma35_desc_init(NULL);
+		if(!ma35_rpmsg_remote_ready())
+		{
+			/* Get remap first */
+			rsc_table = get_resource_table(0, &rsc_size);
+			/* Copy resource table from local to shared momory */
+			memcpy((void *)resource_table_shmem, rsc_table, rsc_size);
+			rsc_table = (void *)resource_table_shmem;
+			ma35_desc_init(NULL);
+		}
 		rsc_table->reserved[1] = 0;
 		rsc_table->reserved[0] = IPI_CMD_REPLY;
-		if(TIMER_GetIntFlag(RXIPI_BASE) == 1)
-    		TIMER_ClearIntFlag(RXIPI_BASE);
 		TIMER_Start(TXIPI_BASE);
+		if(TIMER_GetIntFlag(RXIPI_BASE) == 1)
+			TIMER_ClearIntFlag(RXIPI_BASE);
 		return;
 	}
 
@@ -694,6 +697,7 @@ static int ma35_request_tx_desc(struct rpmsg_endpoint *ept,
 
 	desc = ept_priv->pDesc;
 	desc->CMD = VRING_DESC_CMD_CLAIM;
+	desc->STS = 0;
 	strncpy(desc->ns, ept->name, NO_NAME_SERVICE);
 
 	return ret;

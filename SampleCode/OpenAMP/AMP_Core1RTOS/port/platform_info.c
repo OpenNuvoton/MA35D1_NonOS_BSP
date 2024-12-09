@@ -54,6 +54,10 @@ struct metal_device kick_device = {
 struct remoteproc_priv rproc_priv = {
 	.kick_dev_name = KICK_DEV_NAME,
 	.kick_dev_bus_name = KICK_BUS_NAME,
+	.desc_num = VRING_SIZE,
+	.desc_rxbuf = RING_RX_SIZE / VRING_SIZE,
+	.desc_txbuf = RING_TX_SIZE / VRING_SIZE,
+	.shmem_base = SHARED_RSC_TABLE,
 };
 
 /* processor operations from core1 to core0. It defines notification
