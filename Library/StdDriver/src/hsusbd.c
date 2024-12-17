@@ -31,6 +31,8 @@ HSUSBD_VENDOR_REQ g_hsusbd_pfnVendorRequest = NULL;
 HSUSBD_CLASS_REQ g_hsusbd_pfnClassRequest = NULL;
 HSUSBD_SET_INTERFACE_REQ g_hsusbd_pfnSetInterface = NULL;
 
+uint32_t g_u32EpStallLock = 0;       /*!< Bit map flag to lock specified EP when SET_FEATURE */
+
 static uint32_t g_hsusbd_UsbConfig = 0ul;
 static uint32_t g_hsusbd_UsbAltInterface = 0ul;
 
@@ -190,9 +192,9 @@ void HSUSBD_ProcessSetupPacket(void)
 	for (i=0; i<8; i++)
 		*(ptr+i) = *(uint8_t *)(nc_ptr(ddma_ep0_out[0].buf)+i);
 
-	sysprintf("bmRequestType = 0x%x(%s), bRequest = 0x%x, wLength = 0x%x, wValue = 0x%x, wIndex= 0x%x\n",
-			gUsbCmd.bmRequestType, (gUsbCmd.bmRequestType & 0x80) ? "IN" : "OUT", gUsbCmd.bRequest,
-					gUsbCmd.wLength, gUsbCmd.wValue, gUsbCmd.wIndex);
+	//sysprintf("bmRequestType = 0x%x(%s), bRequest = 0x%x, wLength = 0x%x, wValue = 0x%x, wIndex= 0x%x\n",
+	//		gUsbCmd.bmRequestType, (gUsbCmd.bmRequestType & 0x80) ? "IN" : "OUT", gUsbCmd.bRequest,
+	//				gUsbCmd.wLength, gUsbCmd.wValue, gUsbCmd.wIndex);
 
     /* USB device request in setup packet: offset 0, D[6..5]: 0=Standard, 1=Class, 2=Vendor, 3=Reserved */
     switch (gUsbCmd.bmRequestType & 0x60ul)
@@ -353,25 +355,22 @@ void HSUSBD_StandardRequest(void)
         switch (gUsbCmd.bRequest)
         {
         case GET_CONFIGURATION:
-        {
             /* Return current configuration setting */
             HSUSBD_PrepareCtrlIn((uint8_t *)&g_hsusbd_UsbConfig, 1ul);
             break;
-        }
+
         case GET_DESCRIPTOR:
-        {
             HSUSBD_GetDescriptor();
             break;
-        }
+
         case GET_INTERFACE:
-        {
             /* Return current interface setting */
             HSUSBD_PrepareCtrlIn((uint8_t *)&g_hsusbd_UsbAltInterface, 1ul);
             break;
-        }
+
         case GET_STATUS:
-        {
             /* Device */
+        	dcache_clean_invalidate_by_mva((uint8_t *)(uint64_t)g_hsusbd_buf, 2);
             if (gUsbCmd.bmRequestType == 0x80ul)
             {
                 uint8_t u8Tmp;
@@ -393,18 +392,15 @@ void HSUSBD_StandardRequest(void)
             /* Endpoint */
             else if (gUsbCmd.bmRequestType == 0x82ul)
             {
-                uint8_t ep = (uint8_t)(gUsbCmd.wIndex & 0xFul);
                 g_hsusbd_buf[0] = (uint8_t)HSUSBD_GetStall((uint32_t)gUsbCmd.wIndex);
             }
             g_hsusbd_buf[1] = (uint8_t)0ul;
             HSUSBD_PrepareCtrlIn(g_hsusbd_buf, 2ul);
             break;
-        }
+
         default:
-        {
             /* Setup error, stall the device */
         	HSUSBD_SetStall(EP0);
-        }
         }
     }
     else
@@ -413,18 +409,20 @@ void HSUSBD_StandardRequest(void)
         switch (gUsbCmd.bRequest)
         {
         case CLEAR_FEATURE:
-        {
             if ((gUsbCmd.wValue & 0xfful) == FEATURE_ENDPOINT_HALT)
             {
                 uint32_t epNum;
 
+                /* EP number stall is not allow to be clear in MSC class "Error Recovery Test".
+                   a flag: g_u32EpStallLock is added to support it */
                 epNum = (uint32_t)(gUsbCmd.wIndex & 0xFul);
                 if (epNum == 0)
                 {
                 	HSUSBD_SetStall(gUsbCmd.wIndex);
                 	return;
                 }
-                HSUSBD_ClearStall(gUsbCmd.wIndex);
+                if ((g_u32EpStallLock & epNum) == 0)
+                	HSUSBD_ClearStall(gUsbCmd.wIndex);
             }
             else if ((gUsbCmd.wValue & 0xfful) == FEATURE_DEVICE_REMOTE_WAKEUP)
             {
@@ -432,28 +430,25 @@ void HSUSBD_StandardRequest(void)
             }
         	HSUSBD_EP0_SendZero();
             break;
-        }
+
         case SET_ADDRESS:
-        {
         	if (gUsbCmd.bmRequestType != 0)	/* standard request, RECIP: device */
         		break;
         	HSUSBD_SET_ADDR(gUsbCmd.wValue);
         	HSUSBD_EP0_SendZero();
             break;
-        }
+
         case SET_CONFIGURATION:
-        {
         	ptr = (uint8_t *)((uint64_t)(&g_hsusbd_UsbConfig)|NON_CACHE);
         	if (gUsbCmd.bmRequestType == 0)	/* RECIP: device */
         		g_u8ResetAvailable = 1;
         	*ptr = g_hsusbd_UsbConfig = (uint8_t)gUsbCmd.wValue;
             g_hsusbd_Configured = (uint8_t)1ul;
         	HSUSBD_EP0_SendZero();
-            break;
-        }
+        	break;
+
         case SET_FEATURE:
-        {
-            if (gUsbCmd.wValue == FEATURE_ENDPOINT_HALT)
+        	if (gUsbCmd.wValue == FEATURE_ENDPOINT_HALT)
             {
                 uint32_t idx;
                 idx = (uint32_t)(gUsbCmd.wIndex & 0xFul);
@@ -461,7 +456,7 @@ void HSUSBD_StandardRequest(void)
                 if (idx == 0)
                 	return;
             }
-            if ((gUsbCmd.wValue & 0x3ul) == 2ul)    /* TEST_MODE */
+        	if ((gUsbCmd.wValue & 0x3ul) == 2ul)    /* TEST_MODE */
             {
                 g_hsusbd_EnableTestMode = (uint8_t)1ul;
                 g_hsusbd_TestSelector = (uint8_t)(gUsbCmd.wIndex >> 8);
@@ -472,9 +467,8 @@ void HSUSBD_StandardRequest(void)
             }
         	HSUSBD_EP0_SendZero();
             break;
-        }
+
         case SET_INTERFACE:
-        {
         	ptr = (uint8_t *)((uint64_t)(&g_hsusbd_UsbAltInterface)|NON_CACHE);
 
         	if (gUsbCmd.bmRequestType == 0x1)	/* RECIP: interface */
@@ -487,12 +481,10 @@ void HSUSBD_StandardRequest(void)
             }
         	HSUSBD_EP0_SendZero();
             break;
-        }
+
         default:
-        {
             /* Setup error, stall the device */
         	HSUSBD_SetStall(EP0);
-        }
         }
     }
 }

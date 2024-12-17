@@ -91,7 +91,7 @@ int32_t main (void)
 
     while(1)
     {
-        if (g_u8MscStart)
+        if (g_hsusbd_Configured)
             MSC_ProcessCmd();
     }
 }

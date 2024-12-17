@@ -14,6 +14,7 @@
 
 /* Define sector size */
 #define USBD_SECTOR_SIZE    512
+#define USBD_MAX_LEN		32768
 
 /* Define EP maximum packet size */
 #define EP0_MAX_PKT_SIZE        64
@@ -49,7 +50,10 @@
 #define UFI_READ_FORMAT_CAPACITY                0x23
 #define UFI_READ_CAPACITY                       0x25
 #define UFI_READ_10                             0x28
+#define UFI_READ_12                             0xA8
+#define UFI_READ_16                             0x9E
 #define UFI_WRITE_10                            0x2A
+#define UFI_WRITE_12                            0xAA
 #define UFI_VERIFY_10                           0x2F
 #define UFI_MODE_SELECT_10                      0x55
 #define UFI_MODE_SENSE_10                       0x5A
@@ -106,10 +110,10 @@ void MSC_ReadFormatCapacity(void);
 void MSC_ReadCapacity(void);
 void MSC_ModeSense10(void);
 void MSC_ProcessCmd(void);
-void MSC_AckCmd(uint32_t u32Residue);
+void MSC_AckCmd(void);
 void MSC_BulkOut(uint8_t *u8Buf, uint32_t u32Len);
 void MSC_BulkIn(uint8_t *u8Buf, uint32_t u32Len);
-void MSC_ReceiveCBW(uint8_t *u8Buf);
+void MSC_ReceiveCBW(uint8_t *u8Buf, uint32_t *u32Len);
 
 void MSC_ReadMedia(uint32_t addr, uint32_t size, uint8_t *buffer);
 void MSC_WriteMedia(uint32_t addr, uint32_t size, uint8_t *buffer);
