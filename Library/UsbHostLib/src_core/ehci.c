@@ -1015,7 +1015,7 @@ void EHCI_IRQHandler(void)
 
 	if (intsts & HSUSBH_USTSR_UERRINT_Msk)
 	{
-		USB_error("Transfer error!\n");
+		// USB_error("Transfer error!\n");
 	}
 
 	if (intsts & HSUSBH_USTSR_USBINT_Msk)
@@ -1103,7 +1103,7 @@ static int ehci_rh_polling(void)
 		/*  connect status change                                                             */
 		/*------------------------------------------------------------------------------------*/
 
-		USB_debug("EHCI port1 status change: 0x%x\n", _ehci->UPSCR[i]);
+		// USB_debug("EHCI port1 status change: 0x%x\n", _ehci->UPSCR[i]);
 
 		/*--------------------------------------------------------------------------------*/
 		/*  Disconnect the devices attached to this port.                                 */
