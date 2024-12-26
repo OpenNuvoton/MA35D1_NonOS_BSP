@@ -8,12 +8,12 @@
 *****************************************************************************/
 
 /* Configurable parameters */
-#define SHARED_RSC_TABLE       ( 0x84008000UL )
+#define SHARED_RSC_TABLE       ( 0x84000000UL )
 #define SHARED_MEM_PA          ( SHARED_RSC_TABLE + SHARED_BUF_OFFSET )
 #define RING_TX                ( SHARED_MEM_PA )
-#define RING_TX_SIZE           ( 0x8000 )
+#define RING_TX_SIZE           ( 0x4000 )
 #define RING_RX                ( RING_TX + RING_TX_SIZE )
-#define RING_RX_SIZE           ( 0x8000 )
+#define RING_RX_SIZE           ( 0x4000 )
 #define SHARED_MEM_SIZE        ( RING_TX_SIZE + RING_RX_SIZE )
 #define NO_NAME_SERVICE        ( 32 ) /* Number of char supported by ns (must be aligned with word) */
 

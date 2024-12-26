@@ -553,7 +553,7 @@ int main(void)
 
     SYS_Init();
 
-    sysprintf("\n\nMA35D1 AMP core#1 demo\n");
+    sysprintf("\n\nMA35D1 AMP Core#1 demo\n");
     sysprintf("Please refer to source code for detailed command info.\n\n");
     fflush(stdout);
 

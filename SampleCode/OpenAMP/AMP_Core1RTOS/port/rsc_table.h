@@ -44,14 +44,14 @@ extern "C" {
 #define IPI_CMD_MODIFY         0x20
 #define IPI_CMD_UPDATE         0x22
 
-#define RXBUF_QUEUE_SIZE       ( 15 ) /* If the heap size is insufficient, try reducing the queue size */
+#define RXBUF_QUEUE_SIZE       ( 7 ) /* If the heap size is insufficient, try reducing the queue size */
 #define RXBUF_POOL_SIZE        ( RXBUF_QUEUE_SIZE + 1 )
 #define BINDING_SLEEP_MS       ( 500 )
 #define QUEUE_WAIT_TICK        ( 0 ) // waiting time if blocked
-#define VRING_SIZE             16 /* Number of desc supported by this vring (must be power of two) */
+#define VRING_SIZE             8 /* Number of desc supported by this vring (must be power of two) */
 
 /* Not configurable */
-#define KICK_DEV_ID    0
+#define KICK_DEV_ID            0
 #define NO_RESOURCE_ENTRIES    8
 #define VRING_ALIGN            0x80
 #define SHARED_BUF_OFFSET      sizeof(struct remote_resource_table) /* Reserved region for resource table */
@@ -59,7 +59,7 @@ extern "C" {
 /* Unused */
 #define KICK_DEV_NAME          "poll_dev"
 #define KICK_BUS_NAME          "generic"
-#define POLL_BASE_ADDR         WRHO0_BASE
+#define POLL_BASE_ADDR         TMR89_BASE
 #define POLL_STOP              0x1U
 
 /* A35 memory attributes */

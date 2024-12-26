@@ -48,7 +48,7 @@ struct metal_device kick_device = {
 	},
 	.node = {NULL},
 	.irq_num = 1,
-	.irq_info = (void *)WRHO0_IRQn,
+	.irq_info = (void *)TMR8_IRQn,
 };
 
 struct remoteproc_priv rproc_priv = {

@@ -149,6 +149,9 @@ void RxIPI_IRQHandler(void)
 	struct rpmsg_endpoint_priv *ept_priv;
 	struct rsc_table_desc *desc;
 
+	if(TIMER_GetIntFlag(RXIPI_BASE) == 1)
+		TIMER_ClearIntFlag(RXIPI_BASE);
+
 	if(rsc_table->reserved[1] == IPI_CMD_REQUEST)
 	{
 		if(!ma35_rpmsg_remote_ready())
@@ -163,8 +166,6 @@ void RxIPI_IRQHandler(void)
 		rsc_table->reserved[1] = 0;
 		rsc_table->reserved[0] = IPI_CMD_REPLY;
 		TIMER_Start(TXIPI_BASE);
-		if(TIMER_GetIntFlag(RXIPI_BASE) == 1)
-			TIMER_ClearIntFlag(RXIPI_BASE);
 		return;
 	}
 
@@ -192,15 +193,12 @@ void RxIPI_IRQHandler(void)
 			}
 		}
 	}
-
-    if(TIMER_GetIntFlag(RXIPI_BASE) == 1)
-    	TIMER_ClearIntFlag(RXIPI_BASE);
 }
 
 // Use timer to generate INT to remote
 static int ma35_notify_remote(struct metal_io_region *io_resion, uint32_t id)
 {
-	(void *)io_resion;
+	(void)io_resion;
 	(void)id;
 
 	/* check remote ready before send notification */
@@ -300,7 +298,7 @@ static uint8_t ma35_rpmsg_retrieve_status(struct rpmsg_endpoint_priv *ept_priv)
 	if(desc)
 		return desc->STS;
 	else
-		return -1;
+		return ~0;
 }
 
 static int ma35_rpmsg_receive_status(struct rpmsg_endpoint_priv *ept_priv, uint8_t sts)
@@ -401,6 +399,7 @@ static int ma35_rpmsg_send_offchannel_raw(struct rpmsg_endpoint *ept, uint32_t s
 	metal_mutex_acquire(&ept_priv->lock);
 
 	ma35_rpmsg_desc_reset(ept);
+	desc->STS = VRING_DESC_CMD_HEAD; // mark writting
 
 	for(i = 0, res = len; i < len; i += rproc_priv.desc_txbuf, res -= rproc_priv.desc_txbuf)
 	{
@@ -1045,7 +1044,7 @@ int ma35_rpmsg_init_vdev(struct rpmsg_virtio_device *rvdev,
 
 	metal_list_init(&rdev->endpoints);
 
-	rdev->support_ns = &(rsc_table->rpmsg_vdev).dfeatures;
+	rdev->support_ns = (rsc_table->rpmsg_vdev).dfeatures;
 
 	rvdev->shbuf_io = shm_io;
 	rvdev->shpool = shpool;
@@ -1066,9 +1065,10 @@ int ma35_rpmsg_init_vdev(struct rpmsg_virtio_device *rvdev,
 	memset(rproc_priv.kick_ept, 0, sizeof(void *) * rproc_priv.desc_num);
 
 	// Give a head and never be used
-	Node dummy;
-	dummy.rpmsg_ept = dummy.next = NULL;
-	rproc_priv.head_ept = &dummy;
+	Node *dummy;
+	dummy = (Node *)metal_allocate_memory(sizeof(Node));
+	dummy->rpmsg_ept = dummy->next = NULL;
+	rproc_priv.head_ept = dummy;
 	xTaskCreate(vBindingTask, "BindingTask", configMINIMAL_STACK_SIZE,
 				rproc_priv.head_ept, tskIDLE_PRIORITY + 1, NULL);
 

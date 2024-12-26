@@ -135,13 +135,6 @@ is set to 1. */
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE()
 
-/* The size of the global output buffer that is available for use when there
-are multiple command interpreters running at once (for example, one on a UART
-and one on TCP/IP).  This is done to prevent an output buffer being defined by
-each implementation - which would waste RAM.  In this case, there is only one
-command interpreter running. */
-#define configCOMMAND_INT_MAX_OUTPUT_SIZE 2096
-
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
 void vMainAssertCalled( const char *pcFileName, uint32_t ulLineNumber );

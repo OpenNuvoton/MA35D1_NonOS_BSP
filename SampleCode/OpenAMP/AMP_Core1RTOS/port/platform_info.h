@@ -68,7 +68,7 @@ struct rpmsg_endpoint_priv {
 	// rx
     void *bind_desc; // pointer to rx desc
 	unsigned int bind_id; // index of kickept
-	atomic_int kicked; // abort
+	// atomic_int kicked; // abort
 	//void *rxbuf; // buffer copied from shared memory
 	QueueHandle_t xQueue;
 	uint8_t cmd; // save CMD
