@@ -23,6 +23,9 @@
 #define LCD_WIDTH           1024
 #define LCD_HEIGHT          600
 
+#define PP_OUT_W_ROTATE     336
+#define PP_OUT_H_ROTATE     600
+
 #define SCALING_STEP_MAX    10
 
 uint8_t  _DisplayBuff[LCD_WIDTH * LCD_HEIGHT * 4 * 4] __attribute__((aligned(32)));  /* 1024 x 600 RGB888 */
@@ -520,34 +523,63 @@ int main(void)
 
             case 'R':
             case 'r':
+                pp.img_out_x = 0;
+                pp.img_out_y = 0;
+                scaling_step = 0;
                 switch (pp.rotation)
                 {
                     case VC8000_PP_ROTATION_NONE:
+                        pp.rotation = VC8000_PP_ROTATION_RIGHT_90;
+                        pp.img_out_w = PP_OUT_W_ROTATE;
+                        pp.img_out_h = PP_OUT_H_ROTATE;
+                        break;
+
+                    case VC8000_PP_ROTATION_RIGHT_90:
+                        pp.rotation = VC8000_PP_ROTATION_LEFT_90;
+                        pp.img_out_w = PP_OUT_W_ROTATE;
+                        pp.img_out_h = PP_OUT_H_ROTATE;
+                        break;
+
+                    case VC8000_PP_ROTATION_LEFT_90:
                         pp.rotation = VC8000_PP_ROTATION_HOR_FLIP;
+                        pp.img_out_w = LCD_WIDTH;
+                        pp.img_out_h = LCD_HEIGHT;
                         break;
 
                     case VC8000_PP_ROTATION_HOR_FLIP:
                         pp.rotation = VC8000_PP_ROTATION_VER_FLIP;
+                        pp.img_out_w = LCD_WIDTH;
+                        pp.img_out_h = LCD_HEIGHT;
                         break;
 
                     case VC8000_PP_ROTATION_VER_FLIP:
                         pp.rotation = VC8000_PP_ROTATION_180;
+                        pp.img_out_w = LCD_WIDTH;
+                        pp.img_out_h = LCD_HEIGHT;
                         break;
 
                     case VC8000_PP_ROTATION_180:
                         pp.rotation = VC8000_PP_ROTATION_NONE;
+                        pp.img_out_w = LCD_WIDTH;
+                        pp.img_out_h = LCD_HEIGHT;
                         break;
                 }
-                sysprintf("Roration: %d\n", pp.rotation);
+                // memset(nc_ptr(_DisplayBuff), 0x0, LCD_WIDTH * LCD_HEIGHT * 4);
                 break;
 
             case 'S':
             case 's':
+                if (pp.rotation != VC8000_PP_ROTATION_NONE)
+                {
+                    sysprintf("This demo program only allows scaling to be performed when rotation is not applied.\n");
+                    break;
+                }
                 pp.img_out_x = (LCD_WIDTH * 5 / 100) * scaling_step / 2;
                 pp.img_out_y = (LCD_HEIGHT * 5 / 100) * scaling_step / 2;
                 pp.img_out_w = LCD_WIDTH - pp.img_out_x * 2;
                 pp.img_out_h = LCD_HEIGHT - pp.img_out_y * 2;
                 scaling_step = (scaling_step + 1) % SCALING_STEP_MAX;
+                // memset(nc_ptr(_DisplayBuff), 0x0, LCD_WIDTH * LCD_HEIGHT * 4);
                 break;
 
             default:
