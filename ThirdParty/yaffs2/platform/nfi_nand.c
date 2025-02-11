@@ -644,8 +644,18 @@ static int nuvoton_nand_read_oob_hwecc(struct mtd_info *mtd, struct nand_chip *c
     // Second, copy OOB data to SMRA for page read
     memcpy((void*)ptr, (void*)chip->oob_poi, mtd->oobsize);
 
-	if ((*(ptr+2) != 0) && (*(ptr+3) != 0))
-		memset((void *)chip->oob_poi, 0xff, mtd->oobsize);
+	//if ((*(ptr+2) != 0) && (*(ptr+3) != 0))
+	//	memset((void *)chip->oob_poi, 0xff, mtd->oobsize);
+
+	return 0;
+}
+
+static int nuvoton_nand_write_oob(struct mtd_info *mtd, struct nand_chip *chip, int page)
+{
+	nuvoton_nand_command(mtd, NAND_CMD_SEQIN, mtd->writesize, page);
+    nuvoton_nand_write_buf(mtd, chip->oob_poi, mtd->oobsize);
+	nuvoton_nand_command(mtd, NAND_CMD_PAGEPROG, -1, -1);
+	nuvoton_waitfunc(mtd, chip);
 
 	return 0;
 }
@@ -688,6 +698,7 @@ int board_nand_init(struct nand_chip *nand)
     nand->ecc.write_page = nuvoton_nand_write_page_hwecc;
     nand->ecc.read_page  = nuvoton_nand_read_page_hwecc_oob_first;
     nand->ecc.read_oob   = nuvoton_nand_read_oob_hwecc;
+    nand->ecc.write_oob  = nuvoton_nand_write_oob;
     nand->ecc.layout     = &nuvoton_nand_oob;
 	nand->ecc.write_page_raw = nuvoton_nand_write_page_raw;
 	nand->ecc.read_page_raw  = nuvoton_nand_read_page_raw;
