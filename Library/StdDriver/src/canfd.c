@@ -1075,14 +1075,17 @@ uint32_t CANFD_TransmitDMsg(CANFD_T *psCanfd, uint32_t u32TxBufIdx, CANFD_FD_MSG
         psTxBuffer->au32Data[u32Idx] = psTxMsg->au32Data[u32Idx];
     }
 
-    /* Wait for CAN communication status to be idle */
-    while(CANFD_GET_COMMUNICATION_STATE(psCanfd) != eCANFD_IDLE)
+    if((inpw(ptr_to_u32(SYS_BASE + 0x1F0)) & (0xf000000)) == 0x0)
     {
-        if (u32TimeOutCount == 0)
+        /* Wait for CAN communication status to be idle */
+        while(CANFD_GET_COMMUNICATION_STATE(psCanfd) != eCANFD_IDLE)
         {
-          return 0;
+            if (u32TimeOutCount == 0)
+            {
+                return 0;
+            }
+            u32TimeOutCount--;
         }
-         u32TimeOutCount--;
     }
 
     psCanfd->TXBAR = (1 << u32TxBufIdx);
