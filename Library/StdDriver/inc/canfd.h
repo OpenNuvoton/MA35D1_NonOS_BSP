@@ -389,18 +389,21 @@ __STATIC_INLINE uint32_t CANFD_ReadReg(uint32_t u32RegAddr)
 
     u32ReadReg = inpw(ptr_to_u32(u32RegAddr));
 
-    while(u32TimeOutCnt < CANFD_REG_READ_TIME)
+    if((inpw(ptr_to_u32(SYS_BASE + 0x1F0)) & (0xf000000)) == 0x0)
     {
-        u32ReadReg_1 = inpw(ptr_to_u32(u32RegAddr));
+        while(u32TimeOutCnt < CANFD_REG_READ_TIME)
+        {
+            u32ReadReg_1 = inpw(ptr_to_u32(u32RegAddr));
 
-        if(u32ReadReg_1 == u32ReadReg)
-        {
-            u32TimeOutCnt++;
-        }
-        else
-        {
-            u32ReadReg = u32ReadReg_1;
-            u32TimeOutCnt = 0;
+            if(u32ReadReg_1 == u32ReadReg)
+            {
+                u32TimeOutCnt++;
+            }
+            else
+            {
+                u32ReadReg = u32ReadReg_1;
+                u32TimeOutCnt = 0;
+            }
         }
     }
 
