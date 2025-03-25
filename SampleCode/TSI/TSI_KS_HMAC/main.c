@@ -58,7 +58,7 @@ static int  get_line(void)
 		if (read_file(&ch, 1) < 0)
 			return 0;
 
-		if (ch == 0x0D)
+		if (ch == 0x0D) // /n/r
 		{
 			if (read_file(&ch, 1) < 0)
 				return -1;
@@ -70,6 +70,8 @@ static int  get_line(void)
 			}
 			break;
 		}
+		else if (ch == 0x0A) // /r
+			break;
 
 		g_line[i] = ch;
 	}

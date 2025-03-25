@@ -45,11 +45,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/platform_alt.c</locationURI>
 		</link>
 		<link>
-			<name>crypto_accelerator/sha256_alt.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/sha256_alt.c</locationURI>
-		</link>
-		<link>
 			<name>mbedcrypto/aes.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/ThirdParty/mbedtls-3.1.0/library/aes.c</locationURI>

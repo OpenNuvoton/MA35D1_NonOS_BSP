@@ -372,6 +372,7 @@ static int  get_next_pattern(void)
 				p = find_alphanumeric(p);
 				continue;
 			}
+			p++;
 		}
 	}
 	return -1;
