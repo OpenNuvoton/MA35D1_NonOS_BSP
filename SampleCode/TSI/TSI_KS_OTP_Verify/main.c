@@ -18,7 +18,7 @@
 #include "NuMicro.h"
 #include "tsi_cmd.h"
 
-#define KEY_TYPE_NONE    0
+#define KEY_TYPE_NONE    0  /*  for ignore key */
 #define KEY_TYPE_AES     1
 #define KEY_TYPE_ECC     2
 
@@ -37,14 +37,13 @@ static const uint32_t aes_iv[4] __attribute__((aligned(32))) = { 0 };
 
 static uint8_t aes_input[64] __attribute__((aligned(32)));
 
-static char key_buff[256] __attribute__((aligned(32)));
+static uint32_t key_buff[64] __attribute__((aligned(32)));
 
 static uint8_t out_buff1[1024] __attribute__((aligned(32)));
 static uint8_t out_buff2[1024] __attribute__((aligned(32)));
 
-
 /*
- *  Example OTP .jason file for NumWriter
+ *  Example OTP user key .jason file for NuWriter
  *      {
  *          "mac0": "001938722942",
  *          "mac1": "001939214545",
@@ -69,7 +68,14 @@ static uint8_t out_buff2[1024] __attribute__((aligned(32)));
  *              "key": "d4ccd6dae698208aa8c3a6f39e45510d03be09b2f124bfc067856c324f9b4d09",
  *              "meta": "eccp256-cpu-readable"
  *          }
- *      }
+ *     }
+ *
+ *  Example OTP secure boot key .jason file for NuWriter
+ *     {
+ *          "publicx": "72F84F681092E3A05C1437E3E40534962A5C70556025D348FF9DB97D6AF83EB5",
+ *          "publicy": "8D32DAC7AB6F90332E8E0060E159E0B31502BB4FB2D78369F02D1F5B0C335AD3",
+ *          "aeskey": "0A0BC81E5AFBF836C5E0CFBEA12C1E269A2EBC3B0B6EC39EEE1C7142F760EBC4"
+} *    }
  */
 
 KEYTBL_T my_opt_keys[9] =
@@ -118,24 +124,24 @@ KEYTBL_T my_opt_keys[9] =
     },
     {
         6,
-        KEY_TYPE_NONE,  /* should be KEY_TYPE_AES if secure boot key exist */
-        "SECURE BOOT KEY - AES",
+        KEY_TYPE_ECC,
+        "SECURE BOOT KEY - ECC X",
         256,
-        ""              /* fill your secure boot AES key here */
+        "72F84F681092E3A05C1437E3E40534962A5C70556025D348FF9DB97D6AF83EB5"
     },
     {
         7,
-        KEY_TYPE_NONE,  /* should be KEY_TYPE_ECC if secure boot key exist */
-        "SECURE BOOT KEY - ECC X",
+        KEY_TYPE_ECC,
+        "SECURE BOOT KEY - ECC Y",
         256,
-        ""              /* fill your secure boot ECC public key x here */
+        "8D32DAC7AB6F90332E8E0060E159E0B31502BB4FB2D78369F02D1F5B0C335AD3"
     },
     {
         8,
-        KEY_TYPE_NONE,  /* should be KEY_TYPE_ECC if secure boot key exist */
-        "SECURE BOOT KEY - ECC Y",
+        KEY_TYPE_AES,
+        "SECURE BOOT KEY - AES",
         256,
-        ""              /* fill your secure boot ECC public key y here */
+        "0A0BC81E5AFBF836C5E0CFBEA12C1E269A2EBC3B0B6EC39EEE1C7142F760EBC4"
     },
 };
 
@@ -187,6 +193,7 @@ void swap_ecc_str(char *hex, int len)
     }
 }
 
+
 void  dump_ecc_string(uint8_t *pucBuff, int blen)
 {
     uint64_t  addr, end_addr;
@@ -234,9 +241,16 @@ int check_aes_otp_key(KEYTBL_T *kt)
     i = str2hex(kt->key, hex_buff);
 
     p = nc_ptr(key_buff);
-    for (i = 0; i < kt->keylen / 8; i += 4, p++)
+
+    if (kt->knum == 8)
     {
-        *p = (hex_buff[i+3] << 24) | (hex_buff[i+2] << 16) | (hex_buff[i+1] << 8) | hex_buff[i];
+        for (i = 0; i < kt->keylen / 8; i += 4, p++)
+            *p = (hex_buff[i] << 24) | (hex_buff[i+1] << 16) | (hex_buff[i+2] << 8) | hex_buff[i+3];
+    }
+    else
+    {
+        for (i = 0; i < kt->keylen / 8; i += 4, p++)
+            *p = (hex_buff[i+3] << 24) | (hex_buff[i+2] << 16) | (hex_buff[i+1] << 8) | hex_buff[i];
     }
 
     /* input data; any random data here */
@@ -344,7 +358,8 @@ int check_ecc_otp_key(KEYTBL_T *kt)
     memcpy(kptr, kt->key, kt->keylen / 4);
     kptr[kt->keylen / 4] = 0;
 
-    swap_ecc_str(kptr, kt->keylen);
+    if (kt->knum < 6)
+        swap_ecc_str(kptr, kt->keylen);
 
     sysprintf("key after swapped = ");
     dump_ecc_string(kptr, 256);
@@ -394,6 +409,37 @@ int check_ecc_otp_key(KEYTBL_T *kt)
     return 0;
 }
 
+static void ks_otp_try_read_all(void)
+{
+    uint32_t *au32RKey = nc_ptr(out_buff1);
+    int i, knum, ret, wcnt;
+    int found = 0;
+
+    sysprintf("\nTry to read OTP key if available...\n");
+    for (knum = 0; knum < KS_OTP_KEY_CNT; knum++)
+    {
+        if (knum < 3)
+            wcnt = 128 / 32;
+        else
+            wcnt = 256 / 32;
+
+        ret = TSI_KS_Read(KS_OTP, knum, au32RKey, wcnt);
+        if (ret == 0)
+        {
+            sysprintf("OTP key %d, size %d:\n    ", knum, wcnt * 32);
+            for (i = 0; i < wcnt; i++)
+                sysprintf("0x%x ", au32RKey[i]);
+            sysprintf("\n");
+            found = 1;
+        }
+        else
+            sysprintf("Read OTP key #%d failed. It may be empty or unreadable.\n", knum);
+    }
+    if (!found)
+        sysprintf("No readable OTP keys found.\n");
+    return;
+}
+
 int32_t main(void)
 {
     int loop, i, len, sid, ret;
@@ -420,6 +466,9 @@ int32_t main(void)
     sysprintf("|  MA35D1 TSI - Verify Key Store OTP keys                       |\n");
     sysprintf("+---------------------------------------------------------------+\n");
 
+    ks_otp_try_read_all();
+    sysprintf("\n\n");
+
     for (i = 0; i < sizeof(my_opt_keys) / sizeof(KEYTBL_T); i++)
     {
         int       remain_size;
@@ -428,9 +477,9 @@ int32_t main(void)
         kt = nc_ptr(&my_opt_keys[i]);
 
         if (kt->key_type == KEY_TYPE_NONE)
-        continue;
+            continue;
 
-        sysprintf("Verify OTP key #%d [%s]...\n", kt->knum, kt->name);
+        sysprintf("\n[#%d] Verify OTP key #%d [%s]...\n", kt->knum, kt->knum, kt->name);
 
         if (kt->key_type == KEY_TYPE_AES)
             ret = check_aes_otp_key(kt);
