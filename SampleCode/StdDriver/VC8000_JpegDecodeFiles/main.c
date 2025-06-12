@@ -388,6 +388,11 @@ int32_t main(void)
 	_pp.img_out_fmt = VC8000_PP_F_RGB888;
 	_pp.rotation = VC8000_PP_ROTATION_NONE;
 	_pp.pp_out_dst = VC8000_PP_OUT_DST_DISPLAY;
+    _pp.contrast = 8;
+    _pp.brightness = 0;
+    _pp.saturation = 32;
+    _pp.alpha = 255;
+    _pp.transparency = 0;
 
 	while (1)
 		jpeg_decode_files(usb_path);

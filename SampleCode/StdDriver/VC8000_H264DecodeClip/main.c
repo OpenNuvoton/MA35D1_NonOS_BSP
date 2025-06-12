@@ -160,6 +160,11 @@ int32_t main(void)
 	pp.img_out_fmt = VC8000_PP_F_RGB888;
 	pp.rotation = VC8000_PP_ROTATION_NONE;
 	pp.pp_out_dst = VC8000_PP_OUT_DST_DISPLAY;
+    pp.contrast = 8;
+    pp.brightness = 0;
+    pp.saturation = 32;
+    pp.alpha = 255;
+    pp.transparency = 0;
 
 	ret = VC8000_H264_Enable_PP(handle, &pp);
 	if (ret < 0)

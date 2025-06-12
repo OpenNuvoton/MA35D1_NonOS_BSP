@@ -59,23 +59,28 @@ extern "C"
 #define VC8000_PP_ROTATION_HOR_FLIP   3 /*!< PP output image horizontal flip */
 #define VC8000_PP_ROTATION_VER_FLIP   4 /*!< PP output image vertical flip */
 #define VC8000_PP_ROTATION_180        5 /*!< PP output image rotate 180 degree */
-     
-/*! @}*/ /* end of group VC8000_EXPORTED_CONSTANTS */     
-    
+
+/*! @}*/ /* end of group VC8000_EXPORTED_CONSTANTS */
+
 /** @addtogroup VC8000_EXPORTED_STRUCTURES VC8000 Exported Structures
   @{
-*/     
+*/
 struct pp_params {
-	int      frame_buf_w;      /*!< width of frame buffer */
-	int      frame_buf_h;      /*!< height of frame buffer */
-	int      img_out_x;        /*!< image original point(x,y) on frame buffer */
-	int      img_out_y;        /*!< image original point(x,y) on frame buffer */
-	int      img_out_w;        /*!< image output width on frame buffer */
-	int      img_out_h;        /*!< image output height on frame buffer */
-	int      img_out_fmt;      /*!< image output format */
-	int      rotation;         /*!< select image output rotation */
-	int      pp_out_dst;       /*!< PP output destination */
-	uint32_t pp_out_paddr;     /*!< PP output physical address */
+    int      frame_buf_w;      /*!< width of frame buffer */
+    int      frame_buf_h;      /*!< height of frame buffer */
+    int      img_out_x;        /*!< image original point(x,y) on frame buffer */
+    int      img_out_y;        /*!< image original point(x,y) on frame buffer */
+    int      img_out_w;        /*!< image output width on frame buffer */
+    int      img_out_h;        /*!< image output height on frame buffer */
+    int      img_out_fmt;      /*!< image output format */
+    int      rotation;         /*!< select image output rotation */
+    int      pp_out_dst;       /*!< PP output destination */
+    uint32_t pp_out_paddr;     /*!< PP output physical address */
+    int      contrast;         /*!< contrast setting for PP RGB output; suggest 8 */
+    int      brightness;       /*!< brightness setting for PP RGB output */
+    int      saturation;       /*!< brightness setting for PP RGB output; suggest 32 */
+    int      alpha;            /*!< alpha setting for PP RGB output; suggest 255 */
+    int      transparency;     /*!< brightness setting for PP RGB output */
 };                             /*!< VC8000 post-processing parameters */
 
 typedef void (VC8K_H264Dec_CB)(void);    /*!< VC8000 H264 decode done callback function \hideinitializer */
