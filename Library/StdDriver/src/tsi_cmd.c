@@ -1247,6 +1247,26 @@ int  TSI_OTP_Read(uint32_t u32Addr, uint32_t *u32Data)
 	return ret;
 }
 
+/**
+  * @brief      Program key data to OTP
+  * @param[in]  u32Addr       The OTP address
+  * @param[out] u32Data       The data read to be written to OTP
+  * @return   0               success
+  * @return   otherwise       error code from TSI
+  */
+int  TSI_OTP_Program(uint32_t u32Addr, uint32_t u32Data)
+{
+	TSI_REQ_T  req;
+	int  ret;
+
+	memset(&req, 0, sizeof(req));
+	req.cmd[0] = (CMD_EXT_OTP_PROGRAM << 16);
+	req.cmd[1] = u32Addr;
+	req.cmd[2] = u32Data;
+	ret = tsi_send_command_and_wait(&req, CMD_TIME_OUT_2S);
+	return ret;
+}
+
 /// @cond HIDDEN_SYMBOLS
 
 __aligned(64) static unsigned char tsi_patch_image[] = {

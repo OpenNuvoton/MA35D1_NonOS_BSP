@@ -88,8 +88,11 @@ extern "C"
 /*------------------------------------------------------------------*/
 /*  TSI extened commands supported by patch image                   */
 /*------------------------------------------------------------------*/
-#define	CMD_EXT_OTP_READ        0xF910 /*!< Read OTP */
-#define	CMD_EXT_RSA_EXP_MOD     0xFE51 /*!< Execute RSA exponent modulus */
+#define CMD_EXT_OTP_PROGRAM     0xF905
+#define CMD_EXT_OTP_READ        0xF910 /*!< Read OTP */
+#define CMD_EXT_OTP_READ_LOCK   0xF911
+#define CMD_EXT_OTP_ERASE       0xF913
+#define CMD_EXT_RSA_EXP_MOD     0xFE51 /*!< Execute RSA exponent modulus */
 
 /*------------------------------------------------------------------*/
 /*  TSI command ACK status                                          */
@@ -128,28 +131,28 @@ extern "C"
 /*!< TSI command request */
 typedef struct tsi_cmd_t
 {
-	uint32_t	cmd[4];      /*!< TSI command words */
-	uint32_t	ack[4];      /*!< TSI ack status words */
-	int         tx_channel;  /*!< WHC TX channel used to send this command */
-	uint32_t    tx_jiffy;    /*!< the jiffy of command being send */
-	int         session_id;  /*!< session ID; for AES and SHA only */
-	uint32_t    addr_param;  /*!< parameter block address */
-	uint32_t    caddr_src;   /*!< current data source address */
-	uint32_t    caddr_dst;   /*!< current data destination address */
-	uint32_t    remain_len;  /*!< remaining data length */
+    uint32_t    cmd[4];      /*!< TSI command words */
+    uint32_t    ack[4];      /*!< TSI ack status words */
+    int         tx_channel;  /*!< WHC TX channel used to send this command */
+    uint32_t    tx_jiffy;    /*!< the jiffy of command being send */
+    int         session_id;  /*!< session ID; for AES and SHA only */
+    uint32_t    addr_param;  /*!< parameter block address */
+    uint32_t    caddr_src;   /*!< current data source address */
+    uint32_t    caddr_dst;   /*!< current data destination address */
+    uint32_t    remain_len;  /*!< remaining data length */
 }  TSI_REQ_T;
 
-#define TC_GET_CLASS_CODE(r)	((((r)->cmd[0])>>24)&0xff)
-#define TC_GET_SUB_CODE(r) 		((((r)->cmd[0])>>16)&0xff)
-#define TC_GET_COMMAND(r)		((((r)->cmd[0])>>16)&0xffff)
-#define TC_GET_SESSION_ID(r)	(((r)->cmd[0])&0xff)
-#define TC_SET_CLASS_CODE(r,c)	(r)->cmd[0] = (((r)->cmd[0])&0x00ffffff)|((c&0xff)<<24)
-#define TC_SET_SUB_CODE(r,c)	(r)->cmd[0] = (((r)->cmd[0])&0xff00ffff)|((c&0xff)<<16)
-#define TC_SET_SESSION_ID(r,s)	(r)->cmd[0] = (((r)->cmd[0])&0xffffff00)|(s&0xff)
+#define TC_GET_CLASS_CODE(r)    ((((r)->cmd[0])>>24)&0xff)
+#define TC_GET_SUB_CODE(r)      ((((r)->cmd[0])>>16)&0xff)
+#define TC_GET_COMMAND(r)       ((((r)->cmd[0])>>16)&0xffff)
+#define TC_GET_SESSION_ID(r)    (((r)->cmd[0])&0xff)
+#define TC_SET_CLASS_CODE(r,c)  (r)->cmd[0] = (((r)->cmd[0])&0x00ffffff)|((c&0xff)<<24)
+#define TC_SET_SUB_CODE(r,c)    (r)->cmd[0] = (((r)->cmd[0])&0xff00ffff)|((c&0xff)<<16)
+#define TC_SET_SESSION_ID(r,s)  (r)->cmd[0] = (((r)->cmd[0])&0xffffff00)|(s&0xff)
 
-#define TA_GET_CLASS_CODE(a)	((((a)->ack[0])>>24)&0xff)
-#define TA_GET_SESSION_ID(a)	(((a)->ack[0])&0xff)
-#define TA_GET_STATUS(a)		((((a)->ack[0])>>8)&0xff)
+#define TA_GET_CLASS_CODE(a)    ((((a)->ack[0])>>24)&0xff)
+#define TA_GET_SESSION_ID(a)    (((a)->ack[0])&0xff)
+#define TA_GET_STATUS(a)        ((((a)->ack[0])>>8)&0xff)
 
 /* Command/ACK characteristic is composed of class code, sub-code, and session ID */
 #define TCK_CHR_MASK            (0xffff00ff)
@@ -235,6 +238,7 @@ int TSI_KS_GetRemainSize(int *remain_size);
 int TSI_KS_GetStatus(uint32_t *ks_sts, uint32_t *ks_otpsts, uint32_t *ks_metadata);
 
 int TSI_OTP_Read(uint32_t u32Addr, uint32_t *u32Data);
+int TSI_OTP_Program(uint32_t u32Addr, uint32_t u32Data);
 
 /*! @}*/ /* end of group TSI_EXPORTED_FUNCTIONS */
 
