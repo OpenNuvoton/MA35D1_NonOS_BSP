@@ -141,9 +141,9 @@ int main(void)
             {
                 while (*ptr == ' ') ptr++;
                 btime = msTicks0;
-                cmd_yaffs_write_file(ptr, 0x55, 1*1024);    /* write 0x55 into file 10 times */
+                cmd_yaffs_write_file(ptr, 0x55, 0x1000000);
                 etime = msTicks0 - btime;
-                sysprintf("write %d MB/sec\n", 1*1024*100/etime);
+                sysprintf("write %d KB/sec\n", (0x1000000/1024)*1000/etime);
             }
             break;
 
@@ -156,7 +156,7 @@ int main(void)
                 btime = msTicks0;
                 cmd_yaffs_read_file(ptr);
                 etime = msTicks0 - btime;
-                sysprintf("read %d MB/sec\n", 1*1024*100/etime);
+                sysprintf("read %d MB/sec\n", 1*1024*1000/etime);
                 sysprintf("\ndone.\n");
             }
             else if (*ptr == 'm')    /* rm */
