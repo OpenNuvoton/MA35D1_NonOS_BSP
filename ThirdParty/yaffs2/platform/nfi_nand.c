@@ -705,7 +705,6 @@ int board_nand_init(struct nand_chip *nand)
     nand->ecc.layout     = &nuvoton_nand_oob;
 	nand->ecc.write_page_raw = nuvoton_nand_write_page_raw;
 	nand->ecc.read_page_raw  = nuvoton_nand_read_page_raw;
-	nand->options |= NAND_NO_SUBPAGE_WRITE;
 
 	/* setup by user */
 	nand->ecc.strength   = 8;
@@ -770,6 +769,7 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.total = nuvoton_nand_oob.eccbytes;
 
     nand->options = 0;
+	nand->options |= NAND_NO_SUBPAGE_WRITE;
     nand->bbt_options = (NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB);
 
     // Redundant area size
