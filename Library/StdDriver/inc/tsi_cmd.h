@@ -93,6 +93,9 @@ extern "C"
 #define CMD_EXT_OTP_READ_LOCK   0xF911
 #define CMD_EXT_OTP_ERASE       0xF913
 #define CMD_EXT_RSA_EXP_MOD     0xFE51 /*!< Execute RSA exponent modulus */
+#define CMD_EXT_SHA_START       0xFE71
+#define CMD_EXT_SHA_UPDATE      0xFE72
+#define CMD_EXT_SHA_FINISH      0xFE73
 
 /*------------------------------------------------------------------*/
 /*  TSI command ACK status                                          */

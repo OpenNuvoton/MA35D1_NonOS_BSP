@@ -70,6 +70,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/sha_kat.c</locationURI>
 		</link>
 		<link>
+			<name>User/sha_multi_session.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/sha_multi_session.c</locationURI>
+		</link>
+		<link>
 			<name>User/sm3_kat.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/sm3_kat.c</locationURI>
