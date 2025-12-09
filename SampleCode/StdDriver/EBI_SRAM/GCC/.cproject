@@ -109,4 +109,5 @@
 			<resource resourceType="PROJECT" workspacePath="/EBI_SRAM"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
