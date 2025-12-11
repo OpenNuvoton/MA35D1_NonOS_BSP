@@ -117,7 +117,7 @@ extern "C"
   * @brief Enable PDMA transfer.
   * @param[in] eadc The pointer of the specified EADC module.
   * @return None
-  * @details When A/D conversion is completed, the converted data is loaded into EADC_DATn (n: 0 ~ 18) register,
+  * @details When A/D conversion is completed, the converted data is loaded into EADC_DATn (n: 0 ~ 8) register,
   *         user can enable this bit to generate a PDMA data transfer request.
   * @note When set PDMAEN bit (EADC_CTL[11]), user must set ADINTENn (EADC_CTL[5:2], n=0~3) = 0 to disable interrupt.
   * \hideinitializer
@@ -137,9 +137,9 @@ extern "C"
   * @brief Enable Sample Module PDMA transfer.
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32ModuleMask the combination of sample module interrupt status bits. Each bit corresponds to a sample module interrupt status.
-  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x7FFFF.
+  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x1FF.
   * @return None
-  * @details When A/D conversion is completed, the converted data is loaded into EADC_DATn (n: 0 ~ 18) register,
+  * @details When A/D conversion is completed, the converted data is loaded into EADC_DATn (n: 0 ~ 8) register,
   *         user can enable this bit to generate a PDMA data transfer request.
   * \hideinitializer
   */
@@ -149,7 +149,7 @@ extern "C"
   * @brief Disable Sample Module PDMA transfer.
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32ModuleMask the combination of sample module interrupt status bits. Each bit corresponds to a sample module interrupt status.
-  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x7FFFF.
+  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x1FF.
   * @return None
   * @details This macro is used to disable sample module PDMA transfer.
   * \hideinitializer
@@ -225,7 +225,7 @@ extern "C"
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32IntSel Decides which interrupt source will be used, valid value are from 0 to 3.
   * @param[in] u32ModuleMask the combination of sample module interrupt status bits. Each bit corresponds to a sample module interrupt status.
-  *                          This parameter decides which sample module interrupts will be enabled, valid range are between 1~0x7FFFF.
+  *                          This parameter decides which sample module interrupts will be enabled, valid range are between 1~0x1FF.
   * @return None
   * @details There are 4 ADC interrupts ADINT0~3, and each of these interrupts has its own interrupt vector address.
   * \hideinitializer
@@ -237,7 +237,7 @@ extern "C"
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32IntSel Decides which interrupt source will be used, valid value are from 0 to 3.
   * @param[in] u32ModuleMask the combination of sample module interrupt status bits. Each bit corresponds to a sample module interrupt status.
-  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x7FFFF.
+  *                          This parameter decides which sample module interrupts will be disabled, valid range are between 1~0x1FF.
   * @return None
   * @details There are 4 ADC interrupts ADINT0~3, and each of these interrupts has its own interrupt vector address.
   * \hideinitializer
@@ -260,8 +260,8 @@ extern "C"
   * @brief Start the A/D conversion.
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32ModuleMask The combination of sample module. Each bit corresponds to a sample module.
-  *                         This parameter decides which sample module will be conversion, valid range are between 1~0x7FFFF.
-  *                         Bit 0 is sample module 0, bit 1 is sample module 1..., bit 18 is sample module 18.
+  *                         This parameter decides which sample module will be conversion, valid range are between 1~0x1FF.
+  *                         Bit 0 is sample module 0, bit 1 is sample module 1..., bit 8 is sample module 8.
   * @return None
   * @details After write EADC_SWTRG register to start ADC conversion, the EADC_PENDSTS register will show which SAMPLE will conversion.
   * \hideinitializer
@@ -272,8 +272,8 @@ extern "C"
   * @brief Cancel the conversion for sample module.
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32ModuleMask The combination of sample module. Each bit corresponds to a sample module.
-  *                         This parameter decides which sample module will stop the conversion, valid range are between 1~0x7FFFF.
-  *                         Bit 0 is sample module 0, bit 1 is sample module 1..., bit 18 is sample module18.
+  *                         This parameter decides which sample module will stop the conversion, valid range are between 1~0x1FF.
+  *                         Bit 0 is sample module 0, bit 1 is sample module 1..., bit 8 is sample module 8.
   * @return None
   * @details If user want to disable the conversion of the sample module, user can write EADC_PENDSTS register to clear it.
   * \hideinitializer
@@ -284,8 +284,8 @@ extern "C"
   * @brief Get the conversion pending flag.
   * @param[in] eadc The pointer of the specified EADC module.
   * @return Return the conversion pending sample module.
-  * @details This STPFn(EADC_PENDSTS[18:0]) bit remains 1 during pending state, when the respective ADC conversion is end,
-  *         the STPFn (n=0~18) bit is automatically cleared to 0.
+  * @details This STPFn(EADC_PENDSTS[8:0]) bit remains 1 during pending state, when the respective ADC conversion is end,
+  *         the STPFn (n=0~8) bit is automatically cleared to 0.
   * \hideinitializer
   */
 #define EADC_GET_PENDING_CONV(eadc) ((eadc)->PENDSTS)
@@ -293,9 +293,9 @@ extern "C"
 /**
   * @brief Get the conversion data of the user-specified sample module.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 8.
   * @return Return the conversion data of the user-specified sample module.
-  * @details This macro is used to read RESULT bit (EADC_DATn[15:0], n=0~18) field to get conversion data.
+  * @details This macro is used to read RESULT bit (EADC_DATn[15:0], n=0~8) field to get conversion data.
   * \hideinitializer
   */
 #define EADC_GET_CONV_DATA(eadc, u32ModuleNum) ((eadc)->DAT[(u32ModuleNum)] & EADC_DAT_RESULT_Msk)
@@ -303,27 +303,27 @@ extern "C"
 /**
   * @brief Get the data overrun flag of the user-specified sample module.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleMask The combination of data overrun status bits. Each bit corresponds to a data overrun status, valid range are between 1~0x7FFFF.
+  * @param[in] u32ModuleMask The combination of data overrun status bits. Each bit corresponds to a data overrun status, valid range are between 1~0x1FF.
   * @return Return the data overrun flag of the user-specified sample module.
-  * @details This macro is used to read OV bit (EADC_STATUS0[31:16], EADC_STATUS1[18:16]) field to get data overrun status.
+  * @details This macro is used to read OV bit (EADC_STATUS0[24:16]) field to get data overrun status.
   * \hideinitializer
   */
-#define EADC_GET_DATA_OVERRUN_FLAG(eadc, u32ModuleMask) ((((eadc)->STATUS0 >> EADC_STATUS0_OV_Pos) | ((eadc)->STATUS1 & EADC_STATUS1_OV_Msk)) & (u32ModuleMask))
+#define EADC_GET_DATA_OVERRUN_FLAG(eadc, u32ModuleMask) (((eadc)->STATUS0 >> EADC_STATUS0_OV_Pos) & (u32ModuleMask))
 
 /**
   * @brief Get the data valid flag of the user-specified sample module.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleMask The combination of data valid status bits. Each bit corresponds to a data valid status, valid range are between 1~0x7FFFF.
+  * @param[in] u32ModuleMask The combination of data valid status bits. Each bit corresponds to a data valid status, valid range are between 1~0x1FF.
   * @return Return the data valid flag of the user-specified sample module.
-  * @details This macro is used to read VALID bit (EADC_STATUS0[15:0], EADC_STATUS1[2:0]) field to get data valid status.
+  * @details This macro is used to read VALID bit (EADC_STATUS0[8:0]) field to get data valid status.
   * \hideinitializer
   */
-#define EADC_GET_DATA_VALID_FLAG(eadc, u32ModuleMask) ((((eadc)->STATUS0 & EADC_STATUS0_VALID_Msk) | (((eadc)->STATUS1 & EADC_STATUS1_VALID_Msk) << 16)) & (u32ModuleMask))
+#define EADC_GET_DATA_VALID_FLAG(eadc, u32ModuleMask) (((eadc)->STATUS0 & EADC_STATUS0_VALID_Msk) & (u32ModuleMask))
 
 /**
   * @brief Get the double data of the user-specified sample module.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum Decides the sample module number, valid value are from 0 to 8.
   * @return Return the double data of the user-specified sample module.
   * @details This macro is used to read RESULT bit (EADC_DDATn[15:0], n=0~3) field to get conversion data.
   * \hideinitializer
@@ -345,7 +345,7 @@ extern "C"
 /**
   * @brief Get the user-specified sample module overrun flags.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleMask The combination of sample module overrun status bits. Each bit corresponds to a sample module overrun status, valid range are between 1~0x7FFFF.
+  * @param[in] u32ModuleMask The combination of sample module overrun status bits. Each bit corresponds to a sample module overrun status, valid range are between 1~0x1FF.
   * @return Return the user-specified sample module overrun flags.
   * @details This macro is used to get the user-specified sample module overrun flags.
   * \hideinitializer
@@ -368,7 +368,7 @@ extern "C"
   * @brief Clear the selected sample module overrun status bits.
   * @param[in] eadc The pointer of the specified EADC module.
   * @param[in] u32ModuleMask The combination of sample module overrun status bits. Each bit corresponds to a sample module overrun status.
-  *                      Bit 0 is SPOVF0, bit 1 is SPOVF1..., bit 18 is SPOVF18.
+  *                      Bit 0 is SPOVF0, bit 1 is SPOVF1..., bit 8 is SPOVF8.
   * @return None
   * @details This macro is used to clear the selected sample module overrun status bits.
   * \hideinitializer
@@ -428,7 +428,7 @@ extern "C"
 /**
   * @brief Configure the comparator 0 and enable it.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 8.
   * @param[in] u32Condition specifies the compare condition. Valid values are:
   *                        - \ref EADC_CMP_CMPCOND_LESS_THAN            :The compare condition is "less than the compare value"
   *                        - \ref EADC_CMP_CMPCOND_GREATER_OR_EQUAL     :The compare condition is "greater than or equal to the compare value
@@ -454,7 +454,7 @@ extern "C"
 /**
   * @brief Configure the comparator 1 and enable it.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 8.
   * @param[in] u32Condition specifies the compare condition. Valid values are:
   *                        - \ref EADC_CMP_CMPCOND_LESS_THAN            :The compare condition is "less than the compare value"
   *                        - \ref EADC_CMP_CMPCOND_GREATER_OR_EQUAL     :The compare condition is "greater than or equal to the compare value
@@ -480,7 +480,7 @@ extern "C"
 /**
   * @brief Configure the comparator 2 and enable it.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 8.
   * @param[in] u32Condition specifies the compare condition. Valid values are:
   *                        - \ref EADC_CMP_CMPCOND_LESS_THAN            :The compare condition is "less than the compare value"
   *                        - \ref EADC_CMP_CMPCOND_GREATER_OR_EQUAL     :The compare condition is "greater than or equal to the compare value
@@ -506,7 +506,7 @@ extern "C"
 /**
   * @brief Configure the comparator 3 and enable it.
   * @param[in] eadc The pointer of the specified EADC module.
-  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 18.
+  * @param[in] u32ModuleNum specifies the compare sample module, valid value are from 0 to 8.
   * @param[in] u32Condition specifies the compare condition. Valid values are:
   *                        - \ref EADC_CMP_CMPCOND_LESS_THAN            :The compare condition is "less than the compare value"
   *                        - \ref EADC_CMP_CMPCOND_GREATER_OR_EQUAL     :The compare condition is "greater than or equal to the compare value
