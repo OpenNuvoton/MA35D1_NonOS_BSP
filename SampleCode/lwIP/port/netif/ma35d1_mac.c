@@ -733,7 +733,7 @@ uint32_t GMAC_int_handler0(struct sk_buff *prskb)
 
     if(interrupt & GMACDmaRxNormal) {
         TR("%s:: Rx Normal \n", __FUNCTION__);
-		ret = GMAC_handle_received_data(GMACINTF0, prskb);
+        notify_rx_task(GMACINTF0);
     }
 
     if(interrupt & GMACDmaRxAbnormal) {
@@ -874,7 +874,7 @@ uint32_t GMAC_int_handler1(struct sk_buff *prskb)
 
     if(interrupt & GMACDmaRxNormal) {
         TR("%s:: Rx Normal \n", __FUNCTION__);
-        ret = GMAC_handle_received_data(GMACINTF1, prskb);
+        notify_rx_task(GMACINTF1);
     }
 
     if(interrupt & GMACDmaRxAbnormal) {

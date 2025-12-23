@@ -34,7 +34,7 @@
 #include "task.h"
 #include "NuMicro.h"
 
-#define LWIP_HWSEM_CH  0
+#define LWIP_HWSEM_CH  cpuid()
 #define LWIP_HWSEM_KEY 0x5A
 
 #ifndef configINTERRUPT_CONTROLLER_BASE_ADDRESS

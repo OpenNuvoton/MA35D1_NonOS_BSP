@@ -46,6 +46,7 @@ static void GMAC_powerup_mac(GMACdevice *gmacdev);
 static void GMAC_powerdown_mac(GMACdevice *gmacdev);
 uint32_t GMAC_int_handler0(struct sk_buff *prskb);
 uint32_t GMAC_int_handler1(struct sk_buff *prskb);
+extern void notify_rx_task(int intf);
 
 extern GMACdevice GMACdev[];
 extern u8 mac_addr0[];

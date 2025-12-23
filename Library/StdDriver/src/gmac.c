@@ -28,8 +28,13 @@
   * @return None.
   */
 void plat_delay(uint32_t ticks) {
-    uint32_t tgtTicks = msTicks0 + ticks;
-    while (msTicks0 < tgtTicks);
+    if(cpuid() == 0) {
+        uint32_t tgtTicks = msTicks0 + ticks;
+        while (msTicks0 < tgtTicks);
+    } else {
+        uint32_t tgtTicks = msTicks1 + ticks;
+        while (msTicks1 < tgtTicks);
+    }
 }
 
 /******************************************************************************

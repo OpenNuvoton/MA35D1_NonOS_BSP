@@ -66,6 +66,10 @@
 struct netif *_netif0;
 struct netif *_netif1;
 
+/* Fired by GMAC Rx interrupt. This is greedy so just keep medium priority */
+#define GMAC_LWIP_RX_PRIORITY   (tskIDLE_PRIORITY + 1)
+#define GMAC_LWIP_RX_STACKSIZE  (1024)
+
 #define NUM_OF_RXSKB 32
 struct sk_buff rxskbuf[NUM_OF_RXSKB]; // application buffer queue
 
@@ -74,6 +78,7 @@ extern u8_t mac_addr1[6];
 extern struct sk_buff txbuf[GMAC_CNT];
 extern struct sk_buff rxbuf[GMAC_CNT];
 
+static TaskHandle_t post_rx_task[GMAC_CNT] = {NULL, NULL};
 
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
@@ -87,36 +92,60 @@ struct ethernetif
     /* Add whatever per-interface state that is needed here. */
 };
 
-uint32_t GMAC0_ReceivePkt(struct sk_buff *prskb)
+void notify_rx_task(int intf)
 {
-    return GMAC_int_handler0(prskb);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    if(xTaskGetSchedulerState() != taskSCHEDULER_RUNNING)
+        return;
+
+    vTaskNotifyGiveFromISR(post_rx_task[intf], &xHigherPriorityTaskWoken);
+    /* Force context switch immediately (risky for scheduler) */
+    // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void GMAC0_IRQHandler(void)
 {
     struct sk_buff *rskb = &rxskbuf[0];
-    uint32_t packetCnt;
 
-    packetCnt = GMAC0_ReceivePkt(rskb);
-    if(packetCnt != 0)
-    {
-        ethernetif_input0(packetCnt);
-    }
+    GMAC_int_handler0(rskb);
 }
 
-uint32_t GMAC1_ReceivePkt(struct sk_buff *prskb)
+void gmac0_lwip_rx(void *arg)
 {
-    return GMAC_int_handler1(prskb);
+    struct sk_buff *rskb = &rxskbuf[0];
+    uint32_t packetCnt;
+
+    for (;;)
+    {
+        /* Block until IRQ notifies */
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        packetCnt = GMAC_handle_received_data(GMACINTF0, rskb);
+
+        ethernetif_input0(packetCnt);
+    }
 }
 
 void GMAC1_IRQHandler(void)
 {
     struct sk_buff *rskb = &rxskbuf[0];
+
+    GMAC_int_handler1(rskb);
+}
+
+void gmac1_lwip_rx(void *arg)
+{
+    struct sk_buff *rskb = &rxskbuf[0];
     uint32_t packetCnt;
 
-    packetCnt = GMAC1_ReceivePkt(rskb);
-    if(packetCnt != 0)
+    for (;;)
     {
+        /* Block until IRQ notifies */
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        packetCnt = GMAC_handle_received_data(GMACINTF1, rskb);
+
         ethernetif_input1(packetCnt);
     }
 }
@@ -147,9 +176,10 @@ low_level_init0(struct netif *netif)
 #endif
 
     GMAC_open(GMACINTF0, GMAC_MODE);
+    /* we will call interrupt safe API, the priority must be at or below configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY */
     IRQ_SetPriority((IRQn_ID_t)GMAC0_IRQn, (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1) << portPRIORITY_SHIFT);
     IRQ_SetHandler(GMAC0_IRQn, GMAC0_IRQHandler);
-    IRQ_SetTarget(GMAC0_IRQn, IRQ_CPU_0);
+    IRQ_SetTarget(GMAC0_IRQn, 0x1 << cpuid());
     IRQ_Enable(GMAC0_IRQn);
 }
 
@@ -179,9 +209,10 @@ low_level_init1(struct netif *netif)
 #endif
 
     GMAC_open(GMACINTF1, GMAC_MODE);
+    /* we will call interrupt safe API, the priority must be at or below configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY */
     IRQ_SetPriority((IRQn_ID_t)GMAC1_IRQn, (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1) << portPRIORITY_SHIFT);
     IRQ_SetHandler(GMAC1_IRQn, GMAC1_IRQHandler);
-    IRQ_SetTarget(GMAC1_IRQn, IRQ_CPU_0);
+    IRQ_SetTarget(GMAC1_IRQn, 0x1 << cpuid());
     IRQ_Enable(GMAC1_IRQn);
 }
 
@@ -535,6 +566,13 @@ ethernetif_init0(struct netif *netif)
     /* initialize the hardware */
     low_level_init0(netif);
 
+    xTaskCreate(gmac0_lwip_rx,
+            "gmac0-lwip-rx",
+            GMAC_LWIP_RX_STACKSIZE,
+            NULL,
+            GMAC_LWIP_RX_PRIORITY,
+            &post_rx_task[GMACINTF0]);
+
     return ERR_OK;
 }
 
@@ -591,6 +629,13 @@ ethernetif_init1(struct netif *netif)
 
     /* initialize the hardware */
     low_level_init1(netif);
+
+    xTaskCreate(gmac1_lwip_rx,
+            "gmac1-lwip-rx",
+            GMAC_LWIP_RX_STACKSIZE,
+            NULL,
+            GMAC_LWIP_RX_PRIORITY,
+            &post_rx_task[GMACINTF1]);
 
     return ERR_OK;
 }

@@ -102,7 +102,7 @@ extern uint32_t SystemCoreClock;
 
 /* Set the following definitions to 1 if you would like to place a critical
 section in interrupt. This will use HWSEM channel 0 to implement a spinlock. */
-#define configCritical_Section_In_Int           1
+#define configCritical_Section_In_Int           0
 
 /* Software timer definitions. */
 #define configUSE_TIMERS                        FIXED_TO(1)
@@ -149,9 +149,9 @@ command interpreter running. */
 header file. */
 void vMainAssertCalled( const char *pcFileName, uint32_t ulLineNumber );
 #ifndef GLOBAL_NOASSERT
-#define configASSERT( x ) if( ( x ) == 0 ) { vMainAssertCalled( __FILE__, __LINE__ ); }
+    #define configASSERT( x ) if( ( x ) == 0 ) { vMainAssertCalled( __FILE__, __LINE__ ); }
 #else
-#define configASSERT( x ) x
+    #define configASSERT( x ) x
 #endif
 
 /* If configTASK_RETURN_ADDRESS is not defined then a task that attempts to
@@ -170,7 +170,7 @@ system. */
 routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
 INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
 PRIORITY THAN THIS! (higher priorities are lower numeric values. */
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    5
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    configMAX_API_CALL_INTERRUPT_PRIORITY
 
 /****** Hardware specific settings. *******************************************/
 

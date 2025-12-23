@@ -244,8 +244,26 @@ FreeRTOS_SWI_Handler:
     portRESTORE_CONTEXT
 
 FreeRTOS_Abort:
-    /* Full ESR is in X0, exception class code is in X1. */
-    B       .
+    /* Identify core */
+    MRS     x10, MPIDR_EL1
+    AND     x10, x10, #0xFF
+
+    /* Which EL are we in? */
+    MRS     x11, CurrentEL
+
+#if defined( GUEST )
+    MRS     x12, ESR_EL1
+    MRS     x13, ELR_EL1
+    MRS     x14, SPSR_EL1
+#else
+    MRS     x12, ESR_EL3
+    MRS     x13, ELR_EL3
+    MRS     x14, SPSR_EL3
+#endif
+
+    /* Stop this core safely */
+1:  WFE
+    B       1b
 
 /******************************************************************************
  * vPortRestoreTaskContext is used to start the scheduler.
