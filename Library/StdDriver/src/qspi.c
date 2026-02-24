@@ -45,7 +45,7 @@ uint32_t QSPI_Open(QSPI_T *qspi,
                    uint32_t u32DataWidth,
                    uint32_t u32BusClock)
 {
-    uint32_t u32ClkSrc = 0U, u32Div, u32HCLKFreq, u32RetValue=0U;
+    uint32_t u32ClkSrc = 0U, u32Div, u32APB0PCLKFreq, u32RetValue=0U;
 
     if(u32DataWidth == 32U)
     {
@@ -53,7 +53,7 @@ uint32_t QSPI_Open(QSPI_T *qspi,
     }
 
     /* Get system clock frequency */
-    u32HCLKFreq = CLK_GetSYSCLK0Freq();
+    u32APB0PCLKFreq = CLK_GetSYSCLK1Freq();
 
     if(u32MasterSlave == QSPI_MASTER)
     {
@@ -63,34 +63,34 @@ uint32_t QSPI_Open(QSPI_T *qspi,
         /* Default setting: MSB first, disable unit transfer interrupt, SP_CYCLE = 0. */
         qspi->CTL = u32MasterSlave | (u32DataWidth << QSPI_CTL_DWIDTH_Pos) | (u32QSPIMode) | QSPI_CTL_SPIEN_Msk;
 
-        if(u32BusClock >= u32HCLKFreq)
+        if(u32BusClock >= u32APB0PCLKFreq)
         {
             /* Select PCLK as the clock source of QSPI */
-            CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI1SEL_Msk)) | CLK_CLKSEL4_QSPI1SEL_PCLK0;
+            CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI0SEL_Msk)) | CLK_CLKSEL4_QSPI0SEL_PCLK0;
         }
 
         /* Check clock source of QSPI */
-        if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_APLL) == CLK_CLKSEL4_QSPI1SEL_APLL)
+        if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_APLL) == CLK_CLKSEL4_QSPI0SEL_APLL)
         {
             u32ClkSrc = CLK_GetPLLClockFreq(APLL); /* Clock source is APLL */
         }
-        else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_Msk) == CLK_CLKSEL4_QSPI1SEL_PCLK0)
+        else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_Msk) == CLK_CLKSEL4_QSPI0SEL_PCLK0)
         {
             /* Clock source is PCLK0 */
             u32ClkSrc = CLK_GetPCLK0Freq();
         }
 
-        if(u32BusClock >= u32HCLKFreq)
+        if(u32BusClock >= u32APB0PCLKFreq)
         {
-            /* Set DIVIDER = 0 */
-            qspi->CLKDIV = 0U;
+            /* Set DIVIDER = 1 */
+            qspi->CLKDIV = 1U;
             /* Return master peripheral clock rate */
             u32RetValue = u32ClkSrc;
         }
         else if(u32BusClock >= u32ClkSrc)
         {
-            /* Set DIVIDER = 0 */
-            qspi->CLKDIV = 0U;
+            /* Set DIVIDER = 1 */
+            qspi->CLKDIV = 1U;
             /* Return master peripheral clock rate */
             u32RetValue = u32ClkSrc;
         }
@@ -127,11 +127,11 @@ uint32_t QSPI_Open(QSPI_T *qspi,
         /* Default setting: MSB first, disable unit transfer interrupt, SP_CYCLE = 0. */
         qspi->CTL = u32MasterSlave | (u32DataWidth << QSPI_CTL_DWIDTH_Pos) | (u32QSPIMode) | QSPI_CTL_SPIEN_Msk;
 
-        /* Set DIVIDER = 0 */
-        qspi->CLKDIV = 0U;
+        /* Set DIVIDER = 1 */
+        qspi->CLKDIV = 1U;
 
         /* Select PCLK as the clock source of QSPI */
-        CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI1SEL_Msk)) | CLK_CLKSEL4_QSPI1SEL_PCLK0;
+        CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI0SEL_Msk)) | CLK_CLKSEL4_QSPI0SEL_PCLK0;
         /* Return slave peripheral clock rate */
         u32RetValue = CLK_GetPCLK0Freq();
     }
@@ -147,8 +147,8 @@ uint32_t QSPI_Open(QSPI_T *qspi,
 void QSPI_Close(QSPI_T *qspi)
 {
     /* Reset QSPI */
-    SYS->IPRST2 |= SYS_IPRST2_QSPI1RST_Msk;
-    SYS->IPRST2 &= ~SYS_IPRST2_QSPI1RST_Msk;
+    SYS->IPRST1 |= SYS_IPRST1_QSPI0RST_Msk;
+    SYS->IPRST1 &= ~SYS_IPRST1_QSPI0RST_Msk;
 }
 
 /**
@@ -209,44 +209,40 @@ void QSPI_EnableAutoSS(QSPI_T *qspi, uint32_t u32SSPinMask, uint32_t u32ActiveLe
   */
 uint32_t QSPI_SetBusClock(QSPI_T *qspi, uint32_t u32BusClock)
 {
-    uint32_t u32ClkSrc, u32HCLKFreq;
+    uint32_t u32ClkSrc, u32APB0PCLKFreq;
     uint32_t u32Div, u32RetValue;
 
     /* Get system clock frequency */
-    u32HCLKFreq = CLK_GetSYSCLK0Freq();
+    u32APB0PCLKFreq = CLK_GetSYSCLK1Freq();
 
-    if(u32BusClock >= u32HCLKFreq)
+    if(u32BusClock >= u32APB0PCLKFreq)
     {
         /* Select PCLK as the clock source of QSPI */
-        CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI1SEL_Msk)) | CLK_CLKSEL4_QSPI1SEL_PCLK0;
+        CLK->CLKSEL4 = (CLK->CLKSEL4 & (~CLK_CLKSEL4_QSPI0SEL_Msk)) | CLK_CLKSEL4_QSPI0SEL_PCLK0;
     }
 
     /* Check clock source of QSPI */
-    if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_APLL) == CLK_CLKSEL4_QSPI1SEL_APLL)
+    if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_APLL) == CLK_CLKSEL4_QSPI0SEL_APLL)
     {
         u32ClkSrc = CLK_GetPLLClockFreq(APLL); /* Clock source is APLL */
     }
-    else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_Msk) == CLK_CLKSEL4_QSPI1SEL_PCLK0)
+    else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_Msk) == CLK_CLKSEL4_QSPI0SEL_PCLK0)
     {
         /* Clock source is PCLK0 */
         u32ClkSrc = CLK_GetPCLK0Freq();
     }
-    else
-    {
-        u32ClkSrc = __HIRC; /* Clock source is HIRC */
-    }
 
-    if(u32BusClock >= u32HCLKFreq)
+    if(u32BusClock >= u32APB0PCLKFreq)
     {
-        /* Set DIVIDER = 0 */
-        qspi->CLKDIV = 0U;
+        /* Set DIVIDER = 1 */
+        qspi->CLKDIV = 1U;
         /* Return master peripheral clock rate */
         u32RetValue = u32ClkSrc;
     }
     else if(u32BusClock >= u32ClkSrc)
     {
-        /* Set DIVIDER = 0 */
-        qspi->CLKDIV = 0U;
+        /* Set DIVIDER = 1 */
+        qspi->CLKDIV = 1U;
         /* Return master peripheral clock rate */
         u32RetValue = u32ClkSrc;
     }
@@ -308,18 +304,14 @@ uint32_t QSPI_GetBusClock(QSPI_T *qspi)
 
     /* Check clock source of QSPI */
    {
-        if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_APLL) == CLK_CLKSEL4_QSPI1SEL_APLL)
+        if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_APLL) == CLK_CLKSEL4_QSPI0SEL_APLL)
         {
             u32ClkSrc = CLK_GetPLLClockFreq(APLL); /* Clock source is APLL */
         }
-        else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI1SEL_Msk) == CLK_CLKSEL4_QSPI1SEL_PCLK0)
+        else if((CLK->CLKSEL4 & CLK_CLKSEL4_QSPI0SEL_Msk) == CLK_CLKSEL4_QSPI0SEL_PCLK0)
         {
             /* Clock source is PCLK0 */
             u32ClkSrc = CLK_GetPCLK0Freq();
-        }
-        else
-        {
-            u32ClkSrc = __HIRC; /* Clock source is HIRC */
         }
     }
 
