@@ -17,10 +17,10 @@
 #define SHARED_MEM_SIZE        ( RING_TX_SIZE + RING_RX_SIZE )
 #define NO_NAME_SERVICE        ( 32 ) /* Number of char supported by ns (must be aligned with word) */
 
-#define RXIPI_BASE             ( TIMER9 )
-#define RXIPI_IRQ_NUM          (IRQn_ID_t)TMR9_IRQn
-#define TXIPI_BASE             ( TIMER8 )
-#define TXIPI_IRQ_NUM          (IRQn_ID_t)TMR8_IRQn
+#define RXIPI_BASE             ( TIMER8 )
+#define RXIPI_IRQ_NUM          (IRQn_ID_t)TMR8_IRQn
+#define TXIPI_BASE             ( TIMER9 )
+#define TXIPI_IRQ_NUM          (IRQn_ID_t)TMR9_IRQn
 
 /**
  * @brief Check if remote is ready

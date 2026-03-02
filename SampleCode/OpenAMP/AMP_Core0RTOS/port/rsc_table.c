@@ -20,19 +20,9 @@
 #define __resource
 #endif
 
-/* VirtIO rpmsg device id */
 #define NUM_TABLE_ENTRIES 1
-#define VIRTIO_ID_RPMSG_ 7 // must be unique
 #define RPMSG_VDEV_DFEATURES (1 << VIRTIO_RPMSG_F_NS)
 #define NUM_VRINGS 0x02
-
-#ifndef RING_TX
-#error "RING_TX is not defined"
-#endif
-
-#ifndef RING_RX
-#error "RING_RX is not defined"
-#endif
 
 struct remote_resource_table __resource resources = {
     /* Version */
@@ -48,13 +38,7 @@ struct remote_resource_table __resource resources = {
     },
 
     /* Offsets of rsc entries */
-    {
-        offsetof(struct remote_resource_table, rpmsg_vdev),
-        offsetof(struct remote_resource_table, rpmsg_vring0),
-        offsetof(struct remote_resource_table, rpmsg_vring1),
-        offsetof(struct remote_resource_table, desc_vring0),
-        offsetof(struct remote_resource_table, desc_vring1),
-    },
+    {},
 
     /* Virtio device entry */
     {
@@ -69,9 +53,6 @@ struct remote_resource_table __resource resources = {
         {0, 0},
     },
 
-    /* Vring rsc entry - part of vdev rsc entry */
-    {RING_TX - SHARED_RSC_TABLE, VRING_ALIGN, VRING_SIZE, 1, RING_TX_SIZE},
-    {RING_RX - SHARED_RSC_TABLE, VRING_ALIGN, VRING_SIZE, 2, RING_RX_SIZE},
 };
 
 void *get_resource_table(int rsc_id, int *len)
@@ -79,4 +60,13 @@ void *get_resource_table(int rsc_id, int *len)
     (void)rsc_id;
     *len = sizeof(resources);
     return &resources;
+}
+
+/**
+ * dst: resources
+ * src: resource table in shared memory, which is written by remote
+ */
+void remote_resource_table_copy(void *dst, void *src)
+{
+    memcpy(dst, src, sizeof(struct remote_resource_table));
 }

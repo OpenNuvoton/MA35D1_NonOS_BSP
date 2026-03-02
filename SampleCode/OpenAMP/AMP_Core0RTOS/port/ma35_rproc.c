@@ -22,6 +22,7 @@
 #include "NuMicro.h"
 
 extern void *resource_table_shmem;
+extern struct remote_resource_table resources;
 
 void RxIPI_IRQHandler(void);
 static int ma35_rpmsg_receive(struct rpmsg_endpoint_priv *ept_priv);
@@ -29,6 +30,7 @@ static int check_tx_bind_ready(struct rpmsg_endpoint_priv *ept_priv);
 static int check_rx_bind_ready(struct rpmsg_endpoint_priv *ept_priv);
 static int ma35_rpmsg_reconnect_ept(struct rpmsg_endpoint_priv *ept_priv);
 static int ma35_desc_init(struct remoteproc_priv *priv);
+static int ma35_rsc_table_parser(struct remoteproc_priv *priv);
 
 /**
  * @brief
@@ -66,12 +68,13 @@ static struct remoteproc *ma35_rproc_init(struct remoteproc *rproc,
     rproc->ops = ops;
 
     /* Init HW here to support IPI */
+    RXIPI_BASE->CMP = 0x2;
+    RXIPI_BASE->CTL = 1 << 29;
+    TXIPI_BASE->CMP = 0x2;
+    TXIPI_BASE->CTL = 1 << 29;
     IRQ_SetHandler((IRQn_ID_t)RXIPI_IRQ_NUM, RxIPI_IRQHandler);
-    IRQ_SetTarget(RXIPI_IRQ_NUM, IRQ_CPU_1);
+    IRQ_SetTarget(RXIPI_IRQ_NUM, IRQ_CPU_0);
     IRQ_Enable((IRQn_ID_t)RXIPI_IRQ_NUM);
-
-    /* Rx handler is registered by remote */
-    IRQ_SetTarget(TXIPI_IRQ_NUM, IRQ_CPU_0);
 
     return rproc;
 err1:
@@ -151,24 +154,14 @@ void RxIPI_IRQHandler(void)
     if (TIMER_GetIntFlag(RXIPI_BASE) == 1)
         TIMER_ClearIntFlag(RXIPI_BASE);
 
-    if (rsc_table->reserved[1] == IPI_CMD_REQUEST) {
-        if (!ma35_rpmsg_remote_ready()) {
-            /* Get remap first */
-            rsc_table = get_resource_table(0, &rsc_size);
-            /* Copy resource table from local to shared momory */
-            memcpy((void *)resource_table_shmem, rsc_table, rsc_size);
-            rsc_table = (void *)resource_table_shmem;
-            ma35_desc_init(NULL);
-        }
-        rsc_table->reserved[1] = 0;
-        rsc_table->reserved[0] = IPI_CMD_REPLY;
-        TIMER_Start(TXIPI_BASE);
+    if (rsc_table->reserved[0] == IPI_CMD_REPLY) {
+        ma35_rsc_table_parser(&rproc_priv);
         return;
     }
 
     // scan desc
     for (i = 0; i < rproc_priv.desc_num; i++) {
-        if (rsc_table->desc_vring1[i].CMD &
+        if (rsc_table->desc_vring0[i].CMD &
             (VRING_DESC_CMD_HEAD | VRING_DESC_CMD_CLOSE)) {
             ept_priv = (struct rpmsg_endpoint_priv *)rproc_priv.kick_ept[i];
             if (!check_rx_bind_ready(ept_priv)) {
@@ -194,7 +187,7 @@ static int ma35_notify_remote(struct metal_io_region *io_resion, uint32_t id)
     (void)id;
 
     /* check remote ready before send notification */
-    if (GIC_GetEnableIRQ(TMR8_IRQn)) {
+    if (GIC_GetEnableIRQ(TMR9_IRQn)) {
         TIMER_Start(TXIPI_BASE);
         return 0;
     } else {
@@ -461,13 +454,13 @@ static int ma35_rpmsg_ns_bind_remote(struct rpmsg_endpoint *ept, char *ns,
 
 NS_MATCHING:
     for (i = 0; i < rproc_priv.desc_num; i++) {
-        if ((rsc_table->desc_vring1[i].CMD & VRING_DESC_CMD_CLAIM) == 0)
+        if ((rsc_table->desc_vring0[i].CMD & VRING_DESC_CMD_CLAIM) == 0)
             continue;
-        if (!memcmp(ns, rsc_table->desc_vring1[i].ns, NO_NAME_SERVICE)) {
+        if (!memcmp(ns, rsc_table->desc_vring0[i].ns, NO_NAME_SERVICE)) {
             metal_mutex_acquire(&rdev->lock);
 
             ept_priv->bind_desc =
-                (struct rsc_table_desc *)&rsc_table->desc_vring1[i];
+                (struct rsc_table_desc *)&rsc_table->desc_vring0[i];
             ept_priv->bind_id = i;
             rproc_priv.kick_ept[ept_priv->bind_id] = ept_priv;
 
@@ -641,7 +634,7 @@ static int ma35_check_available_desc(struct rpmsg_endpoint_priv *ept_priv,
         if (!rproc_priv.buf_flag[i]) {
             rproc_priv.buf_flag[i] = 1;
             desc->nxt_offset =
-                offsetof(struct remote_resource_table, desc_vring0) +
+                offsetof(struct remote_resource_table, desc_vring1) +
                 sizeof(struct rsc_table_desc) * i;
             desc = (struct rsc_table_desc *)(rproc_priv.shmem_base +
                                              desc->nxt_offset);
@@ -973,10 +966,10 @@ static int ma35_desc_init(struct remoteproc_priv *priv)
     int i;
     (void)priv;
 
-    memset(rsc_table->desc_vring0, 0,
+    memset(rsc_table->desc_vring1, 0,
            sizeof(struct rsc_table_desc) * rproc_priv.desc_num);
     for (i = 0; i < rproc_priv.desc_num; i++) {
-        rsc_table->desc_vring0[i].buf_offset = rproc_priv.desc_txbuf * i;
+        rsc_table->desc_vring1[i].buf_offset = rproc_priv.desc_txbuf * i;
     }
 
     rproc_priv.ready = 1;
@@ -988,9 +981,13 @@ static void vBindingTask(void *pvParameters)
 {
     Node *head = (Node *)pvParameters;
     Node *scan;
+    struct remote_resource_table *rsc_table = resource_table_shmem;
     struct rpmsg_endpoint *ept;
 
     sysprintf("Start %s...\n", pcTaskGetName(NULL));
+
+    rsc_table->reserved[1] = IPI_CMD_REQUEST;
+    ma35_notify_remote(NULL, 0);
 
     while (1) {
         scan = head->next;
@@ -1012,6 +1009,63 @@ static void vBindingTask(void *pvParameters)
     }
 
     vTaskDelete(NULL);
+}
+
+static int ma35_rsc_table_update(struct remoteproc_priv *priv)
+{
+    // Reserved, add configuration here
+    return 0;
+}
+
+static int ma35_rsc_table_parser(struct remoteproc_priv *priv)
+{
+    struct remote_resource_table *rsc_table;
+    struct fw_rsc_vdev *rsc_vdev;
+    struct fw_rsc_vdev_vring *vring0, *vring1;
+    u32 shmem_rx_size, shmem_tx_size;
+
+    if (priv->ready)
+        goto resu;
+
+    rsc_table = (struct remote_resource_table *)rproc_priv.shmem_base;
+    remote_resource_table_copy(rsc_table, (void *)SHARED_RSC_TABLE);
+
+    if (rsc_table->version != DRIVER_VERSION || rsc_table->num != 1) {
+        sysprintf("Nuvoton AMP version not match %d\n\n", rsc_table->version);
+        goto err;
+    }
+
+    rsc_vdev = &rsc_table->rpmsg_vdev;
+    if (rsc_vdev->id != VIRTIO_ID_RPMSG_ || rsc_vdev->num_of_vrings != 2) {
+        sysprintf("vdev: %d %d\n", rsc_vdev->id, rsc_vdev->num_of_vrings);
+        goto err;
+    }
+
+    vring0 = &rsc_table->rpmsg_vring0;
+    vring1 = &rsc_table->rpmsg_vring1;
+    if (vring0->notifyid != 1 || vring1->notifyid != 2) {
+        sysprintf("notifyid: %d %d\n", vring0->notifyid, vring1->notifyid);
+        goto err;
+    }
+
+    priv->desc_num = vring0->num;
+    priv->shmem_rx_base = priv->shmem_base + vring0->da;
+    shmem_rx_size = vring0->reserved;
+    priv->shmem_tx_base = priv->shmem_base + vring1->da;
+    shmem_tx_size = vring1->reserved;
+    priv->desc_rxbuf = shmem_rx_size / priv->desc_num;
+    priv->desc_txbuf = shmem_tx_size / priv->desc_num;
+
+    priv->ready = 1;
+resu:
+    ma35_rsc_table_update(priv);
+    rsc_table->reserved[0] = 0;
+    ma35_desc_init(priv);
+
+    return 0;
+err:
+    sysprintf("Parameter error detected in resource table.\n");
+    return -1;
 }
 
 int ma35_rpmsg_init_vdev(struct rpmsg_virtio_device *rvdev,
@@ -1044,11 +1098,6 @@ int ma35_rpmsg_init_vdev(struct rpmsg_virtio_device *rvdev,
     /* init shmem pool */
     rproc_priv.shmem_base = SHARED_RSC_TABLE;
     rproc_priv.desc_num = VRING_SIZE;
-    rproc_priv.desc_txbuf = RING_TX_SIZE / rproc_priv.desc_num;
-    rproc_priv.desc_rxbuf = RING_RX_SIZE / rproc_priv.desc_num;
-    base = (u64)rvdev->shpool->base;
-    rproc_priv.shmem_tx_base = base;
-    rproc_priv.shmem_rx_base = base + RING_TX_SIZE;
 
     rproc_priv.buf_flag = (uint8_t *)metal_allocate_memory(rproc_priv.desc_num);
     memset(rproc_priv.buf_flag, 0, (size_t)rproc_priv.desc_num);

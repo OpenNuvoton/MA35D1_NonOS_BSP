@@ -22,34 +22,39 @@
 #include "platform_info.h"
 #include "rsc_table.h"
 
-#define TASKB_TX_SIZE 0x400
-#define TASKD_TX_SIZE 0x2800
-#define TASKF_TX_SIZE 0x400
+#define CORE1_EXECUTE 0x88000000
 
-int ReadTaskB_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+extern void RunCore1(uint32_t addr);
+
+#define TASKA_TX_SIZE 0x400
+#define TASKC_TX_SIZE 0x2800
+#define TASKE_TX_SIZE 0x400
+
+int ReadTaskA_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
                  uint32_t src, void *priv);
-int ReadTaskD_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+int ReadTaskC_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
                  uint32_t src, void *priv);
-int ReadTaskF_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+int ReadTaskE_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
                  uint32_t src, void *priv);
-void vPollTaskB(void *pvParameters);
-void vSendTaskB(void *pvParameters);
-void vPollTaskD(void *pvParameters);
-void vSendTaskD(void *pvParameters);
-void vPollTaskF(void *pvParameters);
-void vSendTaskF(void *pvParameters);
+void vPollTaskA(void *pvParameters);
+void vSendTaskA(void *pvParameters);
+void vPollTaskC(void *pvParameters);
+void vSendTaskC(void *pvParameters);
+void vPollTaskE(void *pvParameters);
+void vSendTaskE(void *pvParameters);
 
 /* User defined endpoints */
 struct amp_endpoint eptinst[] = {
-    {{"eptA->B", EPT_TYPE_RX}, ReadTaskB_cb, vPollTaskB},        /* Task B */
-    {{"eptB->A", EPT_TYPE_TX, TASKB_TX_SIZE}, NULL, vSendTaskB}, /* Task B */
-    {{"eptC->D", EPT_TYPE_RX}, ReadTaskD_cb, vPollTaskD},        /* Task D */
-    {{"eptD->C", EPT_TYPE_TX, TASKD_TX_SIZE}, NULL, vSendTaskD}, /* Task D */
-    {{"eptE->F", EPT_TYPE_RX}, ReadTaskF_cb, vPollTaskF},        /* Task F */
-    {{"eptF->E", EPT_TYPE_TX, TASKF_TX_SIZE}, NULL, vSendTaskF}, /* Task F */
+    {{"eptA->B", EPT_TYPE_TX, TASKA_TX_SIZE}, NULL, vSendTaskA}, /* Task A */
+    {{"eptB->A", EPT_TYPE_RX}, ReadTaskA_cb, vPollTaskA},        /* Task A */
+    {{"eptC->D", EPT_TYPE_TX, TASKC_TX_SIZE}, NULL, vSendTaskC}, /* Task C */
+    {{"eptD->C", EPT_TYPE_RX}, ReadTaskC_cb, vPollTaskC},        /* Task C */
+    {{"eptE->F", EPT_TYPE_TX, TASKE_TX_SIZE}, NULL, vSendTaskE}, /* Task E */
+    {{"eptF->E", EPT_TYPE_RX}, ReadTaskE_cb, vPollTaskE},        /* Task E */
 };
-char tx_bufB[TASKB_TX_SIZE];
-char tx_bufD[TASKD_TX_SIZE];
+char tx_bufA[TASKA_TX_SIZE];
+char tx_bufC[TASKC_TX_SIZE];
+char tx_bufE[TASKE_TX_SIZE];
 
 TaskHandle_t createTaskHandle;
 unsigned long throughput[4];
@@ -57,24 +62,28 @@ unsigned long throughput[4];
 #define rpmsgEpt_to_ampEpt(ept)                                                \
     metal_container_of(ept, struct amp_endpoint, ept)
 
-void UART16_Init()
+void UART0_Init()
 {
-    /* Enable UART16 clock */
-    CLK_EnableModuleClock(UART16_MODULE);
-    CLK_SetModuleClock(UART16_MODULE, CLK_CLKSEL3_UART16SEL_HXT,
-                       CLK_CLKDIV3_UART16(1));
+    /* Enable UART0 clock */
+    CLK_EnableModuleClock(UART0_MODULE);
+    CLK_SetModuleClock(UART0_MODULE, CLK_CLKSEL2_UART0SEL_HXT,
+                       CLK_CLKDIV1_UART0(1));
 
     /* Set multi-function pins */
-    SYS->GPK_MFPL &= ~(SYS_GPK_MFPL_PK2MFP_Msk | SYS_GPK_MFPL_PK3MFP_Msk);
-    SYS->GPK_MFPL |=
-        (SYS_GPK_MFPL_PK2MFP_UART16_RXD | SYS_GPK_MFPL_PK3MFP_UART16_TXD);
+    SYS->GPE_MFPH &= ~(SYS_GPE_MFPH_PE14MFP_Msk | SYS_GPE_MFPH_PE15MFP_Msk);
+    SYS->GPE_MFPH |=
+        (SYS_GPE_MFPH_PE14MFP_UART0_TXD | SYS_GPE_MFPH_PE15MFP_UART0_RXD);
 
     /* Init UART to 115200-8n1 for print message */
-    UART_Open(UART16, 115200);
+    UART_Open(UART0, 115200);
 }
 
 void SYS_Init()
 {
+    /* Enable timer clock */
+    CLK_EnableModuleClock(TMR8_MODULE);
+    CLK_EnableModuleClock(TMR9_MODULE);
+
     /* Unlock protected registers */
     SYS_UnlockReg();
 
@@ -83,14 +92,10 @@ void SYS_Init()
     SystemCoreClockUpdate();
 
     /* Init UART for sysprintf */
-    UART16_Init();
+    UART0_Init();
 
     // Enable HWSEM clock
     CLK_EnableModuleClock(HWS_MODULE);
-
-    // Reset HWSEM
-    SYS->IPRST0 = SYS_IPRST0_HWSEMRST_Msk;
-    SYS->IPRST0 = 0;
 
     /* Enable global timer */
     global_timer_init();
@@ -201,6 +206,45 @@ int amp_close(void)
 }
 
 /**
+ * @brief User Tx task, call ma35_rpmsg_send to send data
+ *
+ * @param pvParameters ept
+ */
+void vSendTaskA(void *pvParameters)
+{
+    int i, ret, size, j = 0;
+
+    for (;;) {
+        /* Start of user write function */
+        size = rand();
+        size = size % TASKA_TX_SIZE;
+        size = size ? size : TASKA_TX_SIZE;
+
+        for (i = 0; i < size; i++)
+            tx_bufA[i] = size + i;
+        /* End of user write function */
+
+        ret = ma35_rpmsg_send(pvParameters, tx_bufA, size);
+        if (ret < 0) {
+            if (ret == RPMSG_ERR_PERM) {
+                sysprintf("%s: Remote closed.\n", pcTaskGetName(NULL));
+                /* 1. do nothing and try reconnecting 2. call
+                 * ma35_rpmsg_destroy_ept and exit */
+                // ma35_rpmsg_destroy_ept(pvParameters);
+                // vTaskDelete(NULL);
+            } else if (ret == RPMSG_ERR_NO_BUFF)
+                sysprintf("%s: Tx blocking.\n", pcTaskGetName(NULL));
+            // else if(ret == RPMSG_ERR_INIT)
+            // 	sysprintf("%s: Remote ept not ready.\n", pcTaskGetName(NULL));
+        } else {
+            throughput[0] += ret;
+        }
+
+        vTaskDelay(10);
+    }
+}
+
+/**
  * @brief User Rx callback, do not call this directly.
  *        The function is called when a POLLIN event is received.
  *
@@ -211,7 +255,7 @@ int amp_close(void)
  * @param priv unused
  * @return int always return RPMSG_SUCCESS
  */
-int ReadTaskB_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+int ReadTaskA_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
                  uint32_t src, void *priv)
 {
     char *rxbuf = data;
@@ -220,7 +264,7 @@ int ReadTaskB_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
     (void)priv;
 
     /* Start of user read function */
-    throughput[0] += rxlen;
+    throughput[1] += rxlen;
     /* End of user read function */
 
     return RPMSG_SUCCESS;
@@ -231,7 +275,7 @@ int ReadTaskB_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
  *
  * @param pvParameters ept
  */
-void vPollTaskB(void *pvParameters)
+void vPollTaskA(void *pvParameters)
 {
     int ret;
 
@@ -255,21 +299,21 @@ void vPollTaskB(void *pvParameters)
  *
  * @param pvParameters ept
  */
-void vSendTaskB(void *pvParameters)
+void vSendTaskC(void *pvParameters)
 {
     int i, ret, size, j = 0;
 
     for (;;) {
         /* Start of user write function */
         size = rand();
-        size = size % TASKB_TX_SIZE;
-        size = size ? size : TASKB_TX_SIZE;
+        size = size % TASKC_TX_SIZE;
+        size = size ? size : TASKC_TX_SIZE;
 
         for (i = 0; i < size; i++)
-            tx_bufB[i] = size + i;
+            tx_bufC[i] = size + i;
         /* End of user write function */
 
-        ret = ma35_rpmsg_send(pvParameters, tx_bufB, size);
+        ret = ma35_rpmsg_send(pvParameters, tx_bufC, size);
         if (ret < 0) {
             if (ret == RPMSG_ERR_PERM) {
                 sysprintf("%s: Remote closed.\n", pcTaskGetName(NULL));
@@ -282,10 +326,10 @@ void vSendTaskB(void *pvParameters)
             // else if(ret == RPMSG_ERR_INIT)
             // 	sysprintf("%s: Remote ept not ready.\n", pcTaskGetName(NULL));
         } else {
-            throughput[1] += ret;
+            throughput[2] += ret;
         }
 
-        vTaskDelay(10);
+        vTaskDelay(100);
     }
 }
 
@@ -300,7 +344,7 @@ void vSendTaskB(void *pvParameters)
  * @param priv unused
  * @return int always return RPMSG_SUCCESS
  */
-int ReadTaskD_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+int ReadTaskC_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
                  uint32_t src, void *priv)
 {
     char *rxbuf = data;
@@ -309,7 +353,7 @@ int ReadTaskD_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
     (void)priv;
 
     /* Start of user read function */
-    throughput[2] += rxlen;
+    throughput[3] += rxlen;
     /* End of user read function */
 
     return RPMSG_SUCCESS;
@@ -320,7 +364,7 @@ int ReadTaskD_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
  *
  * @param pvParameters ept
  */
-void vPollTaskD(void *pvParameters)
+void vPollTaskC(void *pvParameters)
 {
     int ret;
 
@@ -339,121 +383,90 @@ void vPollTaskD(void *pvParameters)
     }
 }
 
-/**
- * @brief User Tx task, call ma35_rpmsg_send to send data
- *
- * @param pvParameters ept
- */
-void vSendTaskD(void *pvParameters)
-{
-    int i, ret, size, j = 0;
-
-    for (;;) {
-        /* Start of user write function */
-        size = rand();
-        size = size % TASKD_TX_SIZE;
-        size = size ? size : TASKD_TX_SIZE;
-
-        for (i = 0; i < size; i++)
-            tx_bufD[i] = size + i;
-        /* End of user write function */
-
-        ret = ma35_rpmsg_send(pvParameters, tx_bufD, size);
-        if (ret < 0) {
-            if (ret == RPMSG_ERR_PERM) {
-                sysprintf("%s: Remote closed.\n", pcTaskGetName(NULL));
-                /* 1. do nothing and try reconnecting 2. call
-                 * ma35_rpmsg_destroy_ept and exit */
-                // ma35_rpmsg_destroy_ept(pvParameters);
-                // vTaskDelete(NULL);
-            } else if (ret == RPMSG_ERR_NO_BUFF)
-                sysprintf("%s: Tx blocking.\n", pcTaskGetName(NULL));
-            // else if(ret == RPMSG_ERR_INIT)
-            // 	sysprintf("%s: Remote ept not ready.\n", pcTaskGetName(NULL));
-        } else {
-            throughput[3] += ret;
-        }
-
-        vTaskDelay(100);
-    }
-}
-
+uint32_t crc_cal, crc_cmp = 0, crc_err = 0;
 extern uint32_t crc32(uint32_t crc, void *data, size_t length);
 /**
- * @brief User Rx callback, do not call this directly.
- *        The function is called when a POLLIN event is received.
- *
- * @param ept rpmsg endpoint
- * @param data pointer to rx buffer provided by driver
- * @param len length of rx buffer
- * @param src unused
- * @param priv unused
- * @return int always return RPMSG_SUCCESS
- */
-int ReadTaskF_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
-                 uint32_t src, void *priv)
-{
-    struct amp_endpoint *eptRead = rpmsgEpt_to_ampEpt(ept);
-    struct amp_endpoint *eptSend = eptRead + 1;
-    char *rxbuf = data;
-    int rxlen = len;
-    (void)src;
-    (void)priv;
-
-    /* Start of user read function */
-    uint32_t crc_cal = crc32(0UL, rxbuf, rxlen);
-    // signal to vSendTaskF
-    xTaskNotify(eptSend->taskHandle, crc_cal, eSetValueWithOverwrite);
-    /* End of user read function */
-
-    return RPMSG_SUCCESS;
-}
-
-/**
- * @brief User poll task, call ma35_rpmsg_poll to get status
- *
- * @param pvParameters ept
- */
-void vPollTaskF(void *pvParameters)
-{
-    int ret;
-
-    for (;;) {
-        ret = ma35_rpmsg_poll(pvParameters);
-        if (ret == RPMSG_ERR_PERM) {
-            sysprintf("%s: Remote closed.\n", pcTaskGetName(NULL));
-            /* 1. do nothing and try reconnecting 2. call ma35_rpmsg_destroy_ept
-             * and exit */
-            // ma35_rpmsg_destroy_ept(pvParameters);
-            // vTaskDelete(NULL);
-        } else if (ret == RPMSG_ERR_NO_BUFF)
-            sysprintf("%s: Rx buffer is full.\n", pcTaskGetName(NULL));
-
-        vTaskDelay(100);
-    }
-}
-
-/**
  * @brief User Tx task, call ma35_rpmsg_send to send data
  *
  * @param pvParameters ept
  */
-void vSendTaskF(void *pvParameters)
+void vSendTaskE(void *pvParameters)
 {
     int i, ret, size = sizeof(uint32_t);
-    uint32_t txbuf;
 
     for (;;) {
         /* Start of user write function */
-        // This task is woken up by ReadTaskF_cb
-        txbuf = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        size = rand();
+        size = size % TASKE_TX_SIZE;
+        size = size ? size : TASKE_TX_SIZE;
+
+        for (i = 0; i < size; i++)
+            tx_bufE[i] = size + i;
+
+        crc_cal = crc32(0UL, tx_bufE, size);
         /* End of user write function */
 
-        ret = ma35_rpmsg_send(pvParameters, &txbuf, size);
+        ret = ma35_rpmsg_send(pvParameters, &tx_bufE, size);
         if (ret < 0) {
             if (ret == RPMSG_ERR_NO_BUFF)
                 sysprintf("%s: Tx blocking.\n", pcTaskGetName(NULL));
         }
+
+        vTaskDelay(1000);
+    }
+}
+
+/**
+ * @brief User Rx callback, do not call this directly.
+ *        The function is called when a POLLIN event is received.
+ *
+ * @param ept rpmsg endpoint
+ * @param data pointer to rx buffer provided by driver
+ * @param len length of rx buffer
+ * @param src unused
+ * @param priv unused
+ * @return int always return RPMSG_SUCCESS
+ */
+int ReadTaskE_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
+                 uint32_t src, void *priv)
+{
+    uint32_t *rxbuf = data;
+    int rxlen = len;
+    (void)src;
+    (void)priv;
+
+    /* Start of user read function */
+    crc_cmp++;
+    if (rxbuf[0] != crc_cal)
+        crc_err++;
+    // else
+    //     sysprintf("recv: 0x%08x, calc: 0x%08x\n", rxbuf[0], crc_cal);
+    /* End of user read function */
+
+    return RPMSG_SUCCESS;
+}
+
+/**
+ * @brief User poll task, call ma35_rpmsg_poll to get status
+ *
+ * @param pvParameters ept
+ */
+void vPollTaskE(void *pvParameters)
+{
+    int ret;
+
+    for (;;) {
+        ret = ma35_rpmsg_poll(pvParameters);
+        if (ret == RPMSG_ERR_PERM) {
+            sysprintf("%s: Remote closed.\n", pcTaskGetName(NULL));
+            /* 1. do nothing and try reconnecting 2. call ma35_rpmsg_destroy_ept
+             * and exit */
+            // ma35_rpmsg_destroy_ept(pvParameters);
+            // vTaskDelete(NULL);
+        } else if (ret == RPMSG_ERR_NO_BUFF)
+            sysprintf("%s: Rx buffer is full.\n", pcTaskGetName(NULL));
+
+        vTaskDelay(100);
     }
 }
 
@@ -483,7 +496,7 @@ void vCmdTask(void *pvParameters)
 
     for (;;) {
         ++stattick;
-        if (UART_IS_RX_READY(UART16)) {
+        if (UART_IS_RX_READY(UART0)) {
             c = sysgetchar();
             sysprintf("%c\n", c);
             switch (c) {
@@ -503,8 +516,8 @@ void vCmdTask(void *pvParameters)
                 /* It is required before powering dowm. */
                 IRQ_Disable((IRQn_ID_t)NonSecPhysicalTimer_IRQn);
                 IRQ_Disable((IRQn_ID_t)RXIPI_IRQ_NUM);
-                IRQ_Disable((IRQn_ID_t)TMR10_IRQn);
-                sysprintf("Disabled IRQs for Core1.\n");
+                IRQ_Disable((IRQn_ID_t)TMR11_IRQn);
+                sysprintf("Disabled IRQs for Core0.\n");
                 __WFI();
                 break;
             case 'g':
@@ -521,19 +534,22 @@ void vCmdTask(void *pvParameters)
                 stattick = 0;
                 throughput[0] = throughput[1] = throughput[2] = throughput[3] =
                     0;
+                crc_cal = crc_cmp = crc_err = 0;
                 xTaskNotify(createTaskHandle, 10, eSetValueWithOverwrite);
                 break;
             case 's':
                 if (stattick)
                     sysprintf(
-                        "Statistics: %lu, %lu, %lu, %lu\n",
+                        "Statistics: %lu, %lu, %lu, %lu; CRC error: %d/%d\n",
                         throughput[0] / stattick, throughput[1] / stattick,
-                        throughput[2] / stattick, throughput[3] / stattick);
+                        throughput[2] / stattick, throughput[3] / stattick,
+                        crc_err, crc_cmp);
                 break;
             case 'z':
                 stattick = 0;
                 throughput[0] = throughput[1] = throughput[2] = throughput[3] =
                     0;
+                crc_cal = crc_cmp = crc_err = 0;
                 sysprintf("Reset statistics.\n");
                 break;
             default:
@@ -553,7 +569,7 @@ int main(void)
 
     SYS_Init();
 
-    sysprintf("\n\nMA35D1 AMP Core#1 demo\n");
+    sysprintf("\n\nMA35D1 AMP Core#0 demo\n");
     sysprintf("Please refer to source code for detailed command info.\n\n");
     fflush(stdout);
 
@@ -574,6 +590,8 @@ int main(void)
             ret = 0;
         }
     }
+
+    RunCore1(CORE1_EXECUTE);
 
     if (!ret) {
         xTaskCreate(vEndpointCreateTask, "CreateEpt", configMINIMAL_STACK_SIZE,

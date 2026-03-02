@@ -55,6 +55,8 @@ extern "C" {
 #define NO_RESOURCE_ENTRIES    8
 #define VRING_ALIGN            0x80
 #define SHARED_BUF_OFFSET      sizeof(struct remote_resource_table) /* Reserved region for resource table */
+#define DRIVER_VERSION         1
+#define VIRTIO_ID_RPMSG_       7 // must be unique
 
 /* Unused */
 #define KICK_DEV_NAME          "poll_dev"
@@ -96,6 +98,7 @@ struct remote_resource_table {
 } __attribute__((packed, aligned(0x100)));
 
 void *get_resource_table(int rsc_id, int *len);
+void remote_resource_table_copy(void *dst, void *src);
 
 #if defined __cplusplus
 }
