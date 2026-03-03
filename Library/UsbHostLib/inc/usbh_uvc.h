@@ -28,7 +28,7 @@
 /*  Capability settings                                                                 */
 /*--------------------------------------------------------------------------------------*/
 
-#define UVC_MAX_DEVICE          1           /* Allowed maximum number of UVC device connected  */
+#define UVC_MAX_DEVICE          2           /* Allowed maximum number of UVC device connected  */
 #define UVC_MAX_STREAM          1           /* Allowed maximum number of streaming interface per UVC device   */
 
 #define UVC_MAX_ALT_IF          12          /* Maximum number of alternative interface per UVC streaming interface supported */
@@ -570,6 +570,15 @@ typedef struct uvc_ctrl_t
     IMAGE_FORMAT_E    frame_format[UVC_MAX_FRAME]; /* frame format                        */
     uint16_t          width[UVC_MAX_FRAME]; /* frame width                                */
     uint16_t          height[UVC_MAX_FRAME];/* frame height                               */
+
+    uint8_t           frame_interval_type[UVC_MAX_FRAME];
+    uint32_t          frame_interval_min[UVC_MAX_FRAME];
+    uint32_t          frame_interval_max[UVC_MAX_FRAME];
+    uint32_t          frame_interval_step[UVC_MAX_FRAME];
+
+    /* discrete interval */
+    uint8_t           frame_interval_num[UVC_MAX_FRAME];
+    uint32_t          frame_interval_list[UVC_MAX_FRAME][8];
 }   UVC_CTRL_T;
 
 typedef struct uvc_strm_t

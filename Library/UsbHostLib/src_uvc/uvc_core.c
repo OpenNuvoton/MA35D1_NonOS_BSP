@@ -350,6 +350,71 @@ commit:
     return ret;
 }
 
+/**
+ *  @brief  Set video frame rate
+ *  @param[in]  vdev    UVC device
+ *  @param[in]  fps     Frame rate
+ *
+ *  @return   Success or failed.
+ *  @retval   0          Success
+ *  @retval   Otheriwse  Error occurred
+ */
+int usbh_uvc_set_video_fps(UVC_DEV_T *vdev, int fps)
+{
+    UVC_CTRL_PARAM_T *param;
+    uint32_t interval;
+    int ret;
+
+    if (!vdev || fps <= 0)
+        return UVC_RET_INVALID;
+
+    param = &vdev->param;
+
+    /* Convert fps to 100ns unit */
+    interval = 10000000 / fps;
+
+    /*----------------------------------------------------*/
+    /* 1. Get current probe                               */
+    /*----------------------------------------------------*/
+    ret = usbh_uvc_probe_control(vdev, UVC_GET_CUR, param);
+    if (ret < 0)
+        return ret;
+
+    /*----------------------------------------------------*/
+    /* 2. Modify frame interval                           */
+    /*----------------------------------------------------*/
+    param->dwFrameInterval = interval;
+    param->bmHint |= 0x0001;     /* bit0: dwFrameInterval fixed */
+
+    /*----------------------------------------------------*/
+    /* 3. Set probe                                       */
+    /*----------------------------------------------------*/
+    ret = usbh_uvc_probe_control(vdev, UVC_SET_CUR, param);
+    if (ret < 0)
+        return ret;
+
+    /*----------------------------------------------------*/
+    /* 4. Get again (device may adjust interval)          */
+    /*----------------------------------------------------*/
+    ret = usbh_uvc_probe_control(vdev, UVC_GET_CUR, param);
+    if (ret < 0)
+        return ret;
+
+    /*----------------------------------------------------*/
+    /* 5. Commit                                          */
+    /*----------------------------------------------------*/
+    ret = usbh_uvc_commit_control(vdev, param);
+    if (ret < 0)
+        return ret;
+
+    /*----------------------------------------------------*/
+    /* 6. Re-select alternative interface                 */
+    /*    (payload size may change with fps)              */
+    /*----------------------------------------------------*/
+    ret = usbh_uvc_select_alt_interface(vdev);
+
+    return ret;
+}
 
 /// @cond HIDDEN_SYMBOLS
 

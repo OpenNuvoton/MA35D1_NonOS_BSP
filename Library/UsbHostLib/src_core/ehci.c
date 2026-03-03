@@ -1016,6 +1016,7 @@ void EHCI_IRQHandler(void)
 	if (intsts & HSUSBH_USTSR_UERRINT_Msk)
 	{
 		// USB_error("Transfer error!\n");
+		// outpw(0x40700000, '!');
 	}
 
 	if (intsts & HSUSBH_USTSR_USBINT_Msk)
@@ -1042,8 +1043,15 @@ static UDEV_T * ehci_find_device_by_port(int port)
 	udev = g_udev_list;
 	while (!IS_NULL_PTR(udev))
 	{
+		if (udev->hc_driver != &ehci_driver)
+		{
+			udev = udev->next;
+			continue;
+		}
+
 		if (IS_NULL_PTR(udev->parent) && (udev->port_num == port) && (udev->speed == SPEED_HIGH))
 			return udev;
+
 		udev = udev->next;
 	}
 	return NULL;
@@ -1103,7 +1111,7 @@ static int ehci_rh_polling(void)
 		/*  connect status change                                                             */
 		/*------------------------------------------------------------------------------------*/
 
-		// USB_debug("EHCI port1 status change: 0x%x\n", _ehci->UPSCR[i]);
+		USB_debug("EHCI port1 status change: 0x%x\n", _ehci->UPSCR[i]);
 
 		/*--------------------------------------------------------------------------------*/
 		/*  Disconnect the devices attached to this port.                                 */
