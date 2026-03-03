@@ -49,9 +49,6 @@ extern void EHCI1_IRQHandler(void);
   */
 void  usbh_core_init()
 {
-	//NVIC_DisableIRQ(HSUSBH_IRQn);
-	//NVIC_DisableIRQ(USBH_IRQn);
-
 	_ehci0 = (HSUSBH_T *)HSUSBH0_BASE;
 	_ohci0 = (USBH_T *)USBH0_BASE;
 	_ehci1 = (HSUSBH_T *)HSUSBH1_BASE;

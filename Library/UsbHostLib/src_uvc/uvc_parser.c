@@ -269,6 +269,7 @@ int uvc_parse_streaming_interface(UVC_DEV_T *vdev, IFACE_T *iface)
     UVC_CTRL_T     *vc = &vdev->vc;
     UVC_STRM_T     *vs = &vdev->vs;
     uint8_t        *bptr;
+    uint32_t       *p;
     int            i, idx, size;
 
     UVC_DBGMSG("UVC parsing video streaming interface %d...\n", iface->if_num);
@@ -396,11 +397,26 @@ int uvc_parse_streaming_interface(UVC_DEV_T *vdev, IFACE_T *iface)
 
                 idx = vc->num_of_frames;
                 vc->frame_idx[idx] = vsu_frame->bFrameIndex;
-                vc->frame_format[idx] = vc->format[vc->num_of_formats-1];
+                vc->frame_format[idx] = vc->format[vc->num_of_formats - 1];
                 vc->width[idx] = vsu_frame->wWidth;
                 vc->height[idx] = vsu_frame->wHeight;
-                vc->num_of_frames++;
 
+                vc->frame_interval_type[idx] = vsu_frame->bFrameIntervalType;
+                if (vsu_frame->bFrameIntervalType == 0)
+                {
+                    vc->frame_interval_min[idx]  = vsu_frame->dwMinFrameInterval;
+                    vc->frame_interval_max[idx]  = vsu_frame->dwMaxFrameInterval;
+                    vc->frame_interval_step[idx] = vsu_frame->dwFrameIntervalStep;
+                }
+                else
+                {
+                    vc->frame_interval_num[idx] = vsu_frame->bFrameIntervalType;
+                    p = (uint32_t *)(vsu_frame + 1);
+                    for (i = 0; i < vsu_frame->bFrameIntervalType; i++)
+                        vc->frame_interval_list[idx][i] = p[i];
+                }
+
+                vc->num_of_frames++;
                 bptr += vsu_frame->bLength;
                 size -= vsu_frame->bLength;
             }

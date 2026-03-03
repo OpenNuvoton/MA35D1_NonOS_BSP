@@ -459,9 +459,7 @@ static int  port_connect_change(HUB_DEV_T *hub, int port, uint16_t wPortStatus)
 		/*--------------------------------------------------------------------------------*/
 		udev = usbh_find_device(hub->pos_id, port);
 		if (!IS_NULL_PTR(udev))
-		{
 			disconnect_device(udev);
-		}
 
 		/*
 		 * New device connected. Do a port reset first.
@@ -511,9 +509,7 @@ static int  port_connect_change(HUB_DEV_T *hub, int port, uint16_t wPortStatus)
 		 */
 		udev = usbh_find_device(hub->pos_id, port);
 		if (!IS_NULL_PTR(udev))
-		{
 			disconnect_device(udev);
-		}
 	}
 	return 0;
 }
@@ -654,7 +650,6 @@ int  usbh_pooling_hubs(void)
 	int   ret, change = 0;
 
 #ifdef ENABLE_EHCI0
-	_ehci0->UPSCR[1] = HSUSBH_UPSCR_PP_Msk | HSUSBH_UPSCR_PO_Msk;     /* set port 2 owner to OHCI              */
 	do
 	{
 		ret = ehci0_driver.rthub_polling();
@@ -665,7 +660,6 @@ int  usbh_pooling_hubs(void)
 #endif
 
 #ifdef ENABLE_EHCI1
-	_ehci1->UPSCR[1] = HSUSBH_UPSCR_PP_Msk | HSUSBH_UPSCR_PO_Msk;     /* set port 2 owner to OHCI              */
 	do
 	{
 		ret = ehci1_driver.rthub_polling();

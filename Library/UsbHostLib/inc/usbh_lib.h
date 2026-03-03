@@ -246,13 +246,14 @@ int usbh_uac_stop_audio_out(struct uac_dev_t *audev);
 /*  USB Video Class Library APIs                                    */
 /*                                                                  */
 /*------------------------------------------------------------------*/
-extern void usbh_uvc_init(void);
-extern struct uvc_dev_t * usbh_uvc_get_device_list(void);
-extern int usbh_get_video_format(struct uvc_dev_t *vdev, int index, IMAGE_FORMAT_E *format, int *width, int *height);
-extern int usbh_set_video_format(struct uvc_dev_t *vdev, IMAGE_FORMAT_E format, int width, int height);
-extern void usbh_uvc_set_video_buffer(struct uvc_dev_t *vdev, uint8_t *image_buff, int img_buff_size);
-extern int usbh_uvc_start_streaming(struct uvc_dev_t *vdev, UVC_CB_FUNC *func);
-extern int usbh_uvc_stop_streaming(struct uvc_dev_t *vdev);
+void usbh_uvc_init(void);
+struct uvc_dev_t * usbh_uvc_get_device_list(void);
+int usbh_get_video_format(struct uvc_dev_t *vdev, int index, IMAGE_FORMAT_E *format, int *width, int *height);
+int usbh_set_video_format(struct uvc_dev_t *vdev, IMAGE_FORMAT_E format, int width, int height);
+void usbh_uvc_set_video_buffer(struct uvc_dev_t *vdev, uint8_t *image_buff, int img_buff_size);
+int usbh_uvc_start_streaming(struct uvc_dev_t *vdev, UVC_CB_FUNC *func);
+int usbh_uvc_stop_streaming(struct uvc_dev_t *vdev);
+int usbh_uvc_set_video_fps(struct uvc_dev_t *vdev, int fps);
 
 /*! @}*/ /* end of group USBH_EXPORTED_FUNCTIONS */
 
