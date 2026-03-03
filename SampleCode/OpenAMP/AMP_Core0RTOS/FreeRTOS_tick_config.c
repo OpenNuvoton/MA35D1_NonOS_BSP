@@ -52,28 +52,28 @@ void vConfigureTickInterrupt(void)
     SYS_UnlockReg();
 
     /* Enable IP clock */
-    CLK_EnableModuleClock(TMR10_MODULE);
+    CLK_EnableModuleClock(TMR11_MODULE);
 
     /* Select IP clock source */
-    CLK_SetModuleClock(TMR10_MODULE, CLK_CLKSEL2_TMR10SEL_HXT, 0);
+    CLK_SetModuleClock(TMR11_MODULE, CLK_CLKSEL2_TMR11SEL_HXT, 0);
 
     /* Set timer frequency to configTICK_RATE_HZ */
-    TIMER_Open(TIMER10, TIMER_PERIODIC_MODE, configTICK_RATE_HZ);
+    TIMER_Open(TIMER11, TIMER_PERIODIC_MODE, configTICK_RATE_HZ);
 
     /* The priority must be the lowest possible. */
-    IRQ_SetPriority((IRQn_ID_t)TMR10_IRQn,
+    IRQ_SetPriority((IRQn_ID_t)TMR11_IRQn,
                     portLOWEST_USABLE_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
 
     /* Enable timer interrupt, connect to handler */
-    TIMER_EnableInt(TIMER10);
-    IRQ_SetHandler((IRQn_ID_t)TMR10_IRQn, FreeRTOS_Tick_Handler);
-    IRQ_SetTarget((IRQn_ID_t)TMR10_IRQn, IRQ_CPU_1);
-    IRQ_Enable((IRQn_ID_t)TMR10_IRQn);
+    TIMER_EnableInt(TIMER11);
+    IRQ_SetHandler((IRQn_ID_t)TMR11_IRQn, FreeRTOS_Tick_Handler);
+    IRQ_SetTarget((IRQn_ID_t)TMR11_IRQn, IRQ_CPU_0);
+    IRQ_Enable((IRQn_ID_t)TMR11_IRQn);
 
     vClearTickInterrupt();
 
     /* Start timer */
-    TIMER_Start(TIMER10);
+    TIMER_Start(TIMER11);
 
     /* Lock protected registers */
     SYS_LockReg();
@@ -82,7 +82,7 @@ void vConfigureTickInterrupt(void)
 
 void vClearTickInterrupt(void)
 {
-    TIMER_ClearIntFlag(TIMER10);
+    TIMER_ClearIntFlag(TIMER11);
 
     __asm volatile("DSB SY");
     __asm volatile("ISB SY");

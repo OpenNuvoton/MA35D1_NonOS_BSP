@@ -146,9 +146,7 @@ static struct remoteproc *platform_create_rproc(int proc_index, int rsc_index)
     metal_phys_addr_t pa;
 
     (void)proc_index;
-    rsc_table = get_resource_table(rsc_index, &rsc_size);
-    /* Copy resource table from local to shared momory */
-    memcpy((void *)resource_table_shmem, rsc_table, rsc_size);
+    get_resource_table(rsc_index, &rsc_size);
     rsc_table = (void *)resource_table_shmem;
 
     /* Unused, reserved for IPI */
