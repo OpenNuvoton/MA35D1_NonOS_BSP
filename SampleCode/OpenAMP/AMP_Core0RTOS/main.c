@@ -2,13 +2,13 @@
  * @file     main.c
  *
  * @brief    This project demonstrates AMP between dual cores of A35,
- *           with core0 running Linux and core1 running FreeRTOS.
+ *           with both core0 and core1 running FreeRTOS.
  *           Fill in your endpoints in "eptinst[]" to complete the design.
  * 
- * Core0      Core1 (this core)
- *   A  <----->  B (Tx & Rx) (High freq. short packet)
- *   C  <----->  D (Tx & Rx) (Low freq. long packet)
- *   E  <----->  F (Tx & Rx) (CRC test)
+ * Core0 (this core)     Core1
+ *   A (Tx & Rx)  <----->  B (High freq. short packet)
+ *   C (Tx & Rx)  <----->  D (Low freq. long packet)
+ *   E (Tx & Rx)  <----->  F (CRC test)
  * 
  * @note     TIMER8/TIMER9 has been assigned to OpenAMP for IPI.
  *
