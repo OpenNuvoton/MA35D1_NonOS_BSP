@@ -79,11 +79,14 @@ static void dcache_op_va(void const *addr, size_t len, enum dcache_op op)
 {
 	uint64_t line, linesize;
 
+	uintptr_t start_addr = (uintptr_t)addr;
+	uintptr_t end_addr = start_addr + (uintptr_t)len;
+
 	linesize = dcache_line_bytes();
 	line = (uint64_t)addr & ~(linesize - 1);
 
 	dsb();
-	while ((void *)line < addr + len) {
+	while (line < (uint64_t)end_addr) {
 		switch (op) {
 		case OP_DCCIVAC:
 			dccivac(line);

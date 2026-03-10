@@ -32,7 +32,7 @@ void _PutChar_f(unsigned char ch)
     }
 }
 
-void sysPutString(unsigned char *string)
+void sysPutString(const char *string)
 {
     while (*string != '\0') {
         _PutChar_f(*string);
@@ -130,7 +130,7 @@ static void sysPutNumber(int value, int radix, int width, char fill)
     }
 }
 
-static char *FormatItem(char *f, uint64_t a)
+static const char *FormatItem(const char *f, uint64_t a)
 {
 	char   c;
     int    fieldwidth = 0;
@@ -228,7 +228,7 @@ int  sysIsKbHit()
 
     if (DEBUG_PORT[id]->FIFOSTS & UART_FIFOSTS_RXEMPTY_Msk)
         return 0;
-    else 
+    else
         return 1;
 }
 /// @endcond HIDDEN_SYMBOLS
@@ -241,7 +241,7 @@ int  sysIsKbHit()
 #ifdef DEUBG_PORT_ONE_ONLY
 static unsigned int mutex_print=0;
 #endif
-void sysprintf(char * pcStr,...)
+void sysprintf(const char * pcStr,...)
 {
 	char  *argP;
 	va_list va;

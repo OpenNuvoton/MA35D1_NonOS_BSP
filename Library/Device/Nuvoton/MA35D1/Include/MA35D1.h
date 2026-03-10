@@ -512,12 +512,12 @@ typedef enum IRQn
 #include "mmu.h"
 
 extern uint32_t volatile msTicks0, msTicks1;
-extern void global_timer_init(void);
-extern void sysprintf(char * pcStr,...);
-extern char sysgetchar(void);
-extern void sysputchar(char ch);
-extern char sysgetchar(void);
-extern int  sysIsKbHit(void);
+void global_timer_init(void);
+void sysprintf(const char * pcStr,...);
+char sysgetchar(void);
+void sysputchar(const char ch);
+char sysgetchar(void);
+int  sysIsKbHit(void);
 /******************************************************************************/
 /*                            Register definitions                            */
 /******************************************************************************/

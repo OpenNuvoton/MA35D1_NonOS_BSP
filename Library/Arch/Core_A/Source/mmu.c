@@ -45,7 +45,7 @@ static u8 * _ettb = _ttb+MMU_SIZE;
 /* This just caches the next free table slot (okay to MA35D1 since they fill up from
  * bottom to top and can never be freed up again). It will reset to its initial
  * value on stage transition, so we still need to check it for UNUSED_DESC. */
-static uint64_t *next_free_table = (void *)_ttb;
+static uint64_t *next_free_table = (uint64_t *)_ttb;
 
 /* Func : get_block_attr
  * Desc : Get block descriptor attributes based on the value of tag in memrange

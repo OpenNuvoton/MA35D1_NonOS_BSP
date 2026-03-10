@@ -66,7 +66,7 @@ void global_timer_init(void) {
 	IRQ_SetPriority ((IRQn_ID_t)NonSecPhysicalTimer_IRQn, IRQ_PRIORITY_Msk);
 
 	/* Set lowest priority -1 */
-	IRQ_SetPriority ((IRQn_ID_t)NonSecPhysicalTimer_IRQn, GIC_GetPriority((IRQn_ID_t)NonSecPhysicalTimer_IRQn)-1);
+	IRQ_SetPriority ((IRQn_ID_t)NonSecPhysicalTimer_IRQn, GIC_GetPriority((IRQn_Type)NonSecPhysicalTimer_IRQn)-1);
 
 	/* Enable IRQ */
 	IRQ_Enable ((IRQn_ID_t)NonSecPhysicalTimer_IRQn);
