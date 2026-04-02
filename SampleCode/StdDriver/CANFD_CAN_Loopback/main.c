@@ -43,15 +43,6 @@ void CANFD00_IRQHandler(void)
     }
 }
 
-void *_MemSet(void *s, int c, size_t count)
-{
-    unsigned char *p = s;
-
-    while (count--)
-        if ((unsigned char)c == *p++)
-    return (void *)(p - 1);
-}
-
 void SYS_Init(void)
 {
     /*---------------------------------------------------------------------------------------------------------*/
@@ -72,7 +63,7 @@ void SYS_Init(void)
     /* Set GPE multi-function pins for UART0 RXD and TXD */
     SYS->GPE_MFPH &= ~(SYS_GPE_MFPH_PE14MFP_Msk | SYS_GPE_MFPH_PE15MFP_Msk);
     SYS->GPE_MFPH |= (SYS_GPE_MFPH_PE14MFP_UART0_TXD | SYS_GPE_MFPH_PE15MFP_UART0_RXD);
-    /* Set PK multi-function pins for CANFD0 RXD and TXD */
+    /* Set PI multi-function pins for CANFD0 RXD and TXD */
     SYS->GPI_MFPL &= ~(SYS_GPI_MFPL_PI2MFP_Msk | SYS_GPI_MFPL_PI3MFP_Msk);
     SYS->GPI_MFPL |= SYS_GPI_MFPL_PI2MFP_CAN0_RXD | SYS_GPI_MFPL_PI3MFP_CAN0_TXD;
 }
@@ -126,7 +117,7 @@ void CAN_TxRx_Test(CANFD_FD_MSG_T *psTxMsg, E_CANFD_ID_TYPE eFrameIdType, uint32
     }
 
     sysprintf("\n\n");
-    _MemSet(&g_sRxMsgFrame, 0, sizeof(g_sRxMsgFrame));
+    memset(&g_sRxMsgFrame, 0, sizeof(g_sRxMsgFrame));
 }
 
 /*---------------------------------------------------------------------------------------------------------*/
