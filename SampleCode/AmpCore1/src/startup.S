@@ -102,6 +102,13 @@ InitEL3:
 	msr      CPTR_EL3, x0
 	isb      sy
 
+	/* Disable Generic Timer */
+	mrs x1, CNTP_CTL_EL0
+	mrs x2, CNTP_TVAL_EL0
+	mrs x3, CNTP_CVAL_EL0
+	mov x1, #0
+	msr CNTP_CTL_EL0, x1
+
 	/* Configure SCR_EL3 */
 	mov      w1, #0              	//; Initial value of register is unknown
 	orr      w1, w1, #(1 << 11)  	//; Set ST bit (Secure EL1 can access CNTPS_TVAL_EL1, CNTPS_CTL_EL1 & CNTPS_CVAL_EL1)

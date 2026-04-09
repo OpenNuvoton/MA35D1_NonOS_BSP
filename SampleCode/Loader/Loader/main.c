@@ -309,7 +309,7 @@ int main()
     UART0_Init();
 
     /* Enable timer control */
-    EL0_SetControl(1U);			// non-secure timer
+    EL0_SetControl(3U);			// non-secure timer
 
     sysprintf("MA35D1 baremetal loader...\n");
 
