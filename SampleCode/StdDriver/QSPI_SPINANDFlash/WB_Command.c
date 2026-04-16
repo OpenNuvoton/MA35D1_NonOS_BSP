@@ -16,6 +16,18 @@
 #include "main.h"
 #include "NuMicro.h"
 
+#define TXRXRST         (0x01 << 23)
+#define FIFOCLR         (0x01 << 22)
+#define TXTHIF          0x40000
+#define TXFULL          0x20000
+#define RXEMPTY         0x100
+#define SPI_BUSY        0x00000001
+#define SPI_QUAD_EN     0x400000
+#define SPI_DIR_2QM     0x100000
+#define SPI_REORDER     0x80000
+#define DWIDTH_MASK     0x1F00
+#define RXPDMAEN        2
+
 static unsigned char WB_SPINAND_SPIin(unsigned int data_input, unsigned int spi_mode);
 static void WB_CS_Low();
 static void WB_CS_High();
@@ -707,12 +719,18 @@ void WB_Page_Data_Read(unsigned int addr)
 
     page_address = addr >> PAGE_SHIFT;
 
-    WB_Write_Enable();
     WB_CS_Low();
-    WB_SPINAND_SPIin(WB_Flash_CMD_Page_Data_Read, SIO);
-    WB_SPINAND_SPIin(WB_Flash_Dummy, SIO);
-    WB_SPINAND_SPIin((page_address >> 8), SIO);
-    WB_SPINAND_SPIin((page_address & 0xFF), SIO | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_CLEAR_RXFIFO_Msk));
+
+    QSPI_FLASH_PORT->FIFOCTL |= 0x300; //TX/RX FIFO buffer clear
+    while (QSPI_FLASH_PORT->STATUS & FIFOCLR);
+
+    QSPI_FLASH_PORT->TX = WB_Flash_CMD_Page_Data_Read;
+    QSPI_FLASH_PORT->TX = 0; //dummy byte
+    QSPI_FLASH_PORT->TX = (page_address >> 8);
+    QSPI_FLASH_PORT->TX = (page_address & 0xFF);
+
+    while (QSPI_FLASH_PORT->STATUS & SPI_BUSY);
+
     WB_CS_High();
     WB_Wait_Ready();
     return;
@@ -825,49 +843,6 @@ void WB_Fast_Read_Dual_Output(unsigned int column_address, unsigned int read_cou
 
 /*
 Command#:
-Function:           WB_Fast_Read_Quad_Output()
-Description:        Fast Read in Quad mode
-Arguments:          column_address: starting address to load
-                    read_count: number of the data to read
-                    read_buf: pointer for the read data
-Return:
-Comment:
-*/
-void WB_Fast_Read_Quad_Output(unsigned int column_address, unsigned int read_count, unsigned char *read_buf)
-{
-    unsigned int index = 0;
-
-    WB_CS_Low();
-    WB_SPINAND_SPIin(WB_Flash_CMD_Fast_Read_Quad_Output, SIO);
-    WB_SPINAND_SPIin(column_address >> 8, SIO);
-    WB_SPINAND_SPIin(column_address & 0xFF, SIO);
-    WB_SPINAND_SPIin(WB_Flash_Dummy, SIO | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_CLEAR_RXFIFO_Msk));
-
-    while (read_count)
-    {
-        // enable SPI dual IO mode and set direction to input
-        if (read_count > 1)
-        {
-            *(read_buf + index) = WB_SPINAND_SPIin(
-                                      WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk));
-        }
-        else
-        {
-            // last byte, disable Quad IO mode
-            *(read_buf + index) = WB_SPINAND_SPIin(
-                                      WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk |
-                                              SPI_PARAM_DISABLE_FUNCTION_Msk));
-        }
-
-        index++;
-        read_count--;
-    }
-
-    WB_CS_High();
-}
-
-/*
-Command#:
 Function:           WB_Fast_Read_Dual_IO()
 Description:        Fast Read in Dual I/O
 Arguments:          column_address: starting address to load
@@ -911,43 +886,95 @@ void WB_Fast_Read_Dual_IO(unsigned int column_address, unsigned int read_count, 
 
 /*
 Command#:
-Function:           WB_Fast_Read_Quad_IO()
-Description:        Fast Read in Quad I/O
+Function:           WB_Fast_Read_Quad_Output()
+Description:        Fast Read in Quad Output
 Arguments:          column_address: starting address to load
                     read_count: number of the data to read
                     read_buf: pointer for the read data
 Return:
 Comment:
 */
-void WB_Fast_Read_Quad_IO(unsigned int column_address, unsigned int read_count, unsigned char *read_buf)
+void WB_Fast_Read_Quad_Output(unsigned int column_address, unsigned int read_count, unsigned char *read_buf)
 {
+    unsigned int i;
+    unsigned int j = 0;
     unsigned int index = 0;
+    unsigned char *rx = read_buf;
+
+    SYS_UnlockReg();
+    SYS_ResetModule(PDMA0_RST);
+    SYS_LockReg();
 
     WB_CS_Low();
-    WB_SPINAND_SPIin(WB_Flash_CMD_Fast_Read_Quad_IO, SIO);
-    WB_SPINAND_SPIin(column_address >> 8, QIO | SPI_DIR_OUTPUT);
-    WB_SPINAND_SPIin(column_address & 0xFF, QIO | SPI_DIR_OUTPUT);
-    WB_SPINAND_SPIin(WB_Flash_Dummy, QIO | SPI_DIR_OUTPUT);
-    WB_SPINAND_SPIin(WB_Flash_Dummy, QIO | SPI_DIR_OUTPUT | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_CLEAR_RXFIFO_Msk));
 
-    while (read_count)
+    QSPI_FLASH_PORT->FIFOCTL |= 0x300; //TX/RX FIFO buffer clear
+    while (QSPI_FLASH_PORT->STATUS & FIFOCLR);
+
+    QSPI_FLASH_PORT->TX = 0x6B;
+    QSPI_FLASH_PORT->TX = (column_address >> 8);
+    QSPI_FLASH_PORT->TX = (column_address & 0xFF);
+    QSPI_FLASH_PORT->TX = 0; //dummy byte
+
+    while (QSPI_FLASH_PORT->STATUS & SPI_BUSY);
+
+    QSPI_FLASH_PORT->FIFOCTL |= 0x100; //RX FIFO buffer clear
+    while (QSPI_FLASH_PORT->STATUS & FIFOCLR);
+
+    if ((read_count % 4) == 0)
     {
-        // enable SPI dual IO mode and set direction to input
-        if (read_count > 1)
-        {
-            *(read_buf + index) = WB_SPINAND_SPIin(
-                                      WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk));
-        }
-        else
-        {
-            // last byte, disable Quad IO mode
-            *(read_buf + index) = WB_SPINAND_SPIin(
-                                      WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk |
-                                              SPI_PARAM_DISABLE_FUNCTION_Msk));
-        }
+        /* Enable Quad mode, direction input */
+        QSPI_FLASH_PORT->CTL = (QSPI_FLASH_PORT->CTL & ~(SPI_DIR_2QM)) | SPI_QUAD_EN;
+        /* Set DWIDTH to 32 bits and enable byte reorder*/
+        QSPI_FLASH_PORT->CTL = (QSPI_FLASH_PORT->CTL & ~(DWIDTH_MASK)) | SPI_REORDER;
 
-        index++;
-        read_count--;
+        /* PDMA RX channel configuration */
+        PDMA0->CHCTL |= 2; /* Enable PDMA channel 1 */
+        PDMA0->REQSEL0_3 = (PDMA0->REQSEL0_3 & (~PDMA_REQSEL0_3_REQSRC1_Msk)) | (55 << PDMA_REQSEL0_3_REQSRC1_Pos); /* 55: QSPI0_RX */
+
+        PDMA0->DSCT[1].CTL = ((read_count/4)-1)<<16 | /* Transfer count */
+                             //1<<14 | /* ACK */
+                             2<<12 | /* Transfer width 32 bits */
+                             0<<10 | /* Increment destination address */
+                             3<<8  | /* Fixed source address */
+                             1<<7  | /* Table interupt disabled */
+                             0<<4  | /* Burst size 128 transfers. No effect in single request type. */
+                             1<<2  | /* Single request type */
+                             1;      /* Basic mode */
+        PDMA0->DSCT[1].SA = ptr_to_u32(&QSPI_FLASH_PORT->RX);
+        PDMA0->DSCT[1].DA = ptr_to_u32(read_buf);
+
+        /* Trigger PDMA */
+        QSPI_FLASH_PORT->PDMACTL |= RXPDMAEN;
+
+        while((PDMA0->TDSTS & 2)==0); /* check the slave's RX DMA interrupt flag */
+        PDMA0->TDSTS = 2; /* Clear the PDMA transfer done interrupt flag */
+
+        QSPI_FLASH_PORT->PDMACTL = 0;
+
+        /* Restore to 1-bit mode */
+        QSPI_FLASH_PORT->CTL = (QSPI_FLASH_PORT->CTL & ~(SPI_QUAD_EN | SPI_DIR_2QM | DWIDTH_MASK | SPI_REORDER)) | 0x800;
+    }
+    else
+    {
+        while (read_count)
+        {
+            // enable SPI dual IO mode and set direction to input
+            if (read_count > 1)
+            {
+                *(read_buf + index) = WB_SPINAND_SPIin(
+                                          WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk));
+            }
+            else
+            {
+                // last byte, disable Quad IO mode
+                *(read_buf + index) = WB_SPINAND_SPIin(
+                                          WB_Flash_Dummy, (QIO | SPI_DIR_INPUT) | (SPI_PARAM_CHECK_BUSY_Msk | SPI_PARAM_READ_RXFIFO_Msk |
+                                                  SPI_PARAM_DISABLE_FUNCTION_Msk));
+            }
+
+            index++;
+            read_count--;
+        }
     }
 
     WB_CS_High();

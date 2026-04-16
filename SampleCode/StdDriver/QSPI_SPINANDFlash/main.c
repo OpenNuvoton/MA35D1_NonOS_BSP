@@ -71,6 +71,9 @@ void QSPI_Init()
     /* Configure QSPI_FLASH_PORT as a master, MSB first, 8-bit transaction, QSPI Mode-0 timing, clock low speed */
     QSPI_Open(QSPI_FLASH_PORT, QSPI_MASTER, QSPI_MODE_0, 8, QSPI_CLOCK);
 
+    /* Set QSPI master receive phase selection */
+    //QSPI_SET_MRXPHASE(QSPI_FLASH_PORT, 3);
+
     /* Set GPIO driver strength */
     PD->DSL = 0x333333;
 
@@ -102,12 +105,16 @@ void SYS_Init(void)
     /* Unlock protected registers */
     SYS_UnlockReg();
 
+    /* Set APLL to 200 MHz */
+    CLK_SetPLLClockFreq(APLL, PLL_OPMODE_INTEGER, FREQ_PLLSRC, 200000000);
+
     /* Enable IP clock */
     CLK_SetModuleClock(SYSCK1_MODULE, CLK_CLKSEL0_SYSCK1SEL_SYSPLL, MODULE_NoMsk);
-    CLK_SetModuleClock(QSPI0_MODULE, CLK_CLKSEL4_QSPI0SEL_PCLK0, MODULE_NoMsk);
+    CLK_SetModuleClock(QSPI0_MODULE, CLK_CLKSEL4_QSPI0SEL_APLL, MODULE_NoMsk);
     CLK_EnableModuleClock(QSPI0_MODULE);
     CLK_EnableModuleClock(GPD_MODULE);
-
+    CLK_EnableModuleClock(PDMA0_MODULE);
+    SYS_ResetModule(PDMA0_RST);
     /*---------------------------------------------------------------------------------------------------------*/
     /* I/O Multi-function Initial                                                                              */
     /*---------------------------------------------------------------------------------------------------------*/

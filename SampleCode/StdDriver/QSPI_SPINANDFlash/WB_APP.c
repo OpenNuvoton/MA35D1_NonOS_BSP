@@ -26,6 +26,9 @@
 #define ECCD_Mask         0x01
 #define SEC_Mask          0x80
 
+extern uint32_t volatile msTicks0;
+uint32_t Read_start, Read_end;
+
 /*
     Application Function prototype
 */
@@ -39,6 +42,7 @@ void SPI_NAND_READ_Test(uint32_t addr);
 /*
     Main Program - SPI_NAND_APP_MainRoutine()
 */
+
 
 void SPI_NAND_APP_MainRoutine()
 {
@@ -77,13 +81,11 @@ void SPI_NAND_APP_MainRoutine()
         Basic programming test includes Block Erase (D8h), Read Data (03h), Page Program (02h) and
         Fast Read (0Bh).
     */
-    SPI_NAND_ERASE_WRITE_READ_Test_1(0x100000);
+    //SPI_NAND_ERASE_WRITE_READ_Test_1(0x100000);
 
-    SPI_NAND_ERASE_WRITE_READ_Test_2(0x100000);
+    //SPI_NAND_ERASE_WRITE_READ_Test_2(0x100000);
 
     SPI_NAND_ERASE_WRITE_READ_Test_3();
-
-    SPI_NAND_ERASE_WRITE_READ_Test_4();
 
     printf("\nAll test item is over...\n\n");
 }
@@ -260,16 +262,19 @@ void SPI_NAND_ERASE_WRITE_READ_Test_2(uint32_t addr)
     - Quad Program Data Load(32h): 0x55
     - Program execute(10h)
     - Page data Read (13h)
-    - Fast Read Quad IO (EBh)
+    - Fast Read Quad Output (6Bh)
 */
 void SPI_NAND_ERASE_WRITE_READ_Test_3()
 {
     unsigned char program_page_0x55[PAGE_SIZE] = {0};
-    unsigned char read_buf[PAGE_SIZE];
+    unsigned char read_buf[64][PAGE_SIZE];
+    unsigned char *read_ptr;
     unsigned int i = 0;
     unsigned int j = 0;
     unsigned int k;
     unsigned char status;
+
+    read_ptr = nc_ptr(read_buf);
 
     printf("\n+------------------------------------------------------------------------+\n");
     printf("|                      SPI_NAND_ERASE_WRITE_READ_Test_3                   |\n");
@@ -283,105 +288,54 @@ void SPI_NAND_ERASE_WRITE_READ_Test_3()
 
     // Read Data (128KB)
     printf("[Block Read] 0x%08x  ... ", 0 * BLOCK_SIZE);
-    WB_Page_Data_Read(0 * PAGE_SIZE);
-    WB_Fast_Read_Quad_Output(0, PAGE_SIZE, read_buf);
-    for (k = 0; k < PAGE_SIZE; k++)
+    for (i = 0; i < 64; i++)
     {
-        if (read_buf[k] != 0xFF)
+        WB_Page_Data_Read(i * PAGE_SIZE);
+        WB_Fast_Read_Quad_Output(0, PAGE_SIZE, read_buf[i]);
+        for (k = 0; k < PAGE_SIZE; k++)
         {
-            printf("Erase verify fail at block 0 address 0x%x = 0x%x\n", k, read_buf[k]);
-            while (1)
-                ;
+            if (read_ptr[i*PAGE_SIZE + k] != 0xFF)
+            {
+                printf("Erase verify fail at block 0 page %d, offset 0x%x = 0x%x\n", i, k, read_ptr[i*PAGE_SIZE + k]);
+                while (1)
+                    ;
+            }
         }
     }
     printf("PASS\n");
 
     // Page Program 0x55
-    WB_Quad_Program_Data_Load(0, PAGE_SIZE, program_page_0x55);
-    WB_Program_Execute(i * PAGE_SIZE);
-    printf("[Quad Page Program 0x55] 0x%08x ... Done\n", i * 0x10000 + j * 0x100);
-
-    // Read (128KB)
-    printf("[Fast Read Quad IO] 0x%08x  ... ", i * 0x10000);
-    WB_Page_Data_Read(i * PAGE_SIZE);
-    WB_Fast_Read_Quad_IO(0, PAGE_SIZE, read_buf);
-    for (k = 0; k < PAGE_SIZE; k++)
+    for (i = 0; i < 64; i++)
     {
-        if (read_buf[k] != 0x55)
-        {
-            printf("Program verify fail at block 0x%X0000 address 0x%x\n", i, k);
-            while (1)
-                ;
-        }
+        WB_Quad_Program_Data_Load(0, PAGE_SIZE, program_page_0x55);
+        WB_Program_Execute(i * PAGE_SIZE);
+        //printf("[Quad Page Program 0x55] address 0x%08x ... Done\n", i * PAGE_SIZE);
     }
-    printf("PASS\n");
 
-    printf("\n  Test Finish !!\n");
-}
-
-/*
-    SPI_NAND_ERASE_WRITE_READ_Test_4
-
-    Basic programming check to whole Flash, the sequence is as follows.
-    - Block Erase (D8h)
-    - Page data Read (13h)
-    - Fast Read Quad Output (6Bh)
-    - Random Quad Program Data Load(34h): 0xAA
-    - Program execute(10h)
-    - Page data Read (13h)
-    - Fast Read Quad IO (EBh)
-*/
-void SPI_NAND_ERASE_WRITE_READ_Test_4()
-{
-    unsigned char program_page_0xAA[PAGE_SIZE] = {0};
-    unsigned char read_buf[PAGE_SIZE];
-    unsigned int i = 0;
-    unsigned int j = 0;
-    unsigned int k;
-    unsigned char status;
-
-    printf("\n+------------------------------------------------------------------------+\n");
-    printf("|                      SPI_NAND_ERASE_WRITE_READ_Test_4                   |\n");
-    printf("+------------------------------------------------------------------------+\n");
-    memset(program_page_0xAA, 0xAA, PAGE_SIZE);
-
-
-    // Block Erase (128KB)
-    printf("\n[Block Erase] 0x%08x ... ", 0 * BLOCK_SIZE);
-    WB_Block_Erase(0 * BLOCK_SIZE);
-    printf("Done\n");
-
-    // Read Data (128KB)
-    printf("[Block Read] 0x%08x  ... ", 0 * BLOCK_SIZE);
-    WB_Page_Data_Read(0 * PAGE_SIZE);
-    WB_Fast_Read_Quad_Output(0, PAGE_SIZE, read_buf);
-    for (k = 0; k < PAGE_SIZE; k++)
-    {
-        if (read_buf[k] != 0xFF)
-        {
-            printf("Erase verify fail at block 0 address 0x%x = 0x%x\n", k, read_buf[k]);
-            while (1)
-                ;
-        }
-    }
-    printf("PASS\n");
-
-    // Page Program 0xAA
-    WB_Random_Quad_Program_Data_Load(0, PAGE_SIZE, program_page_0xAA);
-    WB_Program_Execute(i * PAGE_SIZE);
-    printf("[Random Quad Page Program 0xAA] 0x%08x ... Done\n", i * 0x10000 + j * 0x100);
-
+    printf("Reading Block 0 (total 64 pages)\n");
+    Read_start = msTicks0;
     // Read (128KB)
-    printf("[Fast Read Quad IO] 0x%08x  ... ", i * 0x10000);
-    WB_Page_Data_Read(i * PAGE_SIZE);
-    WB_Fast_Read_Quad_IO(0, PAGE_SIZE, read_buf);
-    for (k = 0; k < PAGE_SIZE; k++)
+    for (i = 0; i < 64; i++)
     {
-        if (read_buf[k] != 0xAA)
+        //printf("[Fast Read Quad Output] 0x%08x  ... ", i * PAGE_SIZE);
+        WB_Page_Data_Read(i * PAGE_SIZE);
+        WB_Fast_Read_Quad_Output(0, PAGE_SIZE, read_buf[i]);
+
+    }
+    Read_end = msTicks0;
+    printf("\nReading 128KB costs %d msec => Read performance = %d Bytes/sec\n", Read_end - Read_start, (128 * 1024/(Read_end - Read_start))*1000);
+
+    //Check data
+    for (i = 0; i < 64; i++)
+    {
+        for (k = 0; k < PAGE_SIZE; k++)
         {
-            printf("Program verify fail at block 0x%X0000 address 0x%x\n", i, k);
-            while (1)
-                ;
+            if (read_ptr[i*PAGE_SIZE + k] != 0x55)
+            {
+                printf("Program verify fail at block 0 page %d offset 0x%x, value 0x%x\n", i, k, read_ptr[i*PAGE_SIZE + k]);
+                while (1)
+                    ;
+            }
         }
     }
     printf("PASS\n");

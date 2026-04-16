@@ -134,10 +134,19 @@ extern "C"
   * @brief      Get the count of available data in RX FIFO.
   * @param[in]  qspi The pointer of the specified QSPI module.
   * @return     The count of available data in RX FIFO.
-  * @details    Read RXCNT (QSPI_STATUS[27:24]) to get the count of available data in RX FIFO.
+  * @details    Read RXCNT (QSPI_STATUS2[13:8]) to get the count of available data in RX FIFO.
   * \hideinitializer
   */
-#define QSPI_GET_RX_FIFO_COUNT(qspi)   (((qspi)->STATUS & QSPI_STATUS_RXCNT_Msk) >> QSPI_STATUS_RXCNT_Pos)
+#define QSPI_GET_RX_FIFO_COUNT(qspi)   (((qspi)->STATUS2 & QSPI_STATUS2_RXCNT_Msk) >> QSPI_STATUS2_RXCNT_Pos)
+
+/**
+  * @brief      Get the count of available data in TX FIFO.
+  * @param[in]  qspi The pointer of the specified QSPI module.
+  * @return     The count of available data in TX FIFO.
+  * @details    Read TXCNT (QSPI_STATUS2[21:16]) to get the count of available data in TX FIFO.
+  * \hideinitializer
+  */
+#define QSPI_GET_TX_FIFO_COUNT(qspi)   (((qspi)->STATUS2 & QSPI_STATUS2_TXCNT_Msk) >> QSPI_STATUS2_TXCNT_Pos)
 
 /**
   * @brief      Get the RX FIFO empty flag.
