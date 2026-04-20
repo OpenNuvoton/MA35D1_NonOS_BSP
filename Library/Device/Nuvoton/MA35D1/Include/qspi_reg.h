@@ -634,17 +634,11 @@ typedef struct
 #define QSPI_STATUS_TXRXRST_Pos          (23)                                              /*!< QSPI_T::STATUS: TXRXRST Position       */
 #define QSPI_STATUS_TXRXRST_Msk          (0x1ul << QSPI_STATUS_TXRXRST_Pos)                /*!< QSPI_T::STATUS: TXRXRST Mask           */
 
-#define QSPI_STATUS_RXCNT_Pos            (24)                                              /*!< QSPI_T::STATUS: RXCNT Position         */
-#define QSPI_STATUS_RXCNT_Msk            (0xful << QSPI_STATUS_RXCNT_Pos)                  /*!< QSPI_T::STATUS: RXCNT Mask             */
+#define QSPI_STATUS2_RXCNT_Pos           (8)                                               /*!< QSPI_T::STATUS2: RXCNT Position      */
+#define QSPI_STATUS2_RXCNT_Msk           (0x3ful << QSPI_STATUS2_RXCNT_Pos)                /*!< QSPI_T::STATUS2: RXCNT Mask          */
 
-#define QSPI_STATUS_TXCNT_Pos            (28)                                              /*!< QSPI_T::STATUS: TXCNT Position         */
-#define QSPI_STATUS_TXCNT_Msk            (0xful << QSPI_STATUS_TXCNT_Pos)                  /*!< QSPI_T::STATUS: TXCNT Mask             */
-
-#define QSPI_STATUS2_RXCPDMA_Pos         (8)                                               /*!< QSPI_T::STATUS2: RXCPDMA Position      */
-#define QSPI_STATUS2_RXCPDMA_Msk         (0x3ful << QSPI_STATUS2_RXCPDMA_Pos)              /*!< QSPI_T::STATUS2: RXCPDMA Mask          */
-
-#define QSPI_STATUS2_TXCPDMA_Pos         (16)                                              /*!< QSPI_T::STATUS2: TXCPDMA Position      */
-#define QSPI_STATUS2_TXCPDMA_Msk         (0x3ful << QSPI_STATUS2_TXCPDMA_Pos)              /*!< QSPI_T::STATUS2: TXCPDMA Mask          */
+#define QSPI_STATUS2_TXCNT_Pos           (16)                                              /*!< QSPI_T::STATUS2: TXCNT Position      */
+#define QSPI_STATUS2_TXCNT_Msk           (0x3ful << QSPI_STATUS2_TXCNT_Pos)                /*!< QSPI_T::STATUS2: TXCNT Mask          */
 
 #define QSPI_STATUS2_SLVBENUM_Pos        (24)                                              /*!< QSPI_T::STATUS2: SLVBENUM Position     */
 #define QSPI_STATUS2_SLVBENUM_Msk        (0x3ful << QSPI_STATUS2_SLVBENUM_Pos)             /*!< QSPI_T::STATUS2: SLVBENUM Mask         */
