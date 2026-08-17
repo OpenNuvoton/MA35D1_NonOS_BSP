@@ -3687,6 +3687,12 @@ static BaseType_t prvCreateIdleTasks( void )
                 /* Assign idle task to each core before SMP scheduler is running. */
                 xIdleTaskHandles[ xCoreID ]->xTaskRunState = xCoreID;
                 pxCurrentTCBs[ xCoreID ] = xIdleTaskHandles[ xCoreID ];
+                #if ( configUSE_CORE_AFFINITY == 1 )
+                {
+                    xIdleTaskHandles[ xCoreID ]->uxCoreAffinityMask =
+                        ( UBaseType_t ) 1U << ( UBaseType_t ) xCoreID;
+                }
+                #endif /* configUSE_CORE_AFFINITY */
             }
             #endif
         }

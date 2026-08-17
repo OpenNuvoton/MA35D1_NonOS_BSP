@@ -199,6 +199,9 @@
     #ifndef configUSE_PASSIVE_IDLE_HOOK
         #error Missing definition:  configUSE_PASSIVE_IDLE_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
     #endif
+    #if ( !defined( configUSE_CORE_AFFINITY ) || ( configUSE_CORE_AFFINITY != 1 ) )
+        #error configUSE_CORE_AFFINITY must be defined to 1 in FreeRTOSConfig.h when configNUMBER_OF_CORES > 1.  Per-core idle task affinity pinning requires the affinity API to be enabled.
+    #endif
 #endif
 
 #ifndef configUSE_TICK_HOOK
