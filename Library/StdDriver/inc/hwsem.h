@@ -135,7 +135,7 @@ __STATIC_INLINE int32_t HWSEM_Try_Lock(HWSEM_T *hwsem, uint32_t u32Num, uint8_t 
 {
     HWSEM_LOCK(hwsem, u32Num, u8Key);
     if((hwsem->SEM[u32Num] & HWSEM_SEM_ID_Msk) == HWSEM_LOCK_BY_A35 &&
-       (hwsem->SEM[u32Num] & HWSEM_SEM_KEY_Msk) == (u8Key << HWSEM_SEM_KEY_Pos))
+      (hwsem->SEM[u32Num] & HWSEM_SEM_KEY_Msk) == ((uint32_t)u8Key << HWSEM_SEM_KEY_Pos))
         return 0;
     else
         return -1;
@@ -156,7 +156,7 @@ __STATIC_INLINE void HWSEM_Spin_Lock(HWSEM_T *hwsem, uint32_t u32Num, uint8_t u8
     {
         HWSEM_LOCK(hwsem, u32Num, u8Key);
         if((hwsem->SEM[u32Num] & HWSEM_SEM_ID_Msk) == HWSEM_LOCK_BY_A35 &&
-           (hwsem->SEM[u32Num] & HWSEM_SEM_KEY_Msk) == (u8Key << HWSEM_SEM_KEY_Pos))
+           (hwsem->SEM[u32Num] & HWSEM_SEM_KEY_Msk) == ((uint32_t)u8Key << HWSEM_SEM_KEY_Pos))
             break;
     }
 }

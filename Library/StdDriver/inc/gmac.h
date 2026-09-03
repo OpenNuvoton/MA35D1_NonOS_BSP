@@ -208,10 +208,10 @@ enum DmaDescriptorStatus    /* status word of DMA descriptor */
     /* nDescSize2Mask     = 0x003FF800,      (RBS2) Buffer 2 size                                21:11                      */
     /* nDescSize1Mask     = 0x000007FF,      (RBS1) Buffer 1 size                                10:0                       */
     /* Enhanced */
-    /* eDescSize2Mask     = 0x1FFF0000,   /* (RBS2) Buffer 2 size                                28:16                      */
+    /* eDescSize2Mask     = 0x1FFF0000,   (RBS2) Buffer 2 size                                28:16                      */
     eDescRxEndOfRing      = 0x00008000,   /* (RER)End of descriptors ring                        15                         */
     eDescRxChain          = 0x00004000,   /* (RCH)Second buffer address is chain address         14                         */
-    /* eDescSize1Mask     = 0x00001FFF,   /* (RBS1) Buffer 1 size                                12:0                       */
+    /* eDescSize1Mask     = 0x00001FFF,   (RBS1) Buffer 1 size                                12:0                       */
 
     /********** RDES2 **********/
     /* Buffer1 address pointer */
@@ -582,21 +582,21 @@ static u32 __inline__ GMAC_READ(u64 u64Reg)
 
 static void __inline__ GMAC_WRITE(u64 u64Reg, u32 u32Data)
 {
-    if((!(u32)u64Reg & 0xFFFFul))
+    if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);
     write32((void *)u64Reg, u32Data);
 }
 
 static void __inline__ GMAC_SETBITS(u64 u64Reg, u32 u32Mask)
 {
-    if((!(u32)u64Reg & 0xFFFFul))
+    if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);
     write32((void *)u64Reg, read32((void *)u64Reg) | u32Mask);
 }
 
 static void __inline__ GMAC_CLEARBITS(u64 u64Reg, u32 u32Mask)
 {
-    if((!(u32)u64Reg & 0xFFFFul))
+    if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);
     write32((void *)u64Reg, read32((void *)u64Reg) & ~u32Mask);
 }

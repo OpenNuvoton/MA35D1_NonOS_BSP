@@ -531,16 +531,6 @@ uint64_t CLK_SetPLLClockFreq(uint32_t u32PllIdx, uint32_t u32OpMode, uint64_t u6
 uint32_t CLK_GetPLLClockFreq(uint32_t u32PllIdx);
 void CLK_DisableAdvPLL(uint32_t u32PllIdx);
 
-/// @cond HIDDEN_SYMBOLS
-static uint32_t CLK_GetCAPLLClockFreq(void);
-static uint32_t CLK_GetAdvPLLClockFreq(uint32_t u32PllIdx);
-static uint64_t CLK_CalPLLFreq_Mode0(uint64_t u64PllSrcClk, uint64_t u64PllFreq, uint32_t *u32Reg);
-static uint64_t CLK_SetAdvPLLFreq(uint32_t u32PllIdx, uint32_t u32OpMode, uint64_t u64PllSrcClk, uint64_t u64PllFreq);
-static uint32_t CLK_GetModuleClockSource(uint32_t u32ModuleIdx);
-static uint32_t CLK_GetModuleClockDivider(uint32_t u32ModuleIdx);
-/// @endcond HIDDEN_SYMBOLS
-
-
 /*! @}*/ /* end of group CLK_EXPORTED_FUNCTIONS */
 
 /*! @}*/ /* end of group CLK_Driver */

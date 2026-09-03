@@ -7,6 +7,13 @@
  *****************************************************************************/
 #include "NuMicro.h"
 
+static uint32_t CLK_GetCAPLLClockFreq(void);
+static uint32_t CLK_GetAdvPLLClockFreq(uint32_t u32PllIdx);
+static uint64_t CLK_CalPLLFreq_Mode0(uint64_t u64PllSrcClk, uint64_t u64PllFreq, uint32_t *u32Reg);
+static uint64_t CLK_SetAdvPLLFreq(uint32_t u32PllIdx, uint32_t u32OpMode, uint64_t u64PllSrcClk, uint64_t u64PllFreq);
+static uint32_t CLK_GetModuleClockSource(uint32_t u32ModuleIdx);
+static uint32_t CLK_GetModuleClockDivider(uint32_t u32ModuleIdx);
+
 /** @addtogroup Standard_Driver Standard Driver
   @{
 */
@@ -1055,7 +1062,7 @@ uint64_t CLK_SetPLLClockFreq(uint32_t u32PllIdx, uint32_t u32OpMode, uint64_t u6
   * @return     Selected module clock source setting
   * @details    This function get selected module clock source.
   */
-uint32_t CLK_GetModuleClockSource(uint32_t u32ModuleIdx)
+static uint32_t CLK_GetModuleClockSource(uint32_t u32ModuleIdx)
 {
     uint32_t u32sel = 0;
     uint32_t u32SelTbl[5] = {0x0, 0x4, 0x8, 0xC, 0x10};
@@ -1200,7 +1207,7 @@ uint32_t CLK_GetModuleClockSource(uint32_t u32ModuleIdx)
   * @return     Selected module clock divider number setting
   * @details    This function get selected module clock divider number.
   */
-uint32_t CLK_GetModuleClockDivider(uint32_t u32ModuleIdx)
+static uint32_t CLK_GetModuleClockDivider(uint32_t u32ModuleIdx)
 {
     uint32_t u32div = 0;
     uint32_t u32DivTbl[5] = {0x0, 0x4, 0xc, 0xc, 0x10};
