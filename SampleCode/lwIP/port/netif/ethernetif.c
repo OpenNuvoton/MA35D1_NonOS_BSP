@@ -57,6 +57,9 @@
 #include "netif/ethernetif.h"
 #include "string.h"
 #include "lwipopts.h"
+#ifdef HAVE_AVTP
+#include "rtp_h264.h"
+#endif
 
 /* Define those to better describe your network interface. */
 #define IFNAME  'e'
@@ -89,6 +92,23 @@ struct ethernetif
     struct eth_addr *ethaddr;
     /* Add whatever per-interface state that is needed here. */
 };
+
+#ifdef HAVE_AVTP
+#define ETHERTYPE_AVTP 0x22F0
+#define AVTP_RX_PRINT_INTERVAL 90000000U
+#define AVTP_HEADER_SIZE 24U
+#define AVTP_CVF_H264_HEADER_SIZE 4U
+static uint32_t avtp_rx_packet_count;
+static uint32_t avtp_rx_byte_count;
+static uint32_t avtp_rx_valid_count;
+static uint32_t avtp_rx_invalid_count;
+static uint32_t avtp_rx_marker_count;
+static uint32_t avtp_rx_h264_packet_count;
+static uint32_t avtp_rx_h264_byte_count;
+static uint32_t avtp_rx_ring_error_count;
+static const uint8_t avtp_expected_stream_id[8] =
+    {0x45, 0x4D, 0x4F, 0x53, 0x89, 0xAB, 0xCD, 0xEF};
+#endif
 
 void notify_rx_task(int intf)
 {
@@ -469,7 +489,114 @@ ethernetif_input0(uint32_t packetCnt)
         /* points to packet payload, which starts with an Ethernet header */
         ethhdr = p->payload;
 
-        switch (htons(ethhdr->type))
+#ifdef HAVE_AVTP
+        uint16_t ether_type = htons(ethhdr->type);
+
+        if (ether_type == ETHERTYPE_AVTP)
+        {
+            uint32_t packet_length = rxskbuf[GMACINTF0][i].len;
+            uint32_t ethernet_header_length = sizeof(struct eth_hdr);
+            uint32_t avtp_length = 0U;
+            uint8_t *avtp = (uint8_t *)ethhdr;
+            uint32_t packet_info;
+            uint32_t stream_data_length;
+            uint32_t h264_payload_length = 0U;
+            uint8_t marker = 0U;
+            uint8_t nal_type = 0U;
+            uint8_t *h264_payload = NULL;
+            int avtp_valid = 1;
+
+            avtp_rx_packet_count++;
+            avtp_rx_byte_count += packet_length;
+
+            if (packet_length < ethernet_header_length + AVTP_HEADER_SIZE)
+            {
+                avtp_valid = 0;
+            }
+            else
+            {
+                avtp_length = packet_length - ethernet_header_length;
+                avtp = (uint8_t *)ethhdr + ethernet_header_length;
+                packet_info = ((uint32_t)avtp[20] << 24) |
+                              ((uint32_t)avtp[21] << 16) |
+                              ((uint32_t)avtp[22] << 8) |
+                              avtp[23];
+                stream_data_length = (packet_info >> 16) & 0xFFFFU;
+                marker = (uint8_t)((packet_info >> 12) & 0x01U);
+
+                if (((avtp[0] & 0x7FU) != 0x03U) ||
+                    (memcmp(&avtp[4], avtp_expected_stream_id, 8) != 0) ||
+                    (avtp[16] != 0x02U) ||
+                    (avtp[17] != 0x01U) ||
+                    (stream_data_length < AVTP_CVF_H264_HEADER_SIZE) ||
+                    (stream_data_length > avtp_length - AVTP_HEADER_SIZE))
+                {
+                    avtp_valid = 0;
+                }
+                else
+                {
+                    h264_payload = avtp + AVTP_HEADER_SIZE +
+                                   AVTP_CVF_H264_HEADER_SIZE;
+                    h264_payload_length = stream_data_length -
+                                          AVTP_CVF_H264_HEADER_SIZE;
+                    avtp_rx_h264_packet_count++;
+                    avtp_rx_h264_byte_count += h264_payload_length;
+                    avtp_rx_marker_count += marker;
+                    if (h264_payload_length > 0U)
+                        nal_type = h264_payload[0] & 0x1FU;
+
+                    if ((g_avtp_ringbuf == NULL) ||
+                        (h264_cvf_to_annexb(g_avtp_ringbuf,
+                                            h264_payload,
+                                            h264_payload_length,
+                                            avtp[2]) != 0))
+                    {
+                        avtp_rx_ring_error_count++;
+                    }
+                }
+            }
+
+            if (avtp_valid)
+            {
+                avtp_rx_valid_count++;
+            }
+            else
+            {
+                avtp_rx_invalid_count++;
+            }
+
+            if (avtp_rx_packet_count == 1U && avtp_valid)
+            {
+                sysprintf("AVTP first: len=%lu subtype=%u seq=%u sid=%02X%02X%02X%02X%02X%02X%02X%02X data=%lu h264=%lu fmt=%u/%u marker=%u nal=%u\n",
+                          (unsigned long)packet_length,
+                          avtp[0] & 0x7FU, avtp[2],
+                          avtp[4], avtp[5], avtp[6], avtp[7],
+                          avtp[8], avtp[9], avtp[10], avtp[11],
+                          (unsigned long)stream_data_length,
+                          (unsigned long)h264_payload_length,
+                          avtp[16], avtp[17], marker, nal_type);
+            }
+            else if ((avtp_rx_packet_count % AVTP_RX_PRINT_INTERVAL) == 0U)
+            {
+                sysprintf("AVTP stats: packets=%lu valid=%lu invalid=%lu bytes=%lu h264_packets=%lu h264=%lu frames=%lu ring_err=%lu\n",
+                          (unsigned long)avtp_rx_packet_count,
+                          (unsigned long)avtp_rx_valid_count,
+                          (unsigned long)avtp_rx_invalid_count,
+                          (unsigned long)avtp_rx_byte_count,
+                          (unsigned long)avtp_rx_h264_packet_count,
+                          (unsigned long)avtp_rx_h264_byte_count,
+                          (unsigned long)avtp_rx_marker_count,
+                          (unsigned long)avtp_rx_ring_error_count);
+            }
+
+            pbuf_free(p);
+            continue;
+        }
+#else
+        uint16_t ether_type = htons(ethhdr->type);
+#endif
+
+        switch (ether_type)
         {
         /* IP or ARP packet? */
         case ETHTYPE_IP:

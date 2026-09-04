@@ -94,6 +94,11 @@ extern uint64_t ullPortYieldRequired;           \
 #else
     #define portYIELD() __asm volatile ( "SMC 0" ::: "memory" )
 #endif
+
+/* Check whether the current execution context is an interrupt handler. */
+extern uint64_t ullPortInterruptNesting;
+#define portCHECK_IF_IN_ISR()    ( ullPortInterruptNesting > 0 )
+
 /*-----------------------------------------------------------
  * Critical section control
  *----------------------------------------------------------*/
