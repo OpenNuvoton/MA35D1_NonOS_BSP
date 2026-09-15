@@ -180,11 +180,11 @@ void UART_Open(UART_T* uart, uint32_t u32baudrate)
         u32UartPort = (ptr_to_u32(uart) & 0xf0000) >> 16;
     }
 
-    if((u32UartPort >= 0) && (u32UartPort <= 7))
+    if(u32UartPort <= 7)
     {
         u32UartClkSrcSel = ((CLK->CLKSEL2 >> (16 + u32UartPort*2)) & 0x3ul);
 
-        if((u32UartPort >= 0) && (u32UartPort <= 3))
+        if(u32UartPort <= 3)
         {
             u32UartClkDivNum = ((CLK->CLKDIV1 >> ((u32UartPort+4)*4)) & 0xful);
         }

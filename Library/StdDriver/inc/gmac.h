@@ -575,26 +575,26 @@ typedef struct GMACDeviceStruct {
 void plat_delay(uint32_t ticks);
 
 /* GMAC bit operation helpers */
-static u32 __inline__ GMAC_READ(u64 u64Reg)
+static __inline__ u32 GMAC_READ(u64 u64Reg)
 {
     return read32((void *)u64Reg);
 }
 
-static void __inline__ GMAC_WRITE(u64 u64Reg, u32 u32Data)
+static __inline__ void GMAC_WRITE(u64 u64Reg, u32 u32Data)
 {
     if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);
     write32((void *)u64Reg, u32Data);
 }
 
-static void __inline__ GMAC_SETBITS(u64 u64Reg, u32 u32Mask)
+static __inline__ void GMAC_SETBITS(u64 u64Reg, u32 u32Mask)
 {
     if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);
     write32((void *)u64Reg, read32((void *)u64Reg) | u32Mask);
 }
 
-static void __inline__ GMAC_CLEARBITS(u64 u64Reg, u32 u32Mask)
+static __inline__ void GMAC_CLEARBITS(u64 u64Reg, u32 u32Mask)
 {
     if(!((u32)u64Reg & 0xFFFFul))
         plat_delay(1);

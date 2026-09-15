@@ -238,7 +238,6 @@ __WEAK uint32_t IRQ_GetMode (IRQn_ID_t irqn) {
 /// Get ID number of current interrupt request (IRQ).
 __WEAK IRQn_ID_t IRQ_GetActiveIRQ (void) {
   IRQn_ID_t irqn;
-  uint32_t prio;
 
   irqn = GIC_AcknowledgePending();
   __DSB();

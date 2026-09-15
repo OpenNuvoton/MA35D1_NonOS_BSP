@@ -126,6 +126,7 @@ void dcache_invalidate_by_mva(void const *addr, size_t len)
  */
 void arch_segment_loaded(uintptr_t start, size_t size, int flags)
 {
+	(void)flags;
 	uint32_t sctlr = raw_read_sctlr_el3();
 	if (sctlr & SCTLR_C)
 		dcache_clean_by_mva((void *)start, size);

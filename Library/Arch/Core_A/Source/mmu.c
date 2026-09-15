@@ -83,13 +83,12 @@ static uint64_t *setup_new_table(uint64_t desc, size_t xlat_size)
 		next_free_table += GRANULE_SIZE/sizeof(*next_free_table);
 	}
 
-	void *frame_base = (void *)(desc & XLAT_ADDR_MASK);
 	if (desc) {
 		/* Can reuse old parent entry, but may need to adjust type. */
 		if (xlat_size == L3_XLAT_SIZE)
 			desc |= PAGE_DESC;
 
-		int i = 0;
+		size_t i = 0;
 		for (; i < GRANULE_SIZE/sizeof(*next_free_table); i++) {
 			next_free_table[i] = desc;
 			desc += xlat_size;
@@ -126,7 +125,6 @@ static uint64_t init_xlat_table(uint64_t base_addr,
 				uint64_t size,
 				uint64_t tag)
 {
-	uint64_t l0_index = (base_addr & L0_ADDR_MASK) >> L0_ADDR_SHIFT;
 	uint64_t l1_index = (base_addr & L1_ADDR_MASK) >> L1_ADDR_SHIFT;
 	uint64_t l2_index = (base_addr & L2_ADDR_MASK) >> L2_ADDR_SHIFT;
 	uint64_t l3_index = (base_addr & L3_ADDR_MASK) >> L3_ADDR_SHIFT;

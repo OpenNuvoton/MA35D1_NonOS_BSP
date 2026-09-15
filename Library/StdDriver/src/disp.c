@@ -37,7 +37,7 @@ void DISP_EnableDCUClk(void)
 uint32_t DISP_FindPixelClk(uint32_t u32PixClkInHz)
 {
     uint32_t ClkDivideFactor[] = {2, 4, 6, 8, 10, 12, 14, 16};
-    uint32_t FactorIdx, tmpFreq, u32PixClkDivfactor;
+    uint32_t FactorIdx, tmpFreq, u32PixClkDivfactor = 0;
     uint64_t u64PixClkOut;
 
     for (FactorIdx = 0; FactorIdx < 8; FactorIdx++)
@@ -52,6 +52,7 @@ uint32_t DISP_FindPixelClk(uint32_t u32PixClkInHz)
         }
     }
     u64PixClkOut = u32PixClkInHz*ClkDivideFactor[u32PixClkDivfactor];
+    (void)u64PixClkOut;
 
     /* Apply new divider */
     CLK->CLKDIV0 = (CLK->CLKDIV0 & ~(CLK_CLKDIV0_DCUPDIV_Msk)) | (u32PixClkDivfactor << CLK_CLKDIV0_DCUPDIV_Pos);

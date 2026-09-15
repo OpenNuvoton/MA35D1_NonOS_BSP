@@ -179,8 +179,8 @@ static const char *FormatItem(const char *f, uint64_t a)
                         if (leftjust)
                             sysPutString((char *)a);
 
-                        if (fieldwidth > strlen((char *)a))
-                            sysPutRepChar(fill, fieldwidth - strlen((char *)a));
+                        if (fieldwidth > 0 && (size_t)fieldwidth > strlen((char *)a))
+                            sysPutRepChar(fill, (size_t)fieldwidth - strlen((char *)a));
 
                         if (!leftjust)
                             sysPutString((char *)a);
@@ -243,7 +243,6 @@ static unsigned int mutex_print=0;
 #endif
 void sysprintf(const char * pcStr,...)
 {
-	char  *argP;
 	va_list va;
 
 #ifdef DEUBG_PORT_ONE_ONLY
@@ -302,3 +301,4 @@ void sysputchar(char ch)
     while (DEBUG_PORT[id]->FIFOSTS & UART_FIFOSTS_TXFULL_Msk);
     DEBUG_PORT[id]->DAT = ch;
 }
+
