@@ -89,8 +89,9 @@ void TIMER_Close(TIMER_T *timer)
 void TIMER_Delay(TIMER_T *timer, uint32_t u32Usec)
 {
     uint32_t u32Clk = TIMER_GetModuleClock(timer);
-    uint32_t u32Prescale = 0UL, delay = (SystemCoreClock / u32Clk) + 1UL;
+    uint32_t u32Prescale = 0UL;
     uint32_t u32Cmpr, u32NsecPerTick;
+    uint64_t u64TimeOut;
 
     /* Clear current timer configuration */
     timer->CTL = 0UL;
@@ -139,12 +140,10 @@ void TIMER_Delay(TIMER_T *timer, uint32_t u32Usec)
     timer->CMP = u32Cmpr;
     timer->CTL = TIMER_CTL_CNTEN_Msk | TIMER_ONESHOT_MODE | u32Prescale;
 
-    /* When system clock is faster than timer clock, it is possible timer active bit cannot set in time while we check it.
-       And the while loop below return immediately, so put a tiny delay here allowing timer start counting and raise active flag. */
-    for (; delay > 0UL; delay--)
-    {
-        __NOP();
-    }
+    /* Wait one timer source clock period before checking the active status. */
+    u64TimeOut = EL0_GetCurrentPhysicalValue() +
+                 (((uint64_t)raw_read_cntfrq_el0() + u32Clk - 1UL) / u32Clk);
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut);
 
     while (timer->CTL & TIMER_CTL_ACTSTS_Msk)
     {
@@ -375,4 +374,3 @@ void TIMER_SetTriggerTarget(TIMER_T *timer, uint32_t u32Mask)
 /*! @}*/ /* end of group TIMER_Driver */
 
 /*! @}*/ /* end of group Standard_Driver */
-

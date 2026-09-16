@@ -1043,7 +1043,7 @@ uint32_t CANFD_TransmitTxMsg(CANFD_T *psCanfd, uint32_t u32TxBufIdx, CANFD_FD_MS
 uint32_t CANFD_TransmitDMsg(CANFD_T *psCanfd, uint32_t u32TxBufIdx, CANFD_FD_MSG_T *psTxMsg)
 {
     CANFD_BUF_T *psTxBuffer;
-    uint32_t u32TimeOutCount = SystemCoreClock/100; // 1 ms timeout
+    uint64_t u64TimeOut;
     uint32_t u32Idx = 0, u32Success = 1;
 
     if (u32TxBufIdx >= CANFD_MAX_TX_BUF_ELEMS) return 0;
@@ -1077,14 +1077,15 @@ uint32_t CANFD_TransmitDMsg(CANFD_T *psCanfd, uint32_t u32TxBufIdx, CANFD_FD_MSG
 
     if((inpw(ptr_to_u32(SYS_BASE + 0x1F0)) & (0xf000000)) == 0x0)
     {
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + 12000; // 1 ms timeout
+
         /* Wait for CAN communication status to be idle */
         while(CANFD_GET_COMMUNICATION_STATE(psCanfd) != eCANFD_IDLE)
         {
-            if (u32TimeOutCount == 0)
+            if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 return 0;
             }
-            u32TimeOutCount--;
         }
     }
 

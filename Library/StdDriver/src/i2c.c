@@ -422,17 +422,17 @@ void I2C_DisableWakeup(I2C_T *i2c)
 uint8_t I2C_WriteByte(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t data)
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -469,10 +469,10 @@ uint8_t I2C_WriteByte(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t data)
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                             /* Write control bit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -499,17 +499,18 @@ uint8_t I2C_WriteByte(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t data)
 uint32_t I2C_WriteMultiBytes(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t data[], uint32_t u32wLen)
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
-    uint32_t u32txLen = 0u, u32TimeOutCount = 0u;
+    uint32_t u32txLen = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                              /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -550,10 +551,10 @@ uint32_t I2C_WriteMultiBytes(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t data[], ui
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                             /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -582,17 +583,17 @@ uint8_t I2C_WriteByteOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8DataAddr,
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
     uint32_t u32txLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                              /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -636,10 +637,10 @@ uint8_t I2C_WriteByteOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8DataAddr,
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                             /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -669,17 +670,17 @@ uint32_t I2C_WriteMultiBytesOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8Da
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
     uint32_t u32txLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                              /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -722,10 +723,10 @@ uint32_t I2C_WriteMultiBytesOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8Da
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                             /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -754,17 +755,17 @@ uint8_t I2C_WriteByteTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16DataAd
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Addr = 1u, u8Ctrl = 0u;
     uint32_t u32txLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                         /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -813,10 +814,10 @@ uint8_t I2C_WriteByteTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16DataAd
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                                 /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -846,17 +847,17 @@ uint32_t I2C_WriteMultiBytesTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u1
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Addr = 1u, u8Ctrl = 0u;
     uint32_t u32txLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                         /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -904,10 +905,10 @@ uint32_t I2C_WriteMultiBytesTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u1
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                                 /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -931,17 +932,17 @@ uint32_t I2C_WriteMultiBytesTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u1
 uint8_t I2C_ReadByte(I2C_T *i2c, uint8_t u8SlaveAddr)
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, rdata = 0u, u8Ctrl = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -977,10 +978,10 @@ uint8_t I2C_ReadByte(I2C_T *i2c, uint8_t u8SlaveAddr)
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                               /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -1013,17 +1014,17 @@ uint32_t I2C_ReadMultiBytes(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t rdata[], ui
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
     uint32_t u32rxLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -1070,10 +1071,10 @@ uint32_t I2C_ReadMultiBytes(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t rdata[], ui
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                               /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -1100,17 +1101,17 @@ uint32_t I2C_ReadMultiBytes(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t rdata[], ui
 uint8_t I2C_ReadByteOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8DataAddr)
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, rdata = 0u, u8Ctrl = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -1161,10 +1162,10 @@ uint8_t I2C_ReadByteOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8DataAddr)
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                              /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -1197,17 +1198,17 @@ uint32_t I2C_ReadMultiBytesOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8Dat
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Ctrl = 0u;
     uint32_t u32rxLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -1269,10 +1270,10 @@ uint32_t I2C_ReadMultiBytesOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8Dat
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                               /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -1298,17 +1299,17 @@ uint32_t I2C_ReadMultiBytesOneReg(I2C_T *i2c, uint8_t u8SlaveAddr, uint8_t u8Dat
 uint8_t I2C_ReadByteTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16DataAddr)
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, rdata = 0u, u8Addr = 1u, u8Ctrl = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                         /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -1367,10 +1368,10 @@ uint8_t I2C_ReadByteTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16DataAdd
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                                 /* Write controlbit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;
@@ -1403,17 +1404,17 @@ uint32_t I2C_ReadMultiBytesTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16
 {
     uint8_t u8Xfering = 1u, u8Err = 0u, u8Addr = 1u, u8Ctrl = 0u;
     uint32_t u32rxLen = 0u;
-    uint32_t u32TimeOutCount = 0u;
+    uint64_t u64TimeOut;
 
     g_I2C_i32ErrCode = 0;
 
     I2C_START(i2c);                                                         /* Send START */
     while(u8Xfering && (u8Err == 0u))
     {
-        u32TimeOutCount = I2C_TIMEOUT;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
         I2C_WAIT_READY(i2c)
         {
-            if(--u32TimeOutCount == 0)
+            if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
                 u8Err = 1u;
@@ -1483,10 +1484,10 @@ uint32_t I2C_ReadMultiBytesTwoRegs(I2C_T *i2c, uint8_t u8SlaveAddr, uint16_t u16
         I2C_SET_CONTROL_REG(i2c, u8Ctrl);                                 /* Write control bit to I2C_CTL register */
     }
 
-    u32TimeOutCount = I2C_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + I2C_TIMEOUT;
     while ((i2c)->CTL0 & I2C_CTL_STO)
     {
-        if(--u32TimeOutCount == 0)
+        if(EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             g_I2C_i32ErrCode = I2C_ERR_TIMEOUT;
             break;

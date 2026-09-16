@@ -782,12 +782,12 @@ uint32_t CLK_GetPLLOpMode(uint32_t u32PllIdx)
   */
 uint32_t CLK_WaitClockReady(uint32_t u32ClkMask)
 {
-    int32_t i32TimeOutCnt = 2160000;
+    uint64_t u64TimeOut = EL0_GetCurrentPhysicalValue() + 3600000; /* 300 ms timeout, ARM Generic Timer @ 12MHz */
     uint32_t u32Ret = 1U;
 
     while ((CLK->STATUS & u32ClkMask) != u32ClkMask)
     {
-        if (i32TimeOutCnt-- <= 0)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             u32Ret = 0U;
             break;
