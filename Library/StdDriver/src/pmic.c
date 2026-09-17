@@ -34,6 +34,7 @@
 #define    REG_I2C0_TOCTL    (I2C0_BASE+0x014)   /*!< I2C Time-out Control Register */
 
 #define RETRY_COUNT 3
+#define PMIC_I2C_TIMEOUT 12000000UL  /* 1 second timeout, ARM Generic Timer @ 12MHz */
 /*---------------------------------------------------------------------------------------------------------*/
 /* Global variables                                                                                        */
 /*---------------------------------------------------------------------------------------------------------*/
@@ -148,9 +149,8 @@ void PMIC_I2C_MasterTx(unsigned int u32Status)
   */
 unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
 {
-    unsigned int I2C_TIME_OUT_COUNT = 0x200000;
     unsigned int u32Status;
-    unsigned int u32time_out = 0;
+    uint64_t u64TimeOut;
 
     g_u8PMIC_PageNum = 0;
 
@@ -159,6 +159,7 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
     g_u8PMIC_EndFlag     = 0x0;
 
     outp32((void *)REG_I2C0_CTL, (inp32((void *)REG_I2C0_CTL)& ~0x3c) | I2C_CTL_STA);
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + PMIC_I2C_TIMEOUT;
 
     while(1)
     {
@@ -172,8 +173,7 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
         {
             break;
         }
-        u32time_out++;
-        if (u32time_out > I2C_TIME_OUT_COUNT)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             sysprintf("i2c Write Time Out!\n");
             return FALSE;
@@ -194,9 +194,8 @@ unsigned int ma35d1_write_i2c_data(unsigned int u32Addr, unsigned int u32Data)
   */
 unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
 {
-    unsigned int I2C_TIME_OUT_COUNT = 0x200000;
     unsigned int u32Status;
-    unsigned int u32time_out = 0;
+    uint64_t u64TimeOut;
 
     g_u8PMIC_PageNum = 0;
 
@@ -204,6 +203,7 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
     g_u8PMIC_EndFlag     = 0x0;
 
     outp32((void *)REG_I2C0_CTL, (inp32((void *)REG_I2C0_CTL)& ~0x3c) | I2C_CTL_STA);
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + PMIC_I2C_TIMEOUT;
 
     while(1)
     {
@@ -218,8 +218,7 @@ unsigned int ma35d1_read_i2c_data(unsigned int u32Addr, unsigned int* u32Data)
             break;
         }
 
-        u32time_out++;
-        if (u32time_out > I2C_TIME_OUT_COUNT)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             sysprintf("i2c Read Time Out!\n");
             return FALSE;
@@ -387,4 +386,3 @@ int ma35d1_read_pmic(unsigned char u32DevAddr, unsigned int u32RegAddr, unsigned
 /*! @}*/ /* end of group PMIC_Driver */
 
 /*! @}*/ /* end of group Standard_Driver */
-

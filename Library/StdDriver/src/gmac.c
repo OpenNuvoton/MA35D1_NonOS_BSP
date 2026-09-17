@@ -9,8 +9,13 @@
 #include <string.h>
 #include <stdio.h>
 
+#define GMAC_MDIO_TIMEOUT       12000ULL     /* 1 ms, ARM Generic Timer @ 12 MHz */
+#define GMAC_TIMESTAMP_TIMEOUT  12000ULL     /* 1 ms, ARM Generic Timer @ 12 MHz */
+#define GMAC_PHY_RESET_TIMEOUT  12000000ULL  /* 1 second, ARM Generic Timer @ 12 MHz */
+#define GMAC_AUTONEG_TIMEOUT    120000000ULL /* 10 seconds, ARM Generic Timer @ 12 MHz */
+
 /** @addtogroup Standard_Driver Standard Driver
-  @{
+ @{
 */
 
 /** @addtogroup GMAC_Driver GMAC Driver
@@ -89,25 +94,24 @@ u32 GMAC_get_mdc_clk_div(GMACdevice *gmacdev)
  */
 s32 GMAC_read_phy_reg(GMACdevice *gmacdev, u32 PhyOffset, u16 *data)
 {
-    u32 addr, i;
+    u32 addr;
+    uint64_t u64TimeOut;
 
     addr = ((gmacdev->PhyBase << GMAC_GmiiAddr_PA_Pos) & GMAC_GmiiAddr_PA_Msk) | ((PhyOffset << GMAC_GmiiAddr_GR_Pos) & GMAC_GmiiAddr_GR_Msk);
     addr |= GMAC_GmiiAddr_GB_Msk | GmiiCsrClk4; // Gmii busy bit
     GMAC_WRITE((u64)&gmacdev->MacBase->GmiiAddr, addr);
 
-    for(i = 0; i < DEFAULT_LOOP_VARIABLE; i++) { //Wait till the busy bit gets cleared with in a certain amount of time
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_MDIO_TIMEOUT;
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut) { //Wait till the busy bit gets cleared with in a certain amount of time
         if(!(GMAC_READ((u64)&gmacdev->MacBase->GmiiAddr) & GMAC_GmiiAddr_GB_Msk)) {
-            break;
+            *data = (u16)(GMAC_READ((u64)&gmacdev->MacBase->GmiiData) & 0xFFFF);
+            return 0;
         }
         plat_delay(DEFAULT_DELAY_VARIABLE);
     }
-    if(i < DEFAULT_LOOP_VARIABLE)
-        *data = (u16)(GMAC_READ((u64)&gmacdev->MacBase->GmiiData) & 0xFFFF);
-    else {
-        TR("Error::: PHY not responding Busy bit didnot get cleared !!!!!!\n");
-        return -GMACPHYERR;
-    }
-    return 0;
+
+    TR("Error::: PHY not responding Busy bit didnot get cleared !!!!!!\n");
+    return -GMACPHYERR;
 }
 
 /**
@@ -120,7 +124,8 @@ s32 GMAC_read_phy_reg(GMACdevice *gmacdev, u32 PhyOffset, u16 *data)
  */
 s32 GMAC_write_phy_reg(GMACdevice *gmacdev, u32 PhyOffset, u16 data)
 {
-    u32 addr, i;
+    u32 addr;
+    uint64_t u64TimeOut;
 
     GMAC_WRITE((u64)&gmacdev->MacBase->GmiiData, data);
 
@@ -130,19 +135,16 @@ s32 GMAC_write_phy_reg(GMACdevice *gmacdev, u32 PhyOffset, u16 data)
     addr |= GMAC_GmiiAddr_GB_Msk | GmiiCsrClk4; // set Gmii clk to 150-250 Mhz and Gmii busy bit
 
     GMAC_WRITE((u64)&gmacdev->MacBase->GmiiAddr, addr);
-    for(i = 0; i < DEFAULT_LOOP_VARIABLE; i++) {
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_MDIO_TIMEOUT;
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut) {
         if(!(GMAC_READ((u64)&gmacdev->MacBase->GmiiAddr) & GMAC_GmiiAddr_GB_Msk)) {
-            break;
+            return 0;
         }
         plat_delay(DEFAULT_DELAY_VARIABLE);
     }
 
-    if(i < DEFAULT_LOOP_VARIABLE) {
-        return 0;
-    } else {
-        TR("Error::: PHY not responding Busy bit didnot get cleared !!!!!!\n");
-        return -GMACPHYERR;
-    }
+    TR("Error::: PHY not responding Busy bit didnot get cleared !!!!!!\n");
+    return -GMACPHYERR;
 }
 
 /**
@@ -177,14 +179,15 @@ s32 GMAC_phy_loopback(GMACdevice *gmacdev, bool loopback)
 s32 GMAC_perform_phy_reset(GMACdevice *gmacdev, int mode)
 {
     s32 ret = 0;
-    s32 i = DEFAULT_LOOP_VARIABLE;
     u16 data;
+    uint64_t u64TimeOut;
 
     ret = GMAC_write_phy_reg(gmacdev, PHY_CONTROL_REG, Mii_reset);
     if(ret)
         return ret;
 
-    while(i-- > 0) {
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_PHY_RESET_TIMEOUT;
+    while(EL0_GetCurrentPhysicalValue() < u64TimeOut) {
         ret = GMAC_read_phy_reg(gmacdev, PHY_CONTROL_REG, &data);
         if(ret)
             return ret;
@@ -221,8 +224,8 @@ s32 GMAC_perform_phy_reset(GMACdevice *gmacdev, int mode)
     if(ret)
         return ret;
 
-    i = 10000000;
-    while(i-- > 0) {
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_AUTONEG_TIMEOUT;
+    while(EL0_GetCurrentPhysicalValue() < u64TimeOut) {
         /* first, a dummy read, needed to latch some MII phys */
         //GMAC_read_phy_reg(gmacdev, PHY_STATUS_REG, &data);
         ret = GMAC_read_phy_reg(gmacdev, PHY_STATUS_REG, &data);
@@ -1444,21 +1447,19 @@ void GMAC_TS_set_clk_type(GMACdevice *gmacdev, u32 clk_type)
  */
 s32 GMAC_TS_addend_update(GMACdevice *gmacdev, u32 addend_value)
 {
-    u32 i;
+    uint64_t u64TimeOut;
     GMAC_WRITE((u64)&gmacdev->MacBase->TSAddend, addend_value);
-    for(i = 0; i < DEFAULT_LOOP_VARIABLE; i++) { //Wait till the busy bit gets cleared with in a certain amount of time
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_TIMESTAMP_TIMEOUT;
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut) { //Wait till the busy bit gets cleared with in a certain amount of time
         if(!(GMAC_READ((u64)&gmacdev->MacBase->TSControl) & GMAC_TSControl_TSADDREG_Msk)) { // if it is cleared then break
-            break;
+            GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSADDREG_Msk);
+            return 0;
         }
         plat_delay(DEFAULT_DELAY_VARIABLE);
     }
-    if(i < DEFAULT_LOOP_VARIABLE)
-        GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSADDREG_Msk);
-    else {
-        TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
-        return -GMACPHYERR;
-    }
-    return 0;
+
+    TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
+    return -GMACPHYERR;
 }
 
 /**
@@ -1472,22 +1473,20 @@ s32 GMAC_TS_addend_update(GMACdevice *gmacdev, u32 addend_value)
  */
 s32 GMAC_TS_timestamp_update(GMACdevice *gmacdev, u32 sec, u32 nanosec)
 {
-    u32 i;
+    uint64_t u64TimeOut;
     GMAC_WRITE((u64)&gmacdev->MacBase->TSSecUpdate, sec);
     GMAC_WRITE((u64)&gmacdev->MacBase->TSNanosecUpdate, nanosec);
-    for(i = 0; i < DEFAULT_LOOP_VARIABLE; i++) { //Wait till the busy bit gets cleared with in a certain amount of time
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_TIMESTAMP_TIMEOUT;
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut) { //Wait till the busy bit gets cleared with in a certain amount of time
         if(!(GMAC_READ((u64)&gmacdev->MacBase->TSControl) & GMAC_TSControl_TSUPDT_Msk)) { // if it is cleared then break
-            break;
+            GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSUPDT_Msk);
+            return 0;
         }
         plat_delay(DEFAULT_DELAY_VARIABLE);
     }
-    if(i < DEFAULT_LOOP_VARIABLE)
-        GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSUPDT_Msk);
-    else {
-        TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
-        return -GMACPHYERR;
-    }
-    return 0;
+
+    TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
+    return -GMACPHYERR;
 }
 
 /**
@@ -1501,22 +1500,20 @@ s32 GMAC_TS_timestamp_update(GMACdevice *gmacdev, u32 sec, u32 nanosec)
  */
 s32 GMAC_TS_timestamp_init(GMACdevice *gmacdev, u32 sec, u32 nanosec)
 {
-    u32 i;
+    uint64_t u64TimeOut;
     GMAC_WRITE((u64)&gmacdev->MacBase->TSSecUpdate, sec);
     GMAC_WRITE((u64)&gmacdev->MacBase->TSNanosecUpdate, nanosec);
-    for(i = 0; i < DEFAULT_LOOP_VARIABLE; i++) { //Wait till the busy bit gets cleared with in a certain amount of time
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + GMAC_TIMESTAMP_TIMEOUT;
+    while (EL0_GetCurrentPhysicalValue() < u64TimeOut) { //Wait till the busy bit gets cleared with in a certain amount of time
         if(!(GMAC_READ((u64)&gmacdev->MacBase->TSControl) & GMAC_TSControl_TSINIT_Msk)) { // if it is cleared then break
-            break;
+            GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSINIT_Msk);
+            return 0;
         }
         plat_delay(DEFAULT_DELAY_VARIABLE);
     }
-    if(i < DEFAULT_LOOP_VARIABLE)
-        GMAC_SETBITS((u64)&gmacdev->MacBase->TSControl, GMAC_TSControl_TSINIT_Msk);
-    else {
-        TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
-        return -GMACPHYERR;
-    }
-    return 0;
+
+    TR("Error::: The TSADDREG bit is not getting cleared !!!!!!\n");
+    return -GMACPHYERR;
 }
 
 /**

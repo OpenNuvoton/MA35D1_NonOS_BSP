@@ -25,7 +25,6 @@
 
 #define SDH_BLOCK_SIZE	512ul
 #define MAX_TUNING_LOOP 16
-
 /** @cond HIDDEN_SYMBOLS */
 
 /* global variables */
@@ -104,21 +103,19 @@ const char *SDH_mode_name(enum bus_mode mode)
 
 int32_t SDH_reset(SDH_T *sdh, unsigned char mask)
 {
-    uint32_t timeout;
+    uint64_t u64TimeOut;
 
     /* Wait max 100 ms */
-    timeout = 100;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + 1200000ULL;
     sdh->SW_RST_R = mask;
-     
+
     while (sdh->SW_RST_R & mask)
     {
-       
-        if (timeout == 0)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
 			sysprintf("SD Reset fail\n");
             return -1;
         }
-        timeout--;
         SDH_DelayMicrosecond(1);
     }
     return 0;
@@ -150,17 +147,18 @@ static void SDH_cmd_done(SDH_T *sdh, struct mmc_cmd *cmd)
 
 static int SDH_transfer_data(SDH_T *sdh, struct mmc_data *data)
 {
-    unsigned int stat, timeout;
+    unsigned int stat;
     /* unsigned int rdy, mask, block = 0; */
     char transfer_done = 0;
     unsigned long start_addr;
+    uint64_t u64TimeOut;
 
     if (data->flags == MMC_DATA_READ)
         start_addr=(unsigned long)data->dest;
     else
         start_addr=(unsigned long)data->src;
 
-    timeout = 1000000;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + 12000000ULL;
     //rdy = 0x30; /* SDHCI_INT_SPACE_AVAIL | SDHCI_INT_DATA_AVAIL */
     //mask = 0xc00; /* SDHCI_DATA_AVAILABLE | SDHCI_SPACE_AVAILABLE */
     do {
@@ -177,10 +175,9 @@ static int SDH_transfer_data(SDH_T *sdh, struct mmc_data *data)
             start_addr += 512*1024;
             sdh->SDMASA_R = start_addr;
         }
-        if (timeout-- > 0)
-            SDH_DelayMicrosecond(1);
-        else
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             return -2;
+        SDH_DelayMicrosecond(1);
 
     } while (!(stat & 0x2));    /* SDHCI_INT_DATA_END */
     return 0;
@@ -191,9 +188,7 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
     unsigned int stat = 0;
     int ret = 0;
     unsigned int mask, flags, mode;
-    unsigned int time = 0;
-    /* Timeout unit - ms */
-    volatile int cmd_timeout = SDH_CMD_DEFAULT_TIMEOUT;
+    uint64_t u64TimeOut;
 
     mask = 0x3; /* SDH_CMD_INHIBIT | SDH_DATA_INHIBIT */
     /* We shouldn't wait for data inhibit for stop commands, even
@@ -201,18 +196,13 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
     if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
         mask &= ~0x2;   /* SDH_DATA_INHIBIT */
 
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + ((uint64_t)SDH_CMD_MAX_TIMEOUT * 12000ULL);
     while (sdh->PSTATE_REG & mask)
     {
-        if (time >= cmd_timeout)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
-            if (2 * cmd_timeout <= SDH_CMD_MAX_TIMEOUT)
-            {
-                cmd_timeout += cmd_timeout;
-            }
-            else
-                return -3;
+            return -3;
         }
-        time++;
         SDH_DelayMicrosecond(1);
     }
 
@@ -273,7 +263,7 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
     sdh->ARGUMENT_R = cmd->cmdarg;
     sdh->CMD_R = (((cmd->cmdidx & 0xff) << 8) | (flags & 0xff));
 
-    cmd_timeout = SDH_CMD_DEFAULT_TIMEOUT;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + ((uint64_t)SDH_CMD_DEFAULT_TIMEOUT * 12000ULL);
     do
     {
         stat = sdh->NORMAL_INT_STAT_R;
@@ -281,12 +271,12 @@ int SDH_send_command(SDH_T *sdh, struct mmc_cmd *cmd, struct mmc_data *data)
             break;
         }
 
-        SDH_DelayMicrosecond(1);
-        if (cmd_timeout--<=0)  /* 50ms */
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
 			sysprintf("Timeout for status update! ret %d\n",ret);
             return -2;
         }
+        SDH_DelayMicrosecond(1);
     }
     while ((stat & mask) != mask);
 
@@ -423,9 +413,10 @@ void SDH_set_timing(SDH_T *sdh, enum bus_mode mode)
 
 void SDH_set_clock(SDH_T *sdh, uint32_t clock)
 {
-    unsigned long div, clk = 0, timeout;
+    unsigned long div, clk = 0;
     unsigned int ReferenceClock;
     VENDOR_SPECIFIC_AREA_T * pVendor;
+    uint64_t u64TimeOut;
 
     if (sdh == SDH0) {
     	ReferenceClock =_SDH0_ReferenceClock = 180000000;
@@ -434,17 +425,15 @@ void SDH_set_clock(SDH_T *sdh, uint32_t clock)
 		ReferenceClock = _SDH1_ReferenceClock = 180000000;
 		pVendor = VENDOR1;
 	}
-
     /* Wait max 20 ms */
-    timeout = 200;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + 240000ULL;
     while (sdh->PSTATE_REG & 0x3) /* (SDH_CMD_INHIBIT | SDH_DATA_INHIBIT)) */
     {
-        if (timeout == 0)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             sysprintf("Timeout to wait cmd & data inhibit\n");
             return;
         }
-        timeout--;
         SDH_DelayMicrosecond(10);
     }
 
@@ -461,15 +450,14 @@ void SDH_set_clock(SDH_T *sdh, uint32_t clock)
     sdh->CLK_CTRL_R = clk;
 
     /* Wait max 20 ms */
-    timeout = 20;
+    u64TimeOut = EL0_GetCurrentPhysicalValue() + 240000ULL;
     while (!(sdh->CLK_CTRL_R & 0x2)) /* SDHCI_CLOCK_INT_STABLE */
     {
-        if (timeout == 0)
+        if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
         {
             sysprintf("Internal clock never stable\n");
             return;
         }
-        timeout--;
         SDH_DelayMicrosecond(10);
     }
 
@@ -870,7 +858,7 @@ int32_t SDH_Init(SDH_T *sdh)
     struct mmc * mmc = &mmcInfo;
     struct mmc_cmd cmd;
     int err;
-    int volatile timeout;
+    uint64_t u64TimeOut;
     SDH_INFO_T *pSD;
     VENDOR_SPECIFIC_AREA_T * pVendor;
 
@@ -928,7 +916,7 @@ int32_t SDH_Init(SDH_T *sdh)
         /* SD 2.0 */
         mmc->version = SD_VERSION_2;
 //        pSD->R7Flag = 1ul;
-        timeout = 1000;
+        u64TimeOut = EL0_GetCurrentPhysicalValue() + 12000000ULL; /* 1 second, ARM Generic Timer @ 12 MHz */
         while (1)
         {
             cmd.cmdidx = MMC_CMD_APP_CMD;
@@ -943,7 +931,7 @@ int32_t SDH_Init(SDH_T *sdh)
             if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
                 break;
 
-            if (timeout-- <= 0)
+            if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
             {
                 sysprintf("SD Tout 1\n");
                 return -1;
@@ -996,7 +984,7 @@ int32_t SDH_Init(SDH_T *sdh)
             /* timer delay */
             SDH_DelayMicrosecond(100);
 
-            timeout = 3;
+            u64TimeOut = EL0_GetCurrentPhysicalValue() + 12000000ULL; /* 1 second, ARM Generic Timer @ 12 MHz */
             while (1)
             {
                 cmd.cmdidx = MMC_CMD_SEND_OP_COND;
@@ -1005,7 +993,7 @@ int32_t SDH_Init(SDH_T *sdh)
                 SDH_send_command(sdh, &cmd, 0);
                 if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
                     break;
-                if (timeout-- <= 0)
+                if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
                 {
                     sysprintf("SD Tout 2\n");
                     return -1;
@@ -1024,7 +1012,7 @@ int32_t SDH_Init(SDH_T *sdh)
             cmd.cmdarg = 0x00ff8000;
             SDH_send_command(sdh, &cmd, 0);
 
-            timeout = 1000;
+            u64TimeOut = EL0_GetCurrentPhysicalValue() + 12000000ULL;
             while (1)
             {
                 cmd.cmdidx = MMC_CMD_APP_CMD;
@@ -1039,7 +1027,7 @@ int32_t SDH_Init(SDH_T *sdh)
                 if (cmd.response[0] & 0x80000000)   /* OCR_BUSY */
                     break;
 
-                if (timeout-- <= 0)
+                if (EL0_GetCurrentPhysicalValue() >= u64TimeOut)
                 {
                     sysprintf("SD Tout 3\n");
                     return -1;
