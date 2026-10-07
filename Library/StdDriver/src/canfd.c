@@ -201,18 +201,22 @@
 
 /// @cond HIDDEN_SYMBOLS
 /**
- * @brief       Sets the first num bytes of the block of memory pointed by s to the specified value.
+ * @brief       Clears the first num bytes of the block of memory pointed by s.
  *
- * @param[in]   s Pointer to the block of memory to fill.
- * @param[in]   c Value to be set.
- * @param[in]   count Number of bytes to be set to the value.
+ * @param[in]   s Pointer to the block of memory to clear.
+ * @param[in]   count Number of bytes to be cleared.
  *
  */
-void *CANFD_MemSet(void *s, int c, size_t count)
+static void *CANFD_MemClear(void *s, size_t count)
 {
-    char *xs = s;
-    while (count--)
-        *xs++ = c;
+    volatile uint32_t *pu32 = (volatile uint32_t *)s;
+
+    while (count >= 4U)
+    {
+        *pu32++ = 0U;
+        count -= 4U;
+    }
+
     return s;
 }
 /// @endcond HIDDEN_SYMBOLS
@@ -302,7 +306,7 @@ static void CANFD_CalculateRamAddress(CANFD_RAM_PART_T *psConfigAddr, CANFD_ELEM
 */
 void CANFD_GetDefaultConfig(CANFD_FD_T *psConfig, uint8_t u8OpMode)
 {
-    CANFD_MemSet(psConfig, 0, sizeof(CANFD_FD_T));
+    memset(psConfig, 0, sizeof(*psConfig));
 
     psConfig->sBtConfig.sNormBitRate.u32BitRate = 500000;
 
@@ -1164,7 +1168,7 @@ void CANFD_InitRxFifo(CANFD_T *psCanfd, uint32_t u32RxFifoNum, CANFD_RAM_PART_T 
                 }
 
                 /*Clear the RX FIFO 0 Memory*/
-                CANFD_MemSet(ptr_s(u32Address), 0x00, (u32Size * 4 * psElemSize->u32RxFifo0));
+                CANFD_MemClear(ptr_s(u32Address), (u32Size * 4 * psElemSize->u32RxFifo0));
             }
             else
             {
@@ -1196,7 +1200,7 @@ void CANFD_InitRxFifo(CANFD_T *psCanfd, uint32_t u32RxFifoNum, CANFD_RAM_PART_T 
                 }
 
                 /*Clear the RX FIFO 0 Memory*/
-                CANFD_MemSet(ptr_s(u32Address), 0x00, (u32Size * 4 * psElemSize->u32RxFifo1));
+                CANFD_MemClear(ptr_s(u32Address), (u32Size * 4 * psElemSize->u32RxFifo1));
             }
             else
             {
@@ -1242,7 +1246,7 @@ void CANFD_InitTxDBuf(CANFD_T *psCanfd, CANFD_RAM_PART_T *psRamConfig, CANFD_ELE
     }
 
     /*Clear the TX Buffer Memory*/
-    CANFD_MemSet(ptr_s(u32Address), 0x00, (u32Size * 4 * psElemSize->u32TxBuf));
+    CANFD_MemClear(ptr_s(u32Address), (u32Size * 4 * psElemSize->u32TxBuf));
 }
 
 
@@ -1280,7 +1284,7 @@ void CANFD_InitRxDBuf(CANFD_T *psCanfd, CANFD_RAM_PART_T *psRamConfig, CANFD_ELE
     }
 
     /*Clear the RX Buffer Memory*/
-    CANFD_MemSet(ptr_s(u32Address), 0x00, (u32Size * 4 * psElemSize->u32RxBuf));
+    CANFD_MemClear(ptr_s(u32Address), (u32Size * 4 * psElemSize->u32RxBuf));
 }
 
 
@@ -1301,7 +1305,7 @@ void CANFD_ConfigSIDFC(CANFD_T *psCanfd, CANFD_RAM_PART_T *psRamConfig, CANFD_EL
     /*Get the Filter List Standard Start Address in the RAM*/
     u32Address = ptr_to_u32(psCanfd) + (uint32_t)CANFD_SRAM_BASE_ADDR + (psRamConfig->u32SIDFC_FLSSA & CANFD_SIDFC_FLSSA_Msk);
     /*Clear the Filter List Memory*/
-    CANFD_MemSet(ptr_s(u32Address), 0x00, (psElemSize->u32SIDFC * 4));
+    CANFD_MemClear(ptr_s(u32Address), (psElemSize->u32SIDFC * 4));
 }
 
 
@@ -1322,7 +1326,7 @@ void CANFD_ConfigXIDFC(CANFD_T *psCanfd, CANFD_RAM_PART_T *psRamConfig, CANFD_EL
     /*Get the Filter List Standard Start Address in the RAM*/
     u32Address = ptr_to_u32(psCanfd) + (uint32_t)CANFD_SRAM_BASE_ADDR + (psRamConfig->u32XIDFC_FLESA & CANFD_XIDFC_FLESA_Msk);
     /*Clear the Filter List Memory*/
-    CANFD_MemSet((uint32_t *)((uint64_t)(u32Address) & 0xffffffffULL), 0x00, (psElemSize->u32XIDFC * 8));
+    CANFD_MemClear((uint32_t *)((uint64_t)(u32Address) & 0xffffffffULL), (psElemSize->u32XIDFC * 8));
 }
 
 
