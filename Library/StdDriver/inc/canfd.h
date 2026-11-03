@@ -429,7 +429,7 @@ __STATIC_INLINE uint32_t CANFD_ReadReg(uint32_t u32RegAddr)
  *    @details      This macro get the module’s CANFD communication state.
  *    \hideinitializer
  */
-#define CANFD_GET_COMMUNICATION_STATE(canfd)    (((canfd)->PSR  & CANFD_PSR_ACT_Msk) >> CANFD_PSR_ACT_Pos)
+#define CANFD_GET_COMMUNICATION_STATE(canfd)    ((CANFD_ReadReg(ptr_to_u32(&(canfd)->PSR)) & CANFD_PSR_ACT_Msk) >> CANFD_PSR_ACT_Pos)
 
 
 void CANFD_Open(CANFD_T *canfd, CANFD_FD_T *psCanfdStr);

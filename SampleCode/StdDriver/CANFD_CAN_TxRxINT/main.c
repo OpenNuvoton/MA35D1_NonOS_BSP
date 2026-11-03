@@ -40,7 +40,7 @@ void CANFD00_IRQHandler(void)
 {
     uint32_t u32IntStatus;
 
-    u32IntStatus = CANFD0->IR;
+    u32IntStatus = CANFD_ReadReg(ptr_to_u32(&CANFD0->IR));
     sysprintf("IR =0x%08X \n", u32IntStatus);
 
     /* Check Error Warning status */
@@ -60,7 +60,7 @@ void CANFD00_IRQHandler(void)
     /* Check Bus-Off status */
     if (u32IntStatus & CANFD_IR_BO_Msk)
     {
-        if (CANFD0->PSR & CANFD_PSR_BO_Msk)
+        if (CANFD_ReadReg(ptr_to_u32(&CANFD0->PSR)) & CANFD_PSR_BO_Msk)
         {
             sysprintf("Bus-Off detected! Recovery will be triggered on next transmission attempt.\n");
             g_u8BusOffFlag = 1;
@@ -308,7 +308,7 @@ uint8_t CAN_BusOffRecovery(void)
     TIMER_Delay(TIMER0,50000);
 
     /* Check if recovery was successful by verifying Bus-Off status */
-    if (CANFD0->PSR & CANFD_PSR_BO_Msk)
+    if (CANFD_ReadReg(ptr_to_u32(&CANFD0->PSR)) & CANFD_PSR_BO_Msk)
     {
         /* Still in Bus-Off state, recovery failed */
         sysprintf("CAN Bus-Off recovery failed. Still in Bus-Off state.\n");

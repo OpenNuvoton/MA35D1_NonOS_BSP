@@ -29,17 +29,17 @@ void SYS_Init(void);
 /*---------------------------------------------------------------------------------------------------------*/
 void CANFD00_IRQHandler(void)
 {
-    sysprintf("IR =0x%08X \n", CANFD0->IR);
+    sysprintf("IR =0x%08X \n", CANFD_ReadReg(ptr_to_u32(&CANFD0->IR)));
     /*Clear the Interrupt flag */
     CANFD_ClearStatusFlag(CANFD0, CANFD_IR_TOO_Msk | CANFD_IR_RF1N_Msk);
     /*Receive the Rx Fifo1 buffer */
     CANFD_ReadRxFifoMsg(CANFD0, 1, &g_sRxMsgFrame);
     g_u8RxFIFO1CompleteFlag = 1;
 
-    if(CANFD0->IR & CANFD_IR_BO_Msk)
+    if(CANFD_ReadReg(ptr_to_u32(&CANFD0->IR)) & CANFD_IR_BO_Msk)
     {
         CANFD_ClearStatusFlag(CANFD0, CANFD_IR_BO_Msk);
-        CANFD0->CCCR &= ~CANFD_CCCR_INIT_Msk;
+        CANFD0->CCCR = CANFD_ReadReg(ptr_to_u32(&CANFD0->CCCR)) & ~CANFD_CCCR_INIT_Msk;
     }
 }
 
