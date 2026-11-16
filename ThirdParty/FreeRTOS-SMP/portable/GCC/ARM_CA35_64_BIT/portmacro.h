@@ -233,6 +233,23 @@ macros is used. */
 handler for whichever peripheral is used to generate the RTOS tick. */
 void FreeRTOS_Tick_Handler( void );
 
+/* configUSE_TASK_FPU_SUPPORT:
+ * 1 - Tasks start without an FPU context and must call
+ *     portTASK_USES_FLOATING_POINT() before using the FPU.  The task-level
+ *     save/restore of Q0-Q31/FPSR/FPCR is skipped for all other tasks.
+ *     ONLY safe if NO code that runs in any task (application, FreeRTOS
+ *     kernel, drivers, libraries) uses the V registers, i.e. everything is
+ *     built with -mgeneral-regs-only (or the code is built so that no
+ *     FP/SIMD instruction is generated).
+ *     Note: the IRQ path always saves the FP/SIMD state regardless of this
+ *     setting.
+ * 2 - (default) Every task starts with a full FP/SIMD context (Q0-Q31, FPSR,
+ *     FPCR) which is saved and restored on each context switch.  Safe for
+ *     any compiler options. */
+#ifndef configUSE_TASK_FPU_SUPPORT
+	#define configUSE_TASK_FPU_SUPPORT 2
+#endif
+
 /* Any task that uses the floating point unit MUST call vPortTaskUsesFPU()
 before any floating point instructions are executed. */
 void vPortTaskUsesFPU( void );

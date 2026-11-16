@@ -290,6 +290,52 @@ vPortRestoreTaskContext:
 	portRESTORE_CONTEXT
 
 
+.macro portSAVE_IRQ_FPU
+	/* Preserve the interrupted context's FP/SIMD state (Q0-Q31, FPSR, FPCR).
+	X9/X10 are free to use here - they were saved on entry. */
+	STP		Q0, Q1, [SP, #-0x20]!
+	STP		Q2, Q3, [SP, #-0x20]!
+	STP		Q4, Q5, [SP, #-0x20]!
+	STP		Q6, Q7, [SP, #-0x20]!
+	STP		Q8, Q9, [SP, #-0x20]!
+	STP		Q10, Q11, [SP, #-0x20]!
+	STP		Q12, Q13, [SP, #-0x20]!
+	STP		Q14, Q15, [SP, #-0x20]!
+	STP		Q16, Q17, [SP, #-0x20]!
+	STP		Q18, Q19, [SP, #-0x20]!
+	STP		Q20, Q21, [SP, #-0x20]!
+	STP		Q22, Q23, [SP, #-0x20]!
+	STP		Q24, Q25, [SP, #-0x20]!
+	STP		Q26, Q27, [SP, #-0x20]!
+	STP		Q28, Q29, [SP, #-0x20]!
+	STP		Q30, Q31, [SP, #-0x20]!
+	MRS		X9, FPSR
+	MRS		X10, FPCR
+	STP		X9, X10, [SP, #-0x10]!
+.endm
+
+.macro portRESTORE_IRQ_FPU
+	LDP		X9, X10, [SP], #0x10
+	MSR		FPSR, X9
+	MSR		FPCR, X10
+	LDP		Q30, Q31, [SP], #0x20
+	LDP		Q28, Q29, [SP], #0x20
+	LDP		Q26, Q27, [SP], #0x20
+	LDP		Q24, Q25, [SP], #0x20
+	LDP		Q22, Q23, [SP], #0x20
+	LDP		Q20, Q21, [SP], #0x20
+	LDP		Q18, Q19, [SP], #0x20
+	LDP		Q16, Q17, [SP], #0x20
+	LDP		Q14, Q15, [SP], #0x20
+	LDP		Q12, Q13, [SP], #0x20
+	LDP		Q10, Q11, [SP], #0x20
+	LDP		Q8, Q9, [SP], #0x20
+	LDP		Q6, Q7, [SP], #0x20
+	LDP		Q4, Q5, [SP], #0x20
+	LDP		Q2, Q3, [SP], #0x20
+	LDP		Q0, Q1, [SP], #0x20
+.endm
+
 /******************************************************************************
  * FreeRTOS_IRQ_Handler handles IRQ entry and exit.
  *****************************************************************************/
@@ -340,8 +386,13 @@ FreeRTOS_IRQ_Handler:
 	/* Maintain the ICCIAR value across the function call. */
 	STP		X0, X1, [SP, #-0x10]!
 
+	/* preserve the FP/SIMD state of the interrupted context. */
+	portSAVE_IRQ_FPU
+
 	/* Call the C handler. */
 	BL vApplicationIRQHandler
+
+	portRESTORE_IRQ_FPU
 
 	/* Disable interrupts. */
 	MSR 	DAIFSET, #2
@@ -436,82 +487,16 @@ Exit_IRQ_No_Context_Switch:
 /******************************************************************************
  * Weak implementation of vApplicationIRQHandler.
  *
- * If the application provides a strong vApplicationIRQHandler() (e.g. in
- * FreeRTOS_tick_config.c), the linker picks that and this weak version is
- * discarded - no FPU registers are saved in the IRQ path, giving maximum
- * performance.  This is the default / current behaviour.
- *
- * If instead the application provides a vApplicationFPUSafeIRQHandler(),
- * and does NOT provide a strong vApplicationIRQHandler(), this weak
- * version is linked.  It saves all 32 Q registers + FPSR/FPCR on the ELx
- * stack before calling vApplicationFPUSafeIRQHandler(), then restores them
- * on return.  This protects the interrupted context's FPU state when ISR
- * code (or functions it calls) uses floating-point / NEON instructions.
- *
- * Summary for application writers:
- *   - ISRs do NOT use FPU : implement vApplicationIRQHandler (no overhead)
- *   - ISRs DO use FPU     : implement vApplicationFPUSafeIRQHandler
+ * FreeRTOS_IRQ_Handler already saves and restores Q0-Q31, FPSR and FPCR around
+ * the call, so this simply forwards to vApplicationFPUSafeIRQHandler().  An
+ * application may provide either a strong vApplicationIRQHandler() or a
+ * vApplicationFPUSafeIRQHandler(); both are FP/SIMD safe.
  *****************************************************************************/
 .align 8
 .weak vApplicationIRQHandler
 .type vApplicationIRQHandler, %function
 vApplicationIRQHandler:
-	/* Save LR and FP so we can BL to the safe handler and return. */
-	STP		X29, X30, [SP, #-0x10]!
-
-	/* Save all 32 128-bit SIMD/FP registers. */
-	STP		Q0, Q1, [SP, #-0x20]!
-	STP		Q2, Q3, [SP, #-0x20]!
-	STP		Q4, Q5, [SP, #-0x20]!
-	STP		Q6, Q7, [SP, #-0x20]!
-	STP		Q8, Q9, [SP, #-0x20]!
-	STP		Q10, Q11, [SP, #-0x20]!
-	STP		Q12, Q13, [SP, #-0x20]!
-	STP		Q14, Q15, [SP, #-0x20]!
-	STP		Q16, Q17, [SP, #-0x20]!
-	STP		Q18, Q19, [SP, #-0x20]!
-	STP		Q20, Q21, [SP, #-0x20]!
-	STP		Q22, Q23, [SP, #-0x20]!
-	STP		Q24, Q25, [SP, #-0x20]!
-	STP		Q26, Q27, [SP, #-0x20]!
-	STP		Q28, Q29, [SP, #-0x20]!
-	STP		Q30, Q31, [SP, #-0x20]!
-
-	/* Save FPSR and FPCR (full 64-bit to maintain 16-byte SP alignment). */
-	MRS		X9, FPSR
-	MRS		X10, FPCR
-	STP		X9, X10, [SP, #-0x10]!
-
-	/* W0 still contains ulICCIAR from the caller (FreeRTOS_IRQ_Handler).
-	 * Call the FPU-safe C handler. */
-	BL		vApplicationFPUSafeIRQHandler
-
-	/* Restore FPSR and FPCR. */
-	LDP		X9, X10, [SP], #0x10
-	MSR		FPSR, X9
-	MSR		FPCR, X10
-
-	/* Restore all 32 128-bit SIMD/FP registers (reverse order). */
-	LDP		Q30, Q31, [SP], #0x20
-	LDP		Q28, Q29, [SP], #0x20
-	LDP		Q26, Q27, [SP], #0x20
-	LDP		Q24, Q25, [SP], #0x20
-	LDP		Q22, Q23, [SP], #0x20
-	LDP		Q20, Q21, [SP], #0x20
-	LDP		Q18, Q19, [SP], #0x20
-	LDP		Q16, Q17, [SP], #0x20
-	LDP		Q14, Q15, [SP], #0x20
-	LDP		Q12, Q13, [SP], #0x20
-	LDP		Q10, Q11, [SP], #0x20
-	LDP		Q8, Q9, [SP], #0x20
-	LDP		Q6, Q7, [SP], #0x20
-	LDP		Q4, Q5, [SP], #0x20
-	LDP		Q2, Q3, [SP], #0x20
-	LDP		Q0, Q1, [SP], #0x20
-
-	/* Restore FP and LR, return to FreeRTOS_IRQ_Handler. */
-	LDP		X29, X30, [SP], #0x10
-	RET
+	B		vApplicationFPUSafeIRQHandler
 
 
 .align 8

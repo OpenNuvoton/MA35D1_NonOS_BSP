@@ -245,21 +245,13 @@ void vClearTickInterrupt( void )
 /* IRQ take over by FreeRTOS kernel.
  *
  * This is a STRONG definition of vApplicationIRQHandler, which overrides the
- * weak FPU-saving version in portASM.S.  Because this strong version is
- * linked, NO FPU registers are saved/restored in the IRQ path - giving
- * maximum interrupt latency performance.
+ * weak forwarding version in portASM.S.  FreeRTOS_IRQ_Handler already saves
+ * and restores Q0-Q31, FPSR and FPCR around this call, so the interrupted
+ * context's FP/SIMD state is protected even though compiled C code (-O1 and
+ * above) freely uses the V registers.  Nothing needs to be saved here.
  *
- * If your ISR callbacks (or functions they call) use floating-point or
- * NEON instructions, you have two options:
- *
- *   1. Remove or rename this function so the weak vApplicationIRQHandler
- *      in portASM.S is linked instead.  Then implement
- *      vApplicationFPUSafeIRQHandler() with the same body as below.
- *      The port will automatically save/restore all 32 Q registers +
- *      FPSR/FPCR around your handler.
- *
- *   2. Keep this function and manually save/restore the FPU registers
- *      you use in your ISR code.
+ * (An alternative is to name this function vApplicationFPUSafeIRQHandler;
+ * both are equally safe.)
  */
 void vApplicationIRQHandler( uint32_t ulICCIAR )
 {

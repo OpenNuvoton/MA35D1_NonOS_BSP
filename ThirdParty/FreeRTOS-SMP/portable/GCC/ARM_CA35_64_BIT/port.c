@@ -312,13 +312,29 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
 	*pxTopOfStack = ( StackType_t ) pxCode; /* Exception return address. */
 	pxTopOfStack--;
 
-	/* The task will start without a floating point context.  A task that uses
-	the floating point hardware must call vPortTaskUsesFPU() before executing
-	any floating point instructions.  Paired with a zero padding slot to match
-	the STP/LDP pair in portSAVE_CONTEXT/portRESTORE_CONTEXT. */
-	*pxTopOfStack = ( StackType_t ) 0x00;	/* Padding (XZR in the STP pair). */
-	pxTopOfStack--;
-	*pxTopOfStack = portNO_FLOATING_POINT_CONTEXT;
+	#if ( configUSE_TASK_FPU_SUPPORT == 2 )
+	{
+		uint32_t ulWord;
+
+		/* Every task starts with a zeroed FP/SIMD context: FPCR, FPSR and
+		Q0-Q31 (64 words). */
+		for( ulWord = 0; ulWord < ( 64U + 2U ); ulWord++ )
+		{
+			*pxTopOfStack = ( StackType_t ) 0x00;
+			pxTopOfStack--;
+		}
+
+		*pxTopOfStack = ( StackType_t ) 0x00;	/* Padding (XZR in the STP pair). */
+		pxTopOfStack--;
+		*pxTopOfStack = pdTRUE;
+	}
+	#else
+	{
+		*pxTopOfStack = ( StackType_t ) 0x00;	/* Padding (XZR in the STP pair). */
+		pxTopOfStack--;
+		*pxTopOfStack = portNO_FLOATING_POINT_CONTEXT;
+	}
+	#endif
 
 	return pxTopOfStack;
 }
