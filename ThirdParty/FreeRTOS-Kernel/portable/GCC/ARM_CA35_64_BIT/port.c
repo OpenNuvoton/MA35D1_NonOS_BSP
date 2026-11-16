@@ -254,15 +254,35 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
     *pxTopOfStack = ( StackType_t ) pxCode; /* Exception return address. */
     pxTopOfStack--;
 
-    /* The task will start with a critical nesting count of 0 as interrupts are
-    enabled. */
-    *pxTopOfStack = portNO_CRITICAL_NESTING;
-    pxTopOfStack--;
+#if ( configUSE_TASK_FPU_SUPPORT == 2 )
+    {
+        uint32_t ulWord;
 
-    /* The task will start without a floating point context.  A task that uses
-    the floating point hardware must call vPortTaskUsesFPU() before executing
-    any floating point instructions. */
-    *pxTopOfStack = portNO_FLOATING_POINT_CONTEXT;
+        /* Every task starts with a zeroed FP/SIMD context: FPCR, FPSR and
+        Q0-Q31 (64 words), placed below ELR as portRESTORE_CONTEXT expects. */
+        for( ulWord = 0; ulWord < ( 64U + 2U ); ulWord++ )
+        {
+            *pxTopOfStack = ( StackType_t ) 0x00;
+            pxTopOfStack--;
+        }
+
+        /* Critical nesting count of 0 as interrupts are enabled. */
+        *pxTopOfStack = portNO_CRITICAL_NESTING;
+        pxTopOfStack--;
+        *pxTopOfStack = pdTRUE;
+    }
+    #else
+    {
+        /* The task will start with a critical nesting count of 0 as interrupts
+        are enabled. */
+        *pxTopOfStack = portNO_CRITICAL_NESTING;
+        pxTopOfStack--;
+
+        /* The task starts without a floating point context.  A task that uses
+        the FPU must call vPortTaskUsesFPU() first. */
+        *pxTopOfStack = portNO_FLOATING_POINT_CONTEXT;
+    }
+    #endif
 
     return pxTopOfStack;
 }
@@ -528,3 +548,13 @@ uint32_t ulReturn;
 
 #endif /* configASSERT_DEFINED */
 /*-----------------------------------------------------------*/
+
+/*-----------------------------------------------------------*/
+
+/* Weak default for vApplicationFPUSafeIRQHandler, called by the weak
+vApplicationIRQHandler in portASM.S.  The application must provide either a
+strong vApplicationIRQHandler() or vApplicationFPUSafeIRQHandler(). */
+void __attribute__(( weak )) vApplicationFPUSafeIRQHandler( uint32_t ulICCIAR )
+{
+    ( void ) ulICCIAR;
+}

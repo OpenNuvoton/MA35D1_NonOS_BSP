@@ -109,6 +109,11 @@
     STP     Q28, Q29, [SP,#-0x20]!
     STP     Q30, Q31, [SP,#-0x20]!
 
+    /* Save FPSR and FPCR (on top of the Q registers). */
+    MRS     X7, FPSR
+    MRS     X8, FPCR
+    STP     X7, X8, [SP, #-0x10]!
+
 1:
     /* Store the critical nesting count and FPU context indicator. */
     STP     X2, X3, [SP, #-0x10]!
@@ -161,6 +166,12 @@
     /* Restore the FPU context, if any. */
     CMP     X2, #0
     B.EQ    1f
+
+    /* Restore FPSR and FPCR first (saved last, so on top). */
+    LDP     X7, X8, [SP], #0x10
+    MSR     FPSR, X7
+    MSR     FPCR, X8
+
     LDP     Q30, Q31, [SP], #0x20
     LDP     Q28, Q29, [SP], #0x20
     LDP     Q26, Q27, [SP], #0x20
@@ -287,6 +298,52 @@ vPortRestoreTaskContext:
     portRESTORE_CONTEXT
 
 
+.macro portSAVE_IRQ_FPU
+    /* Preserve the interrupted context's FP/SIMD state (Q0-Q31, FPSR, FPCR).
+    X9/X10 are free to use here - they were saved on entry. */
+    STP     Q0, Q1, [SP, #-0x20]!
+    STP     Q2, Q3, [SP, #-0x20]!
+    STP     Q4, Q5, [SP, #-0x20]!
+    STP     Q6, Q7, [SP, #-0x20]!
+    STP     Q8, Q9, [SP, #-0x20]!
+    STP     Q10, Q11, [SP, #-0x20]!
+    STP     Q12, Q13, [SP, #-0x20]!
+    STP     Q14, Q15, [SP, #-0x20]!
+    STP     Q16, Q17, [SP, #-0x20]!
+    STP     Q18, Q19, [SP, #-0x20]!
+    STP     Q20, Q21, [SP, #-0x20]!
+    STP     Q22, Q23, [SP, #-0x20]!
+    STP     Q24, Q25, [SP, #-0x20]!
+    STP     Q26, Q27, [SP, #-0x20]!
+    STP     Q28, Q29, [SP, #-0x20]!
+    STP     Q30, Q31, [SP, #-0x20]!
+    MRS     X9, FPSR
+    MRS     X10, FPCR
+    STP     X9, X10, [SP, #-0x10]!
+    .endm
+
+.macro portRESTORE_IRQ_FPU
+    LDP     X9, X10, [SP], #0x10
+    MSR     FPSR, X9
+    MSR     FPCR, X10
+    LDP     Q30, Q31, [SP], #0x20
+    LDP     Q28, Q29, [SP], #0x20
+    LDP     Q26, Q27, [SP], #0x20
+    LDP     Q24, Q25, [SP], #0x20
+    LDP     Q22, Q23, [SP], #0x20
+    LDP     Q20, Q21, [SP], #0x20
+    LDP     Q18, Q19, [SP], #0x20
+    LDP     Q16, Q17, [SP], #0x20
+    LDP     Q14, Q15, [SP], #0x20
+    LDP     Q12, Q13, [SP], #0x20
+    LDP     Q10, Q11, [SP], #0x20
+    LDP     Q8, Q9, [SP], #0x20
+    LDP     Q6, Q7, [SP], #0x20
+    LDP     Q4, Q5, [SP], #0x20
+    LDP     Q2, Q3, [SP], #0x20
+    LDP     Q0, Q1, [SP], #0x20
+    .endm
+
 /******************************************************************************
  * FreeRTOS_IRQ_Handler handles IRQ entry and exit.
  *****************************************************************************/
@@ -334,8 +391,14 @@ FreeRTOS_IRQ_Handler:
     /* Maintain the ICCIAR value across the function call. */
     STP     X0, X1, [SP, #-0x10]!
 
+    /* Unconditionally preserve the FP/SIMD state of the interrupted context,
+    as compiled C code (-O1 and above) freely uses the V registers. */
+    portSAVE_IRQ_FPU
+
     /* Call the C handler. */
     BL vApplicationIRQHandler
+
+    portRESTORE_IRQ_FPU
 
     /* Disable interrupts. */
     MSR     DAIFSET, #2
@@ -426,6 +489,18 @@ Exit_IRQ_No_Context_Switch:
 
 
 
+
+/******************************************************************************
+ * Weak vApplicationIRQHandler.  FreeRTOS_IRQ_Handler already saves/restores
+ * Q0-Q31, FPSR and FPCR, so this just forwards to
+ * vApplicationFPUSafeIRQHandler().  A strong vApplicationIRQHandler() in the
+ * application overrides it and is equally FP/SIMD safe.
+ *****************************************************************************/
+.align 8
+.weak vApplicationIRQHandler
+.type vApplicationIRQHandler, %function
+vApplicationIRQHandler:
+    B       vApplicationFPUSafeIRQHandler
 
 .align 8
 pxCurrentTCBConst: .dword pxCurrentTCB
