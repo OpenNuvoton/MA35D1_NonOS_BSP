@@ -73,7 +73,10 @@ void SYS_Init(void)
     CLK_WaitClockReady(CLK_STATUS_HXTSTB_Msk);
 
     /* Enable IP clock */
-    CLK_SetModuleClock(KPI_MODULE, CLK_CLKSEL4_KPISEL_LXT, CLK_CLKDIV4_KPI(1));
+    CLK_SetModuleClock(KPI_MODULE,
+                       CLK_CLKSEL4_KPISEL_HXT,
+                       CLK_CLKDIV4_KPI(24));
+    CLK_EnableModuleClock(KPI_MODULE);
     CLK_SetModuleClock(UART0_MODULE, CLK_CLKSEL2_UART0SEL_HXT, CLK_CLKDIV1_UART0(2));
     CLK_EnableModuleClock(UART0_MODULE);
 
@@ -122,7 +125,11 @@ int32_t main (void)
 
     /* KPI setting */
     KPI_Open(KPI, u32RowNum, u32ColNum);
-    KPI_ConfigKeyScanTiming(KPI, 50, 3, KPI_ROW_SCAN_DELAY4CLK);
+
+    KPI->KPIPRESCALDIV = 0x1F;
+
+    KPI_ConfigKeyScanTiming(KPI, 64, 10,
+                            KPI_ROW_SCAN_DELAY4CLK);
 
     // Clear interrupt
     KPI->KPIKPE0 = KPI->KPIKPE0;
@@ -134,9 +141,10 @@ int32_t main (void)
     IRQ_Enable ((IRQn_ID_t)KPI_IRQn);
     KPI_ENABLE_INT(KPI, KPI_KPICONF_PKINTEN_Msk|KPI_KPICONF_RKINTEN_Msk|KPI_KPICONF_INTEN_Msk);
 
+    KPI->KPICONF |= KPI_KPICONF_ENKP_Msk;
+
     sysprintf("\nThis sample code demonstrate KPI function\n");
     sysprintf("\nPlease Press KPI key.");
 
     while(1);
 }
-
