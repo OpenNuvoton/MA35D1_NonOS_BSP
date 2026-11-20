@@ -92,8 +92,8 @@ void SystemInit1 (void)
 	/* Set timer clock */
 	EL0_SetCounterFrequency(GTIM_Clock);
 
-	/* Enable MMU */
-	ma35d1_mmu_init();
+	/* Enable MMU, reusing the page tables built by core 0 */
+	ma35d1_mmu_init_secondary();
 
 	/* Distributor already initial by core 0 */
 	GIC_CPUInterfaceInit();

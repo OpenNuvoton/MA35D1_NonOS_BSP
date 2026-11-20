@@ -176,4 +176,7 @@ void mmu_enable(void);
 void mmu_disable(void);
 /* Initialize MMU registers and page table memory region for ma35d1 */
 void ma35d1_mmu_init(void);
+/* Secondary core: reuse the primary core's page tables and enable the MMU. */
+void mmu_init_secondary(void);
+void ma35d1_mmu_init_secondary(void);
 #endif /* __ARCH_ARM64_MMU_H__ */

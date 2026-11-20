@@ -223,6 +223,23 @@ void mmu_init(void)
 	raw_write_mair_el3(MAIR_ATTRIBUTES);
 }
 
+/* Func : mmu_init_secondary
+ * Desc : Program the MMU registers of a secondary core to use the page tables
+ * already built by the primary core.
+ */
+void mmu_init_secondary(void)
+{
+	raw_write_ttbr0_el3((uintptr_t)_ttb);
+
+	raw_write_tcr_el3(TCR_TOSZ | TCR_IRGN0_NM_WBWAC | TCR_ORGN0_NM_WBWAC |
+			  TCR_SH0_IS | TCR_TG0_4KB | TCR_PS_4GB |
+			  TCR_TBI_USED);
+
+	raw_write_mair_el3(MAIR_ATTRIBUTES);
+
+	tlb_invalidate_all();
+}
+
 /* Func : mmu_save_context
  * Desc : Save mmu context (registers and ttbr base).
  */

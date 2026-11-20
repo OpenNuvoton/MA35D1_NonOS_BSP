@@ -54,3 +54,9 @@ void ma35d1_mmu_init(void)
 	ma35d1_mmu_config();
 	mmu_enable();
 }
+
+void ma35d1_mmu_init_secondary(void)
+{
+	mmu_init_secondary();
+	mmu_enable();
+}
